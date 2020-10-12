@@ -143,7 +143,7 @@ def set_enckey():
 
 def set_deckey():
     IM871.write(
-        port.to_bytes([IM871A_SERIAL_SOF, DEVMGMT_ID, DEVMGMT_MSG_SET_AES_DECKEY_REQ, 0x19, 0x1,0x2C, 0x2D, 0x32, 0x66,
+        port.to_bytes([IM871A_SERIAL_SOF, DEVMGMT_ID, DEVMGMT_MSG_SET_AES_DECKEY_REQ, 0x19, 0x1, 0x2C, 0x2D, 0x32, 0x66,
                        0x68, 0x57, 0x30, 0x02, 0x9A, 0x25, 0x13, 0x9E, 0x32, 0x44, 0xCC, 0x2E, 0x39, 0x1A, 0x8E,
                        0xF6, 0xB9, 0x15, 0xB6,
                        0x97]))
@@ -152,11 +152,13 @@ def set_deckey():
     data_received = IM871.read(5)
     print(data_received.hex())
 
+
 def read_data():
     while True:
         data = IM871.read(100)
-        print(data.hex())
-
+        datasci = data.hex()
+        if datasci[14:22] == '57686632':
+            print(datasci)
 
 
 # def data_handling(data):
@@ -164,7 +166,7 @@ def read_data():
 
 
 if __name__ == '__main__':
-    IM871 = port.Serial(port='/dev/ttyUSB0', baudrate=57600, bytesize=8, parity=port.PARITY_NONE, stopbits=1,timeout=1)
+    IM871 = port.Serial(port='/dev/ttyUSB0', baudrate=57600, bytesize=8, parity=port.PARITY_NONE, stopbits=1, timeout=1)
     if IM871.isOpen():
         print("Connected to Serial port ttyUSB0")
         # getdeviceid()
