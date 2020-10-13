@@ -147,7 +147,7 @@ class OmniPower:
     def is_this_my(self, t):
         """
         Check whether a given telegram is from this meter by comparing meter setting to telegram
-         - Meted ID == A
+         - Meter ID == A
          - Manufacturer ID == M
          - Version == Version
          - Medium == Medium
