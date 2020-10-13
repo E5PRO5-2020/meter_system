@@ -118,8 +118,3 @@ class MeterMeasurement:
         obj = self.as_dict()
         return json.dumps(obj)
 
-
-
-# Only run self-tests if started from terminal, not when imported
-if __name__ == '__main__':
-    test0()
