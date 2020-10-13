@@ -158,7 +158,13 @@ def read_data():
         data = IM871.read(100)
         datasci = data.hex()
         if datasci[14:22] == '57686632':
+            datasci = datasci[6::]
+            with open("data_read.txt", "a+") as f:
+                f.write(datasci+"\n")
             print(datasci)
+    # Look for AES Error indication (3.1.10.4 Manual)
+    # if datasci[4:6] == '0x27':
+    #   print(datasci)
 
 
 # def data_handling(data):
@@ -166,7 +172,8 @@ def read_data():
 
 
 if __name__ == '__main__':
-    IM871 = port.Serial(port='/dev/ttyUSB0', baudrate=57600, bytesize=8, parity=port.PARITY_NONE, stopbits=1, timeout=1)
+    IM871 = port.Serial(port='/dev/ttyUSB0', baudrate=57600, bytesize=8, parity=port.PARITY_NONE, stopbits=1,
+                        timeout=0.3)
     if IM871.isOpen():
         print("Connected to Serial port ttyUSB0")
         # getdeviceid()
