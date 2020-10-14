@@ -1,0 +1,5 @@
+wheel
+pycryptodome>=3.9,<3.10
+sphinx>=3.2,<3.3
+paho-mqtt>=1.5,<1.6
+pytest>=6.1,<6.2

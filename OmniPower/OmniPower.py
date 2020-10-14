@@ -1,4 +1,4 @@
-"""
+""" Parse Kamstrup OmniPower wm-bus telegrams
 This module implements parsing for the Kamstrup OmniPower meter, single-phase.
 This meter sends wm-bus C1 (compact one-way) telegrams.
 
@@ -57,12 +57,13 @@ Field 4:    P+              32-bit uint     power,  10^0 W      Production to gr
 """
 
 from binascii import hexlify, unhexlify
-from MeterMeasurement import MeterMeasurement, Measurement
 from struct import *
 from Crypto.Cipher import AES
 from Crypto.Util import Counter
 from datetime import datetime
 import json
+# And our own implementation
+from OmniPower.MeterMeasurement import MeterMeasurement, Measurement
 
 
 class C1Telegram:

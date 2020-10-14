@@ -6,8 +6,8 @@ from datetime import datetime
 import json
 
 # Use our implemented classes
-from MeterMeasurement import Measurement, MeterMeasurement
-from OmniPower import C1Telegram, OmniPower
+from OmniPower.MeterMeasurement import Measurement, MeterMeasurement
+from OmniPower.OmniPower import C1Telegram, OmniPower
 
 
 def test0():

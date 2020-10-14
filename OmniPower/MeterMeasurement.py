@@ -9,7 +9,7 @@ from datetime import datetime
 
 
 class Measurement:
-    """
+    """Single physical measurement
     A single measurement of a physical quantity consisting of a value and a unit
     """
     def __init__(self, value, unit):
@@ -71,8 +71,7 @@ class MeterMeasurement:
         return header + text
 
     def as_dict(self):
-        """
-        Serializes and dumps the Measurement object as a dict object.
+        """Serializes and dumps the Measurement object as a dict object.
         Make an object similar to
         {
             "Meter ID: ": "3232323",
@@ -98,6 +97,7 @@ class MeterMeasurement:
         }
         :return: dict
         """
+
         # Build object, and dump timestamp using ISO8601, https://en.wikipedia.org/wiki/ISO_8601
         obj = {
             'Meter ID: ': str(self.meter_id),
@@ -111,8 +111,7 @@ class MeterMeasurement:
         return obj
 
     def json_dump(self):
-        """
-        Returns a JSON string
+        """Returns a JSON string
         :return:
         """
         obj = self.as_dict()
