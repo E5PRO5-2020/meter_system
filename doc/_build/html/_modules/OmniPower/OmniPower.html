@@ -1,0 +1,492 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>OmniPower.OmniPower &mdash; Kamstrup OmniPower wm-bus metering development documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+
+  
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html" class="icon icon-home" alt="Documentation Home"> Kamstrup OmniPower wm-bus metering
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Table of contents</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../omnipower.html">OmniPower implementation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../metermeasurement.html">Implementation of generic measurements</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Kamstrup OmniPower wm-bus metering</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>OmniPower.OmniPower</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for OmniPower.OmniPower</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot; Parse Kamstrup OmniPower wm-bus telegrams</span>
+
+<span class="sd">:platform: Python 3.5.10 on Linux, OS X</span>
+<span class="sd">:synopsis: Implements parsing functionality for C1 telegrams and log handling for data series</span>
+<span class="sd">:author: Janus Bo Andersen</span>
+<span class="sd">:date: 14 October 2020</span>
+
+<span class="sd">- This module implements parsing for the Kamstrup OmniPower meter, single-phase.</span>
+<span class="sd">- This meter sends wm-bus C1 (compact one-way) telegrams.</span>
+<span class="sd">- Telegrams on wm-bus are little-endian, i.e. LSB first.</span>
+
+<span class="sd">In a regular measurement data telegram, the data fields are:</span>
+
+<span class="sd">+---+-------+-------+-------------+---------------------------------------------+---------------------------------+</span>
+<span class="sd">| # | Byte# | Bytes | M-bus field | Description                                 | Expected value (little-endian)  |</span>
+<span class="sd">+===+=======+=======+=============+=============================================+=================================+</span>
+<span class="sd">| 0 | 0     | 1     | L           | Telegram length                             | 0x27 (39 bytes follow)          |</span>
+<span class="sd">+---+-------+-------+-------------+---------------------------------------------+---------------------------------+</span>
+<span class="sd">| 1 | 1     | 1     | C           | Control field (type and purpose of message) | 0x44 (SND_NR)                   |</span>
+<span class="sd">+---+-------+-------+-------------+---------------------------------------------+---------------------------------+</span>
+<span class="sd">| 2 | 2-3   | 2     | M           | Manufacturer ID (official ID code)          | 0x2D2C (KAM)                    |</span>
+<span class="sd">+---+-------+-------+-------------+---------------------------------------------+---------------------------------+</span>
+<span class="sd">| 3 | 4-7   | 4     | A           | Address (meter serial number)               | 0x57686632 (big endian 32666857)|</span>
+<span class="sd">+---+-------+-------+-------------+---------------------------------------------+---------------------------------+</span>
+<span class="sd">| 4 | 8     | 1     | Ver.        | Version number of the wm-bus firmware       | 0x30                            |</span>
+<span class="sd">+---+-------+-------+-------------+---------------------------------------------+---------------------------------+</span>
+<span class="sd">| 5 | 9     | 1     | Medium      | Type / medium of meter                      | 0x02 (Electricity)              |</span>
+<span class="sd">+---+-------+-------+-------------+---------------------------------------------+---------------------------------+</span>
+<span class="sd">| 6 | 10    | 1     | CI          | Control Information                         | 0x8D (Extended Link Layer 2)    |</span>
+<span class="sd">+---+-------+-------+-------------+---------------------------------------------+---------------------------------+</span>
+<span class="sd">| 7 | 11    | 1     | CC          | Communication Control                       | 0x20 (Slow response sync.)      |</span>
+<span class="sd">+---+-------+-------+-------------+---------------------------------------------+---------------------------------+</span>
+<span class="sd">| 8 | 12    | 1     | ACC         | Access field                                | Varies                          |</span>
+<span class="sd">+---+-------+-------+-------------+---------------------------------------------+---------------------------------+</span>
+<span class="sd">| 9 | 13-16 | 4     | AES_CTR     | AES counter                                 | Varies, used for decryption     |</span>
+<span class="sd">+---+-------+-------+-------------+---------------------------------------------+---------------------------------+</span>
+<span class="sd">|10 | 17-39 | 23    | Data        | Contains AES-encrypted data frame           | Encrypted data                  |</span>
+<span class="sd">+---+-------+-------+-------------+---------------------------------------------+---------------------------------+</span>
+<span class="sd">|11 | 40-41 | 2     | CRC16       | CRC16 check                                 |                                 |</span>
+<span class="sd">+---+-------+-------+-------------+---------------------------------------------+---------------------------------+</span>
+
+<span class="sd">The first 9 fields of the telegram can be unpacked using the little-endian format `&lt;BBHIBBBBB`, where</span>
+
+<span class="sd">- `&lt;` marks little-endian,</span>
+<span class="sd">- `B` is an unsigned 1 byte (char),</span>
+<span class="sd">- `H` is an unsigned 2 byte (short),</span>
+<span class="sd">- `I` is an unsigned 4 byte (int)</span>
+
+<span class="sd">Telegram examples</span>
+
+<span class="sd">+---+---+-----+---------+---+---+---+---+---+---------+-----------------------------------------------+-----+</span>
+<span class="sd">|L  |C  |M    |A        |Ver|Med|CI |CC |ACC|AES_CTR  |Encrypted payload                              |CRC16|</span>
+<span class="sd">+===+===+=====+=========+===+===+===+===+===+=========+===============================================+=====+</span>
+<span class="sd">|27 |44 |2D2C |57686632 |30 |02 |8D |20 |2E |21870320 |D3A4F149B1B8F5783DF7434B8A66A55786499ABE7BAB59 |xxxx |</span>
+<span class="sd">+---+---+-----+---------+---+---+---+---+---+---------+-----------------------------------------------+-----+</span>
+<span class="sd">|27 |44 |2d2c |57686632 |30 |02 |8d |20 |63 |60dd0320 |c42b87f46fc048d42498b44b5e34f083e93e6af1617631 |3d9c |</span>
+<span class="sd">+---+---+-----+---------+---+---+---+---+---+---------+-----------------------------------------------+-----+</span>
+<span class="sd">|27 |44 |2d2c |57686632 |30 |02 |8d |20 |8e |11de0320 |188851bdc4b72dd3c2954a341be369e9089b4eb3858169 |494e |</span>
+<span class="sd">+---+---+-----+---------+---+---+---+---+---+---------+-----------------------------------------------+-----+</span>
+
+<span class="sd">The AES-CTR decryption prefix is built from some of the fields (m-bus mode 5). It&#39;s packed using the format `&lt;HIBBBIB`.</span>
+
+<span class="sd">+-----+---------+---+---+---+---------+---+</span>
+<span class="sd">|M    |A        |Ver|Med|CC |AES_CTR  |Pad|</span>
+<span class="sd">+=====+=========+===+===+===+=========+===+</span>
+<span class="sd">|2D2C |57686632 |30 |02 |20 |21870320 |00 |</span>
+<span class="sd">+-----+---------+---+---+---+---------+---+</span>
+
+<span class="sd">A decrypted payload example</span>
+
+<span class="sd">+------+-------+----------------+-----------+---------+---------+---------+---------+</span>
+<span class="sd">|CRC16 |CI-TPL |Data fmt. sign. |CRC16 data |Field 1  |Field 2  |Field 3  |Field 4  |</span>
+<span class="sd">+======+=======+================+===========+=========+=========+=========+=========+</span>
+<span class="sd">|1170  |79     |138C            |4491       |CE000000 |00000000 |03000000 |00000000 |</span>
+<span class="sd">+------+-------+----------------+-----------+---------+---------+---------+---------+</span>
+
+<span class="sd">Measurement fields start at byte 7, and can be extracted using `&lt;IIII` little-endian format.</span>
+
+<span class="sd">The fields in the OmniPower are</span>
+
+<span class="sd">+----------+---------------+----------------+--------------------+--------------------------------------+-----------+</span>
+<span class="sd">| Field    | Kamstrup name | Data fmt (DIF) | Value type (VIF/E) | VIF/E meaning                        | DIF VIF/E |</span>
+<span class="sd">+==========+===============+================+====================+======================================+===========+</span>
+<span class="sd">| Field 1  | A+            | 32-bit uint    | Energy, 10^1 Wh    | Consumption from grid, accum.        | 04  04    |</span>
+<span class="sd">+----------+---------------+----------------+--------------------+--------------------------------------+-----------+</span>
+<span class="sd">| Field 2  | A-            | 32-bit uint    | Energy, 10^1 Wh    | Production to grid, accum.           | 04  84 3C |</span>
+<span class="sd">+----------+---------------+----------------+--------------------+--------------------------------------+-----------+</span>
+<span class="sd">| Field 3  | P+            | 32-bit uint    | Power,  10^0 W     | Consumption from grid, instantan.    | 04  2B    |</span>
+<span class="sd">+----------+---------------+----------------+--------------------+--------------------------------------+-----------+</span>
+<span class="sd">| Field 4  | P-            | 32-bit uint    | Power,  10^0 W     | Production to grid, instantan.       | 04  AB 3C |</span>
+<span class="sd">+----------+---------------+----------------+--------------------+--------------------------------------+-----------+</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">binascii</span> <span class="kn">import</span> <span class="n">hexlify</span><span class="p">,</span> <span class="n">unhexlify</span>
+<span class="kn">from</span> <span class="nn">struct</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">Crypto.Cipher</span> <span class="kn">import</span> <span class="n">AES</span>
+<span class="kn">from</span> <span class="nn">Crypto.Util</span> <span class="kn">import</span> <span class="n">Counter</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
+<span class="kn">import</span> <span class="nn">json</span>
+
+<span class="c1"># And our own implementation</span>
+<span class="kn">from</span> <span class="nn">OmniPower.MeterMeasurement</span> <span class="kn">import</span> <span class="n">MeterMeasurement</span><span class="p">,</span> <span class="n">Measurement</span>
+
+
+<div class="viewcode-block" id="C1Telegram"><a class="viewcode-back" href="../../omnipower.html#OmniPower.OmniPower.C1Telegram">[docs]</a><span class="k">class</span> <span class="nc">C1Telegram</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Implements capture of data fields for a C1 telegram from OmniPower</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">telegram</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Take a telegram (bytestring with hex values) and parses into fields</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">header</span> <span class="o">=</span> <span class="n">telegram</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">17</span> <span class="o">*</span> <span class="mi">2</span><span class="p">]</span>                             <span class="c1"># Non-encrypted part, discard after parsing</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">encrypted</span> <span class="o">=</span> <span class="n">telegram</span><span class="p">[</span><span class="mi">17</span> <span class="o">*</span> <span class="mi">2</span><span class="p">:</span><span class="nb">len</span><span class="p">(</span><span class="n">telegram</span><span class="p">)</span> <span class="o">-</span> <span class="mi">4</span><span class="p">]</span>     <span class="c1"># Encrypted part of telegram, keep after parsing</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">decrypted</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>                                     <span class="c1"># Empty string until decrypted</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">CRC16</span> <span class="o">=</span> <span class="n">telegram</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">telegram</span><span class="p">)</span> <span class="o">-</span> <span class="mi">4</span><span class="p">:]</span>
+
+            <span class="n">header_values</span> <span class="o">=</span> <span class="n">unpack</span><span class="p">(</span><span class="s1">&#39;&lt;BBHIBBBBBI&#39;</span><span class="p">,</span> <span class="n">unhexlify</span><span class="p">(</span><span class="n">header</span><span class="p">))</span>
+
+            <span class="c1"># Extract fields by field numbers</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">L</span> <span class="o">=</span> <span class="n">header_values</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">C</span> <span class="o">=</span> <span class="n">header_values</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">M</span> <span class="o">=</span> <span class="n">header_values</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">A</span> <span class="o">=</span> <span class="n">header_values</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">version</span> <span class="o">=</span> <span class="n">header_values</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">medium</span> <span class="o">=</span> <span class="n">header_values</span><span class="p">[</span><span class="mi">5</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">CI</span> <span class="o">=</span> <span class="n">header_values</span><span class="p">[</span><span class="mi">6</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">CC</span> <span class="o">=</span> <span class="n">header_values</span><span class="p">[</span><span class="mi">7</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ACC</span> <span class="o">=</span> <span class="n">header_values</span><span class="p">[</span><span class="mi">8</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">AES_CTR</span> <span class="o">=</span> <span class="n">header_values</span><span class="p">[</span><span class="mi">9</span><span class="p">]</span>
+
+            <span class="c1"># Store original hex values as big-endian inside strings for comparison with human-readable values</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">be</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s1">&#39;L&#39;</span><span class="p">:</span> <span class="n">hexlify</span><span class="p">(</span><span class="n">pack</span><span class="p">(</span><span class="s1">&#39;&gt;B&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">L</span><span class="p">)),</span>
+                <span class="s1">&#39;C&#39;</span><span class="p">:</span> <span class="n">hexlify</span><span class="p">(</span><span class="n">pack</span><span class="p">(</span><span class="s1">&#39;&gt;B&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">C</span><span class="p">)),</span>
+                <span class="s1">&#39;M&#39;</span><span class="p">:</span> <span class="n">hexlify</span><span class="p">(</span><span class="n">pack</span><span class="p">(</span><span class="s1">&#39;&gt;H&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">M</span><span class="p">)),</span>
+                <span class="s1">&#39;A&#39;</span><span class="p">:</span> <span class="n">hexlify</span><span class="p">(</span><span class="n">pack</span><span class="p">(</span><span class="s1">&#39;&gt;I&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">A</span><span class="p">)),</span>
+                <span class="s1">&#39;version&#39;</span><span class="p">:</span> <span class="n">hexlify</span><span class="p">(</span><span class="n">pack</span><span class="p">(</span><span class="s1">&#39;&gt;B&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">version</span><span class="p">)),</span>
+                <span class="s1">&#39;medium&#39;</span><span class="p">:</span> <span class="n">hexlify</span><span class="p">(</span><span class="n">pack</span><span class="p">(</span><span class="s1">&#39;&gt;B&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">medium</span><span class="p">)),</span>
+                <span class="s1">&#39;CI&#39;</span><span class="p">:</span> <span class="n">hexlify</span><span class="p">(</span><span class="n">pack</span><span class="p">(</span><span class="s1">&#39;&gt;B&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">CI</span><span class="p">))</span><span class="o">.</span><span class="n">upper</span><span class="p">(),</span>
+                <span class="s1">&#39;CC&#39;</span><span class="p">:</span> <span class="n">hexlify</span><span class="p">(</span><span class="n">pack</span><span class="p">(</span><span class="s1">&#39;&gt;B&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">CC</span><span class="p">))</span><span class="o">.</span><span class="n">upper</span><span class="p">(),</span>
+                <span class="s1">&#39;ACC&#39;</span><span class="p">:</span> <span class="n">hexlify</span><span class="p">(</span><span class="n">pack</span><span class="p">(</span><span class="s1">&#39;&gt;B&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ACC</span><span class="p">)),</span>
+                <span class="s1">&#39;AES_CTR&#39;</span><span class="p">:</span> <span class="n">hexlify</span><span class="p">(</span><span class="n">pack</span><span class="p">(</span><span class="s1">&#39;&gt;I&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">AES_CTR</span><span class="p">)),</span>
+            <span class="p">}</span>
+
+            <span class="c1"># Compute decryption prefix</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">prefix</span> <span class="o">=</span> <span class="n">pack</span><span class="p">(</span><span class="s1">&#39;&lt;HIBBBIB&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">M</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">A</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">version</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">medium</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">CC</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">AES_CTR</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+
+        <span class="k">except</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Oops!&quot;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="C1Telegram.decrypt_using"><a class="viewcode-back" href="../../omnipower.html#OmniPower.OmniPower.C1Telegram.decrypt_using">[docs]</a>    <span class="k">def</span> <span class="nf">decrypt_using</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">meter</span><span class="p">:</span> <span class="s1">&#39;OmniPower&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Decrypts a telegram using the key from the specified meter.</span>
+<span class="sd">        Updates the decrypted field of self.</span>
+<span class="sd">        Requires instantiated OmniPower meter with valid AES-key.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">meter</span><span class="o">.</span><span class="n">AES_key</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">decrypted</span> <span class="o">=</span> <span class="n">meter</span><span class="o">.</span><span class="n">decrypt</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Oh no!&quot;</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="OmniPower"><a class="viewcode-back" href="../../omnipower.html#OmniPower.OmniPower.OmniPower">[docs]</a><span class="k">class</span> <span class="nc">OmniPower</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Implementation of our OmniPower single-phase meter</span>
+<span class="sd">    Passed values are hex encoded as string, e.g. &#39;2C2D&#39; for value 0x2C2D.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;Kamstrup OmniPower one-phase&#39;</span><span class="p">,</span>
+                 <span class="n">meter_id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;32666857&#39;</span><span class="p">,</span>
+                 <span class="n">manufacturer_id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;2C2D&#39;</span><span class="p">,</span>
+                 <span class="n">medium</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;02&#39;</span><span class="p">,</span>
+                 <span class="n">version</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;30&#39;</span><span class="p">,</span>
+                 <span class="n">aes_key</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;9A25139E3244CC2E391A8EF6B915B697&#39;</span><span class="p">):</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>                        <span class="c1"># Meter nickname</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">meter_id</span> <span class="o">=</span> <span class="n">meter_id</span>                <span class="c1"># serial number of the meter</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">manufacturer_id</span> <span class="o">=</span> <span class="n">manufacturer_id</span>  <span class="c1"># Kamstrup manufacturer ID</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">medium</span> <span class="o">=</span> <span class="n">medium</span>                    <span class="c1"># Medium/type of meter, e.g 0x02 is electricity</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">version</span> <span class="o">=</span> <span class="n">version</span>                  <span class="c1"># Firmware version for the wm-bus interface</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">AES_key</span> <span class="o">=</span> <span class="n">aes_key</span>                  <span class="c1"># 128-bit AES encryption key</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">measurement_log</span> <span class="o">=</span> <span class="p">[]</span>               <span class="c1"># Start with an empty log</span>
+
+<div class="viewcode-block" id="OmniPower.is_this_my"><a class="viewcode-back" href="../../omnipower.html#OmniPower.OmniPower.OmniPower.is_this_my">[docs]</a>    <span class="k">def</span> <span class="nf">is_this_my</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">telegram</span><span class="p">:</span> <span class="s1">&#39;C1Telegram&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Check whether a given telegram is from this meter by comparing meter setting to telegram</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Comparison is done on lowercase strings and big-endian values, e.g. 2c2d == 2c2d</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">telegram</span><span class="o">.</span><span class="n">be</span><span class="p">[</span><span class="s1">&#39;A&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">meter_id</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">encode</span><span class="p">())</span> <span class="ow">and</span> \
+                <span class="p">(</span><span class="n">telegram</span><span class="o">.</span><span class="n">be</span><span class="p">[</span><span class="s1">&#39;M&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">manufacturer_id</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">encode</span><span class="p">())</span> <span class="ow">and</span> \
+                <span class="p">(</span><span class="n">telegram</span><span class="o">.</span><span class="n">be</span><span class="p">[</span><span class="s1">&#39;version&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">version</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">encode</span><span class="p">())</span> <span class="ow">and</span> \
+                <span class="p">(</span><span class="n">telegram</span><span class="o">.</span><span class="n">be</span><span class="p">[</span><span class="s1">&#39;medium&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">medium</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">encode</span><span class="p">()):</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span></div>
+
+<div class="viewcode-block" id="OmniPower.decrypt"><a class="viewcode-back" href="../../omnipower.html#OmniPower.OmniPower.OmniPower.decrypt">[docs]</a>    <span class="k">def</span> <span class="nf">decrypt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">telegram</span><span class="p">:</span> <span class="s1">&#39;C1Telegram&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bytes</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Decrypt a telegram. Requires:</span>
+<span class="sd">         - the prefix from the telegram (telegram.prefix), and</span>
+<span class="sd">         - the encryption key from the meter.</span>
+
+<span class="sd">        Decrypts the data stored telegram.encrypted</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Get relevant variables</span>
+        <span class="n">key</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">AES_key</span>                  <span class="c1"># UTF-8 formatted</span>
+        <span class="n">ciphertext</span> <span class="o">=</span> <span class="n">telegram</span><span class="o">.</span><span class="n">encrypted</span>     <span class="c1"># ASCII string</span>
+        <span class="n">prefix</span> <span class="o">=</span> <span class="n">telegram</span><span class="o">.</span><span class="n">prefix</span>            <span class="c1"># bytestring</span>
+
+        <span class="c1"># Make binary representations</span>
+        <span class="n">key</span> <span class="o">=</span> <span class="n">unhexlify</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+        <span class="n">ciphertext</span> <span class="o">=</span> <span class="n">unhexlify</span><span class="p">(</span><span class="n">ciphertext</span><span class="p">)</span>
+
+        <span class="c1"># Create cryptographic objects to decrypt using AES-CTR method</span>
+        <span class="n">counter</span> <span class="o">=</span> <span class="n">Counter</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="n">nbits</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="n">prefix</span><span class="p">,</span> <span class="n">initial_value</span><span class="o">=</span><span class="mh">0x0000</span><span class="p">)</span>
+        <span class="n">cipher</span> <span class="o">=</span> <span class="n">AES</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">AES</span><span class="o">.</span><span class="n">MODE_CTR</span><span class="p">,</span> <span class="n">counter</span><span class="o">=</span><span class="n">counter</span><span class="p">)</span>
+
+        <span class="c1"># Perform decryption</span>
+        <span class="k">return</span> <span class="n">hexlify</span><span class="p">(</span><span class="n">cipher</span><span class="o">.</span><span class="n">decrypt</span><span class="p">(</span><span class="n">ciphertext</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="OmniPower.extract_measurement_frame"><a class="viewcode-back" href="../../omnipower.html#OmniPower.OmniPower.OmniPower.extract_measurement_frame">[docs]</a>    <span class="k">def</span> <span class="nf">extract_measurement_frame</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">telegram</span><span class="p">:</span> <span class="s1">&#39;C1Telegram&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MeterMeasurement</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Requires that the telegram is already decrypted, otherwise returns empty measurement</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Create a measurement frame with static data from this meter and current time</span>
+        <span class="n">omnipower_meas</span> <span class="o">=</span> <span class="n">MeterMeasurement</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">meter_id</span><span class="p">,</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">())</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">telegram</span><span class="o">.</span><span class="n">decrypted</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">omnipower_meas</span>
+
+        <span class="c1"># Extract the measurements into a 4-tuple</span>
+        <span class="n">measurement_data</span> <span class="o">=</span> <span class="n">unpack</span><span class="p">(</span><span class="s1">&#39;&lt;IIII&#39;</span><span class="p">,</span> <span class="n">unhexlify</span><span class="p">(</span><span class="n">telegram</span><span class="o">.</span><span class="n">decrypted</span><span class="p">[</span><span class="mi">7</span> <span class="o">*</span> <span class="mi">2</span><span class="p">:]))</span>
+
+        <span class="c1"># Store in measurement objects with units</span>
+        <span class="n">m1</span> <span class="o">=</span> <span class="n">Measurement</span><span class="p">(</span><span class="n">measurement_data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="mi">10</span> <span class="o">/</span> <span class="mi">1000</span><span class="p">,</span> <span class="s2">&quot;kWh&quot;</span><span class="p">)</span>  <span class="c1"># A+ measurement</span>
+        <span class="n">m2</span> <span class="o">=</span> <span class="n">Measurement</span><span class="p">(</span><span class="n">measurement_data</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="mi">10</span> <span class="o">/</span> <span class="mi">1000</span><span class="p">,</span> <span class="s2">&quot;kWh&quot;</span><span class="p">)</span>  <span class="c1"># A- measurement</span>
+        <span class="n">m3</span> <span class="o">=</span> <span class="n">Measurement</span><span class="p">(</span><span class="n">measurement_data</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">/</span> <span class="mi">1000</span><span class="p">,</span> <span class="s2">&quot;kW&quot;</span><span class="p">)</span>  <span class="c1"># P+ measurement</span>
+        <span class="n">m4</span> <span class="o">=</span> <span class="n">Measurement</span><span class="p">(</span><span class="n">measurement_data</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">/</span> <span class="mi">1000</span><span class="p">,</span> <span class="s2">&quot;kW&quot;</span><span class="p">)</span>  <span class="c1"># P- measurement</span>
+
+        <span class="c1"># Add the measurements in the measurement frame</span>
+        <span class="n">omnipower_meas</span><span class="o">.</span><span class="n">add_measurement</span><span class="p">(</span><span class="s2">&quot;A+&quot;</span><span class="p">,</span> <span class="n">m1</span><span class="p">)</span>
+        <span class="n">omnipower_meas</span><span class="o">.</span><span class="n">add_measurement</span><span class="p">(</span><span class="s2">&quot;A-&quot;</span><span class="p">,</span> <span class="n">m2</span><span class="p">)</span>
+        <span class="n">omnipower_meas</span><span class="o">.</span><span class="n">add_measurement</span><span class="p">(</span><span class="s2">&quot;P+&quot;</span><span class="p">,</span> <span class="n">m3</span><span class="p">)</span>
+        <span class="n">omnipower_meas</span><span class="o">.</span><span class="n">add_measurement</span><span class="p">(</span><span class="s2">&quot;P-&quot;</span><span class="p">,</span> <span class="n">m4</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">omnipower_meas</span></div>
+
+<div class="viewcode-block" id="OmniPower.add_measurement_to_log"><a class="viewcode-back" href="../../omnipower.html#OmniPower.OmniPower.OmniPower.add_measurement_to_log">[docs]</a>    <span class="k">def</span> <span class="nf">add_measurement_to_log</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">measurement</span><span class="p">:</span> <span class="n">MeterMeasurement</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Pushes a new measurement to the tail end of the log</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">measurement_log</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">measurement</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="OmniPower.process_telegram"><a class="viewcode-back" href="../../omnipower.html#OmniPower.OmniPower.OmniPower.process_telegram">[docs]</a>    <span class="k">def</span> <span class="nf">process_telegram</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">telegram</span><span class="p">:</span> <span class="s1">&#39;C1Telegram&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Does entire processing chain for a telegram, including adding to log</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Confirm that the telegram belongs to this meter</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_this_my</span><span class="p">(</span><span class="n">telegram</span><span class="p">):</span>
+
+            <span class="c1"># decrypt the telegram, then extract measurements and store these in own log</span>
+            <span class="n">telegram</span><span class="o">.</span><span class="n">decrypt_using</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">add_measurement_to_log</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">extract_measurement_frame</span><span class="p">(</span><span class="n">telegram</span><span class="p">))</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span></div>
+
+<div class="viewcode-block" id="OmniPower.dump_log_to_json"><a class="viewcode-back" href="../../omnipower.html#OmniPower.OmniPower.OmniPower.dump_log_to_json">[docs]</a>    <span class="k">def</span> <span class="nf">dump_log_to_json</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns a JSON object of all measurement frames in log, with an incremented number for each observation</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">dump</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="c1"># Fill object</span>
+        <span class="p">[</span><span class="n">dump</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">):</span> <span class="n">log_i</span><span class="o">.</span><span class="n">as_dict</span><span class="p">()})</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">log_i</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">measurement_log</span><span class="p">)]</span>
+
+        <span class="c1"># Return JSON-string</span>
+        <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">dump</span><span class="p">)</span></div></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 2020, Team 3, E5PRO5 2020, Aarhus Uni., School of Engineering
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
