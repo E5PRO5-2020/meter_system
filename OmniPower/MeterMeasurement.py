@@ -1,5 +1,9 @@
-"""
-This module implements classes for generic measurements taken from a meter
+"""Generic class for measurements and measurement frames.
+
+:platform: Python 3.5.10 on Linux, OS X
+:synopsis: This module implements classes for generic measurements taken from a meter.
+:authors: Janus Bo Andersen, Jakob Aaboe Vestergaard
+:date: 13 October 2020
 """
 
 import os
@@ -9,10 +13,10 @@ from datetime import datetime
 
 
 class Measurement:
-    """Single physical measurement
-    A single measurement of a physical quantity consisting of a value and a unit
+    """Single physical measurement.
+    A single measurement of a physical quantity pair, consisting of a value and a unit.
     """
-    def __init__(self, value, unit):
+    def __init__(self, value: float, unit: str):
 
         # A numeric value (float)
         self.value = value
@@ -29,26 +33,24 @@ class Measurement:
 
 class MeterMeasurement:
     """
-    A single measurement collection based on one frame from the meter
-    Will contain multiple measurements of physical quantities taken at the same time
+    A single measurement collection based on one frame from the meter.
+    Will contain multiple measurements of physical quantities taken at the same time.
     """
 
-    def __init__(self, meter_id, timestamp):
+    def __init__(self, meter_id: str, timestamp: datetime):
         """
         Make a new measurement collection
         :param meter_id: ID of the meter taking the measurement
         :param timestamp: Time when the measurement was received, must be Python datetime object
         """
+
         self.meter_id = meter_id
         self.timestamp = timestamp
         self.Measurements = OrderedDict()
 
-    def add_measurement(self, name, measurement):
+    def add_measurement(self, name: str, measurement: Measurement) -> None:
         """
-        Store a new measurement in the collection
-        :param name: Human readable field name
-        :param measurement: The measurement object of type Measurement
-        :return: Void
+        Store a new measurement in the collection.
         """
 
         # Insert new pair into ordered dict. The name is human readable
@@ -56,8 +58,7 @@ class MeterMeasurement:
 
     def __repr__(self):
         """
-        Human readable representation of a measurement collection
-        :return:
+        Human readable representation of a measurement collection.
         """
         # Build the header
         header = "Meter ID: " + str(self.meter_id) + os.linesep
@@ -70,8 +71,8 @@ class MeterMeasurement:
         # Return human readable combined string
         return header + text
 
-    def as_dict(self):
-        """Serializes and dumps the Measurement object as a dict object.
+    def as_dict(self) -> dict:
+        """Serializes and dumps the Measurement frame as a dict.
         Make an object similar to
         {
             "Meter ID: ": "3232323",
@@ -95,7 +96,6 @@ class MeterMeasurement:
                 }
             }
         }
-        :return: dict
         """
 
         # Build object, and dump timestamp using ISO8601, https://en.wikipedia.org/wiki/ISO_8601
@@ -110,10 +110,8 @@ class MeterMeasurement:
 
         return obj
 
-    def json_dump(self):
-        """Returns a JSON string
-        :return:
+    def json_dump(self) -> str:
+        """Returns a JSON formatted string of all data in frame.
         """
         obj = self.as_dict()
         return json.dumps(obj)
-

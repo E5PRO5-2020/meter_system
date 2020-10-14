@@ -2,7 +2,8 @@
 
 :platform: Python 3.5.10 on Linux, OS X
 :synopsis: Implements parsing functionality for C1 telegrams and log handling for data series
-:author: Janus Bo Andersen <janus@janusboandersen.dk>
+:author: Janus Bo Andersen
+:date: 14 October 2020
 
 - This module implements parsing for the Kamstrup OmniPower meter, single-phase.
 - This meter sends wm-bus C1 (compact one-way) telegrams.
@@ -97,6 +98,7 @@ from Crypto.Cipher import AES
 from Crypto.Util import Counter
 from datetime import datetime
 import json
+
 # And our own implementation
 from OmniPower.MeterMeasurement import MeterMeasurement, Measurement
 
@@ -106,16 +108,15 @@ class C1Telegram:
     Implements capture of data fields for a C1 telegram from OmniPower
     """
 
-    def __init__(self, tlg):
+    def __init__(self, telegram: bytes) -> None:
         """
-        Take a telegram (string with hex values) and parses into fields
-        :param tlg: C1 type telegram
+        Take a telegram (bytestring with hex values) and parses into fields
         """
         try:
-            header = tlg[0:17 * 2]                      # Non-encrypted part of telegram, discard after parsing
-            self.encrypted = tlg[17 * 2:len(tlg)-4]     # Encrypted part of telegram, keep after parsing
-            self.decrypted = ''                         # Empty string until decrypted
-            self.CRC16 = tlg[len(tlg)-4:]
+            header = telegram[0:17 * 2]                             # Non-encrypted part, discard after parsing
+            self.encrypted = telegram[17 * 2:len(telegram) - 4]     # Encrypted part of telegram, keep after parsing
+            self.decrypted = ''                                     # Empty string until decrypted
+            self.CRC16 = telegram[len(telegram) - 4:]
 
             header_values = unpack('<BBHIBBBBBI', unhexlify(header))
 
@@ -151,15 +152,19 @@ class C1Telegram:
         except:
             print("Oops!")
 
-    def decrypt_using(self, meter: object) -> None:
+    def decrypt_using(self, meter: 'OmniPower') -> bool:
         """
         Decrypts a telegram using the key from the specified meter.
         Updates the decrypted field of self.
-        :param meter: Instantiated OmniPower meter with valid AES-key
-        :return: void
+        Requires instantiated OmniPower meter with valid AES-key.
         """
+
+        if not meter.AES_key:
+            return False
+
         try:
             self.decrypted = meter.decrypt(self)
+            return True
         except:
             print("Oh no!")
 
@@ -171,12 +176,12 @@ class OmniPower:
     """
 
     def __init__(self,
-                 name='Kamstrup OmniPower one-phase',
-                 meter_id='32666857',
-                 manufacturer_id='2C2D',
-                 medium='02',
-                 version='30',
-                 aes_key='9A25139E3244CC2E391A8EF6B915B697'):
+                 name: str = 'Kamstrup OmniPower one-phase',
+                 meter_id: str = '32666857',
+                 manufacturer_id: str = '2C2D',
+                 medium: str = '02',
+                 version: str = '30',
+                 aes_key: str = '9A25139E3244CC2E391A8EF6B915B697'):
 
         self.name = name                        # Meter nickname
         self.meter_id = meter_id                # serial number of the meter
@@ -186,39 +191,33 @@ class OmniPower:
         self.AES_key = aes_key                  # 128-bit AES encryption key
         self.measurement_log = []               # Start with an empty log
 
-    def is_this_my(self, t: type(C1Telegram)) -> None:
+    def is_this_my(self, telegram: 'C1Telegram') -> bool:
         """
         Check whether a given telegram is from this meter by comparing meter setting to telegram
-         - Meter ID == A
-         - Manufacturer ID == M
-         - Version == Version
-         - Medium == Medium
-
-        Comparison is done on lowercase strings and big-endian values, e.g. 2c2d == 2c2d
-        :param t: C1Telegram type telegram
-        :return:
         """
 
-        if (t.be['A'] == self.meter_id.lower().encode()) and \
-                (t.be['M'] == self.manufacturer_id.lower().encode()) and \
-                (t.be['version'] == self.version.lower().encode()) and \
-                (t.be['medium'] == self.medium.lower().encode()):
+        # Comparison is done on lowercase strings and big-endian values, e.g. 2c2d == 2c2d
+        if (telegram.be['A'] == self.meter_id.lower().encode()) and \
+                (telegram.be['M'] == self.manufacturer_id.lower().encode()) and \
+                (telegram.be['version'] == self.version.lower().encode()) and \
+                (telegram.be['medium'] == self.medium.lower().encode()):
             return True
         else:
             return False
 
-    def decrypt(self, t: type(C1Telegram)) -> str:
+    def decrypt(self, telegram: 'C1Telegram') -> bytes:
         """
-        Decrypt a telegram, requires the prefix from the telegram (t.prefix) and the encryption key from the meter.
-        Decrypts the data inside t.encrypted
-        :param t: C1 type telegram
-        :return:
+        Decrypt a telegram. Requires:
+         - the prefix from the telegram (telegram.prefix), and
+         - the encryption key from the meter.
+
+        Decrypts the data stored telegram.encrypted
         """
 
         # Get relevant variables
-        key = self.AES_key          # UTF-8 formatted
-        ciphertext = t.encrypted    # ASCII string
-        prefix = t.prefix           # bytestring
+        key = self.AES_key                  # UTF-8 formatted
+        ciphertext = telegram.encrypted     # ASCII string
+        prefix = telegram.prefix            # bytestring
 
         # Make binary representations
         key = unhexlify(key)
@@ -231,23 +230,25 @@ class OmniPower:
         # Perform decryption
         return hexlify(cipher.decrypt(ciphertext))
 
-    def extract_measurement_frame(self, t):
+    def extract_measurement_frame(self, telegram: 'C1Telegram') -> MeterMeasurement:
         """
-        Requires an already decrypted telegram
-        :return:
+        Requires that the telegram is already decrypted, otherwise returns empty measurement
         """
 
+        # Create a measurement frame with static data from this meter and current time
+        omnipower_meas = MeterMeasurement(self.meter_id, datetime.now())
+
+        if not telegram.decrypted:
+            return omnipower_meas
+
         # Extract the measurements into a 4-tuple
-        measurement_data = unpack('<IIII', unhexlify(t.decrypted[7 * 2:]))
+        measurement_data = unpack('<IIII', unhexlify(telegram.decrypted[7 * 2:]))
 
         # Store in measurement objects with units
         m1 = Measurement(measurement_data[0] * 10 / 1000, "kWh")  # A+ measurement
         m2 = Measurement(measurement_data[1] * 10 / 1000, "kWh")  # A- measurement
         m3 = Measurement(measurement_data[2] / 1000, "kW")  # P+ measurement
         m4 = Measurement(measurement_data[3] / 1000, "kW")  # P- measurement
-
-        # Create a measurement frame with static data from this meter and current time
-        omnipower_meas = MeterMeasurement(self.meter_id, datetime.now())
 
         # Add the measurements in the measurement frame
         omnipower_meas.add_measurement("A+", m1)
@@ -257,35 +258,31 @@ class OmniPower:
 
         return omnipower_meas
 
-    def add_measurement_to_log(self, measurement):
+    def add_measurement_to_log(self, measurement: MeterMeasurement) -> None:
         """
         Pushes a new measurement to the tail end of the log
-        :param measurement: A MeterMeasurement frame
-        :return: void
         """
+
         self.measurement_log.append(measurement)
 
-    def process_telegram(self, t):
+    def process_telegram(self, telegram: 'C1Telegram') -> bool:
         """
         Does entire processing chain for a telegram, including adding to log
-        :param t:
-        :return: True if success, otherwise False
         """
 
         # Confirm that the telegram belongs to this meter
-        if self.is_this_my(t):
+        if self.is_this_my(telegram):
 
             # decrypt the telegram, then extract measurements and store these in own log
-            t.decrypt_using(self)
-            self.add_measurement_to_log(self.extract_measurement_frame(t))
+            telegram.decrypt_using(self)
+            self.add_measurement_to_log(self.extract_measurement_frame(telegram))
             return True
         else:
             return False
 
-    def dump_log_to_json(self):
+    def dump_log_to_json(self) -> str:
         """
         Returns a JSON object of all measurement frames in log, with an incremented number for each observation
-        :return: JSON-encoded string (UTF-8)
         """
         dump = {}
 

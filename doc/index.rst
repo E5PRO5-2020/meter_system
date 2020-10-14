@@ -3,13 +3,16 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to Kamstrup OmniPower wm-bus metering's documentation!
-==============================================================
+Kamstrup OmniPower wm-bus metering's documentation
+==================================================
+
 .. toctree::
    :caption: Table of contents
    :maxdepth: 2
 
    omnipower
+   metermeasurement
+
 
 Indices and tables
 ==================
