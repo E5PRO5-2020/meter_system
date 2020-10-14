@@ -185,7 +185,7 @@
         <span class="k">except</span><span class="p">:</span>
             <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Oops!&quot;</span><span class="p">)</span>
 
-<div class="viewcode-block" id="C1Telegram.decrypt_using"><a class="viewcode-back" href="../../omnipower.html#OmniPower.OmniPower.C1Telegram.decrypt_using">[docs]</a>    <span class="k">def</span> <span class="nf">decrypt_using</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">meter</span><span class="p">):</span>
+<div class="viewcode-block" id="C1Telegram.decrypt_using"><a class="viewcode-back" href="../../omnipower.html#OmniPower.OmniPower.C1Telegram.decrypt_using">[docs]</a>    <span class="k">def</span> <span class="nf">decrypt_using</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">meter</span><span class="p">:</span> <span class="nb">object</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Decrypts a telegram using the key from the specified meter.</span>
 <span class="sd">        Updates the decrypted field of self.</span>
@@ -220,7 +220,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">AES_key</span> <span class="o">=</span> <span class="n">aes_key</span>                  <span class="c1"># 128-bit AES encryption key</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">measurement_log</span> <span class="o">=</span> <span class="p">[]</span>               <span class="c1"># Start with an empty log</span>
 
-<div class="viewcode-block" id="OmniPower.is_this_my"><a class="viewcode-back" href="../../omnipower.html#OmniPower.OmniPower.OmniPower.is_this_my">[docs]</a>    <span class="k">def</span> <span class="nf">is_this_my</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">):</span>
+<div class="viewcode-block" id="OmniPower.is_this_my"><a class="viewcode-back" href="../../omnipower.html#OmniPower.OmniPower.OmniPower.is_this_my">[docs]</a>    <span class="k">def</span> <span class="nf">is_this_my</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="nb">type</span><span class="p">(</span><span class="n">C1Telegram</span><span class="p">))</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Check whether a given telegram is from this meter by comparing meter setting to telegram</span>
 <span class="sd">         - Meter ID == A</span>
@@ -241,7 +241,7 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">False</span></div>
 
-<div class="viewcode-block" id="OmniPower.decrypt"><a class="viewcode-back" href="../../omnipower.html#OmniPower.OmniPower.OmniPower.decrypt">[docs]</a>    <span class="k">def</span> <span class="nf">decrypt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">):</span>
+<div class="viewcode-block" id="OmniPower.decrypt"><a class="viewcode-back" href="../../omnipower.html#OmniPower.OmniPower.OmniPower.decrypt">[docs]</a>    <span class="k">def</span> <span class="nf">decrypt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="nb">type</span><span class="p">(</span><span class="n">C1Telegram</span><span class="p">))</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Decrypt a telegram, requires the prefix from the telegram (t.prefix) and the encryption key from the meter.</span>
 <span class="sd">        Decrypts the data inside t.encrypted</span>

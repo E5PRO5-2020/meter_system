@@ -363,7 +363,7 @@
 <dd><p>Implements capture of data fields for a C1 telegram from OmniPower</p>
 <dl class="py method">
 <dt id="OmniPower.OmniPower.C1Telegram.decrypt_using">
-<code class="sig-name descname">decrypt_using</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">meter</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/OmniPower/OmniPower.html#C1Telegram.decrypt_using"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#OmniPower.OmniPower.C1Telegram.decrypt_using" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">decrypt_using</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">meter</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.9)">object</a></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)">None</a><a class="reference internal" href="_modules/OmniPower/OmniPower.html#C1Telegram.decrypt_using"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#OmniPower.OmniPower.C1Telegram.decrypt_using" title="Permalink to this definition">¶</a></dt>
 <dd><p>Decrypts a telegram using the key from the specified meter.
 Updates the decrypted field of self.
 :param meter: Instantiated OmniPower meter with valid AES-key
@@ -390,7 +390,7 @@ Passed values are hex encoded as string, e.g. ‘2C2D’ for value 0x2C2D.</p>
 
 <dl class="py method">
 <dt id="OmniPower.OmniPower.OmniPower.decrypt">
-<code class="sig-name descname">decrypt</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">t</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/OmniPower/OmniPower.html#OmniPower.decrypt"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#OmniPower.OmniPower.OmniPower.decrypt" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">decrypt</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">t</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#type" title="(in Python v3.9)">type</a></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)">str</a><a class="reference internal" href="_modules/OmniPower/OmniPower.html#OmniPower.decrypt"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#OmniPower.OmniPower.OmniPower.decrypt" title="Permalink to this definition">¶</a></dt>
 <dd><p>Decrypt a telegram, requires the prefix from the telegram (t.prefix) and the encryption key from the meter.
 Decrypts the data inside t.encrypted
 :param t: C1 type telegram
@@ -413,7 +413,7 @@ Decrypts the data inside t.encrypted
 
 <dl class="py method">
 <dt id="OmniPower.OmniPower.OmniPower.is_this_my">
-<code class="sig-name descname">is_this_my</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">t</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/OmniPower/OmniPower.html#OmniPower.is_this_my"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#OmniPower.OmniPower.OmniPower.is_this_my" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">is_this_my</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">t</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#type" title="(in Python v3.9)">type</a></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)">None</a><a class="reference internal" href="_modules/OmniPower/OmniPower.html#OmniPower.is_this_my"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#OmniPower.OmniPower.OmniPower.is_this_my" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="simple">
 <dt>Check whether a given telegram is from this meter by comparing meter setting to telegram</dt><dd><ul class="simple">
 <li><p>Meter ID == A</p></li>
