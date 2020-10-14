@@ -15,22 +15,25 @@ def test0():
     Test the implementation of the Measurement and MeterMeasurement types
     """
 
-    omni_power_meas = MeterMeasurement("3232323", datetime.now())
+    # Just some generic data to see how these classes work
+    omni_power_frame = MeterMeasurement("3232323", datetime.now())
+
     m1 = Measurement(7, "kWh")
-    omni_power_meas.add_measurement("A+", m1)
+    omni_power_frame.add_measurement("A+", m1)
 
     m2 = Measurement(8, "kWh")
-    omni_power_meas.add_measurement("A-", m2)
+    omni_power_frame.add_measurement("A-", m2)
 
     m3 = Measurement(9, "kW")
-    omni_power_meas.add_measurement("P+", m3)
+    omni_power_frame.add_measurement("P+", m3)
 
     m4 = Measurement(10, "kW")
-    omni_power_meas.add_measurement("P-", m4)
-    print(omni_power_meas)
+    omni_power_frame.add_measurement("P-", m4)
+
+    print(omni_power_frame)
 
     # Demo of dumping object to JSON object that can be saved in a file
-    jsdump = omni_power_meas.json_dump()
+    jsdump = omni_power_frame.json_dump()
 
     # Demo of loading object
     my_obj = json.loads(jsdump)
@@ -92,7 +95,7 @@ def test2():
     # Make new omnipower meter with default values (our meter)
     omnipower = OmniPower()
 
-    # Receive a bunch of telegrams from Steffen's and Thomas's list
+    # Receive a bunch of telegrams from Steffen's and Thomas's list (UTF-8 strings)
     telegrams = ['27442d2c5768663230028d206360dd0320c42b87f46fc048d42498b44b5e34f083e93e6af16176313d9c',
                  '27442d2c5768663230028d206562dd03200ac3aea1e613dd9af1a75c68cdedd5fdd2617c1e71a9d0b3b1',
                  '27442d2c5768663230028d206663dd0320183edb492079b22095afcd9c7721b64c7cbffb1b892e9c832d',
@@ -103,10 +106,13 @@ def test2():
                  '27442d2c5768663230028d208d10de0320eb9f476e9e4d8e82b16d9b9bc46dbf514276f576afba7baa30',
                  '27442d2c5768663230028d208e11de0320188851bdc4b72dd3c2954a341be369e9089b4eb3858169494e']
 
+    # Encode them all as ascii strings (might not be needed with IM871A interface)
+    telegrams = [t.encode() for t in telegrams]
+
     # Process the telegrams
     for telegram in telegrams:
         # Parse the telegram as C1-type telegram
-        tlg = C1Telegram(telegram.encode())
+        tlg = C1Telegram(telegram)
 
         # Let OmniPower process it fully, including entering in log
         omnipower.process_telegram(tlg)
@@ -114,6 +120,7 @@ def test2():
     # Check what we have in the log now
     # print(omnipower.measurement_log)
 
+    # Return the meter including all the measurements
     return omnipower
 
 
