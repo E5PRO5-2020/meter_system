@@ -126,20 +126,24 @@ def test2():
 
 # Only run self-tests if started from terminal, not when imported
 if __name__ == '__main__':
+    # mypy can be used to test types, i.e. run a type-checker like static type
+    # checking in C / C++ / Java. Errors are not necessarily a problem, but
+    # shows where we could have issues.
+
     # Run demo 0
     test0()
 
     # Run demo 1
-    test1()
+    # test1()
 
     # Run demo 2
-    omnipower_meter = test2()
+    # omnipower_meter = test2()
 
     # Output the log
     # print(omnipower.measurement_log)
 
     # Try to dump all data to a JSON string. This emulates saving to a file
-    logobj = omnipower_meter.dump_log_to_json()
+    # logobj = omnipower_meter.dump_log_to_json()
 
     # Try to parse the JSON (like reading from the file) and check the A+ measurement for the last object
-    print(json.loads(logobj)['8'])
+    # print(json.loads(logobj)['8'])

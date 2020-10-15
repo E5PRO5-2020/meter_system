@@ -4,3 +4,4 @@ paho-mqtt>=1.5.1,<1.6
 pytest>=6.1,<6.2
 sphinx>=3.2.1,<3.3
 sphinx_rtd_theme
+mypy>=0.790

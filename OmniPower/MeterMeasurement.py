@@ -10,6 +10,7 @@ import os
 from collections import OrderedDict
 import json
 from datetime import datetime
+from typing import Any
 
 
 class Measurement:
@@ -39,14 +40,14 @@ class MeterMeasurement:
 
     def __init__(self, meter_id: str, timestamp: datetime):
         """
-        Make a new measurement collection
-        :param meter_id: ID of the meter taking the measurement
-        :param timestamp: Time when the measurement was received, must be Python datetime object
+        Make a new measurement collection.
+        Takes meter ID of the meter taking the measurement.
+        Add the time when the measurement was received as a datetime obj.
         """
 
         self.meter_id = meter_id
         self.timestamp = timestamp
-        self.Measurements = OrderedDict()
+        self.Measurements = OrderedDict()   # type: OrderedDict[Any, Any]
 
     def add_measurement(self, name: str, measurement: Measurement) -> None:
         """
@@ -99,14 +100,14 @@ class MeterMeasurement:
         """
 
         # Build object, and dump timestamp using ISO8601, https://en.wikipedia.org/wiki/ISO_8601
-        obj = {
+        obj = dict({
             'Meter ID: ': str(self.meter_id),
             'Timestamp:': datetime.strftime(self.timestamp, '%Y-%m-%dT%H:%M:%S'),
-            'Measurements': {}
-        }
+            'Measurements': dict()
+        })
         # Insert all the measurements
         [obj['Measurements'].update({key: {'value': val.value, 'unit': val.unit}})
-         for key, val in self.Measurements.items()]
+         for key, val in self.Measurements.items()]     # type:
 
         return obj
 

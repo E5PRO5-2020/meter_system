@@ -98,6 +98,7 @@ from Crypto.Cipher import AES
 from Crypto.Util import Counter
 from datetime import datetime
 import json
+from typing import List
 
 # And our own implementation
 from OmniPower.MeterMeasurement import MeterMeasurement, Measurement
@@ -115,7 +116,7 @@ class C1Telegram:
         try:
             header = telegram[0:17 * 2]                             # Non-encrypted part, discard after parsing
             self.encrypted = telegram[17 * 2:len(telegram) - 4]     # Encrypted part of telegram, keep after parsing
-            self.decrypted = ''                                     # Empty string until decrypted
+            self.decrypted = bytes()                                # Empty string until decrypted
             self.CRC16 = telegram[len(telegram) - 4:]
 
             header_values = unpack('<BBHIBBBBBI', unhexlify(header))
@@ -167,6 +168,7 @@ class C1Telegram:
             return True
         except:
             print("Oh no!")
+            return False
 
 
 class OmniPower:
@@ -189,7 +191,7 @@ class OmniPower:
         self.medium = medium                    # Medium/type of meter, e.g 0x02 is electricity
         self.version = version                  # Firmware version for the wm-bus interface
         self.AES_key = aes_key                  # 128-bit AES encryption key
-        self.measurement_log = []               # Start with an empty log
+        self.measurement_log = []               # type: List['MeterMeasurement']
 
     def is_this_my(self, telegram: 'C1Telegram') -> bool:
         """
@@ -215,12 +217,12 @@ class OmniPower:
         """
 
         # Get relevant variables
-        key = self.AES_key                  # UTF-8 formatted
+        key_in = self.AES_key               # UTF-8 formatted
         ciphertext = telegram.encrypted     # ASCII string
         prefix = telegram.prefix            # bytestring
 
         # Make binary representations
-        key = unhexlify(key)
+        key = unhexlify(key_in)             # type: bytes
         ciphertext = unhexlify(ciphertext)
 
         # Create cryptographic objects to decrypt using AES-CTR method
