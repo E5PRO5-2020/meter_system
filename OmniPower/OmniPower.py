@@ -98,7 +98,8 @@ from Crypto.Cipher import AES
 from Crypto.Util import Counter
 from datetime import datetime
 import json
-from typing import List
+import re
+from typing import List, Tuple
 
 # And our own implementation
 from OmniPower.MeterMeasurement import MeterMeasurement, Measurement
@@ -177,6 +178,20 @@ class OmniPower:
     Passed values are hex encoded as string, e.g. '2C2D' for value 0x2C2D.
     """
 
+    # Byte limit for short, data-only telegrams from OmniPower.
+    # Larger telegrams also contain DIF/VIF information
+    short_telegram_lim = 39
+
+    # Short telegram format is contiguous frame of 4 32-bit uints
+    short_telegram_fmt = '<IIII'
+
+    # Long telegram format contains DIF/VIF/VIF followed by values.
+    # The DIF 04 specifies a 32-bit uint, so the little-endian format '<I' is used.
+    long_telegram_fmt = (('0404', '<I'),
+                         ('04843C', '<I'),
+                         ('042B', '<I'),
+                         ('04AB3C', '<I'))
+
     def __init__(self,
                  name: str = 'Kamstrup OmniPower one-phase',
                  meter_id: str = '32666857',
@@ -232,6 +247,41 @@ class OmniPower:
         # Perform decryption
         return hexlify(cipher.decrypt(ciphertext))
 
+    @classmethod
+    def unpack_short_telegram(cls, data: bytes) -> Tuple[int, ...]:
+        """
+        Short C1 telegrams only contain field data values, no information about DIF/VIF
+        """
+        # Extract the measurements into a 4-tuple
+        return unpack(cls.short_telegram_fmt, unhexlify(data[7 * 2:]))
+
+    @classmethod
+    def unpack_long_telegram(cls, data: bytes) -> Tuple[int, ...]:
+        """
+        Long C1 telegrams contain DIF/VIF information and field data values
+        """
+        # Make return value vector with exactly as many zeros as there are expected fields.
+        # So if one field is not found, a zero is returned in its place
+        return_val = [0] * len(cls.long_telegram_fmt)
+
+        for i, fmt in enumerate(cls.long_telegram_fmt):
+
+            # Build Regex, which searches for the code and groups the 8 subsequent characters
+            pattern = fmt[0].lower() + "(.{8})"
+
+            # Search for the pattern in the data, which we first format to an UTF-8 string with decode
+            match = re.search(pattern, data.decode())
+
+            if match:
+                # Unpack the found specific 8 characters (4 bytes = 32 bits)
+                # match.group(1) contains these 8 characters
+                # unpack returns a 1-tuple, from which we grab the single integer element with [0]
+                print("Found DIF/VIF/VIFE field {} in data records (long) telegram".format(fmt[0]))
+                return_val[i] = unpack(fmt[1], unhexlify(match.group(1).encode()))[0]
+
+        # Finally, return a tuple that we can use to convert and log measurements
+        return tuple(return_val)
+
     def extract_measurement_frame(self, telegram: 'C1Telegram') -> MeterMeasurement:
         """
         Requires that the telegram is already decrypted, otherwise returns empty measurement
@@ -243,8 +293,10 @@ class OmniPower:
         if not telegram.decrypted:
             return omnipower_meas
 
-        # Extract the measurements into a 4-tuple
-        measurement_data = unpack('<IIII', unhexlify(telegram.decrypted[7 * 2:]))
+        if telegram.L <= OmniPower.short_telegram_lim:
+            measurement_data = OmniPower.unpack_short_telegram(telegram.decrypted)
+        else:
+            measurement_data = OmniPower.unpack_long_telegram(telegram.decrypted)
 
         # Store in measurement objects with units
         m1 = Measurement(measurement_data[0] * 10 / 1000, "kWh")  # A+ measurement
@@ -264,14 +316,12 @@ class OmniPower:
         """
         Pushes a new measurement to the tail end of the log
         """
-
         self.measurement_log.append(measurement)
 
     def process_telegram(self, telegram: 'C1Telegram') -> bool:
         """
         Does entire processing chain for a telegram, including adding to log
         """
-
         # Confirm that the telegram belongs to this meter
         if self.is_this_my(telegram):
 

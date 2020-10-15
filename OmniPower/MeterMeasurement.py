@@ -10,7 +10,7 @@ import os
 from collections import OrderedDict
 import json
 from datetime import datetime
-from typing import Any
+from typing import Any, Dict
 
 
 class Measurement:
@@ -25,11 +25,11 @@ class Measurement:
         # A string SI unit
         self.unit = unit
 
-    def __repr__(self):
+    def __str__(self) -> str:
         return str(self.value) + " " + self.unit
 
-    def __iter__(self):
-        return self.value, self.unit
+    def __repr__(self) -> str:
+        return 'Measurement({}, {})'.format(self.value, self.unit)
 
 
 class MeterMeasurement:
@@ -47,7 +47,7 @@ class MeterMeasurement:
 
         self.meter_id = meter_id
         self.timestamp = timestamp
-        self.Measurements = OrderedDict()   # type: OrderedDict[Any, Any]
+        self.Measurements = OrderedDict()   # type: OrderedDict[str, Any]
 
     def add_measurement(self, name: str, measurement: Measurement) -> None:
         """
@@ -57,7 +57,7 @@ class MeterMeasurement:
         # Insert new pair into ordered dict. The name is human readable
         self.Measurements.update({name: measurement})
 
-    def __repr__(self):
+    def __str__(self) -> str:
         """
         Human readable representation of a measurement collection.
         """
@@ -67,10 +67,13 @@ class MeterMeasurement:
 
         # Iterate over the measurements in the collection, making a combined string
         text = [k + ": " + str(v.value) + " " + str(v.unit) for k, v in self.Measurements.items()]
-        text = os.linesep.join(text)
+        text_join = os.linesep.join(text)
 
         # Return human readable combined string
-        return header + text
+        return header + text_join
+
+    def __repr__(self) -> str:
+        return "MeterMeasurement('{}', {})".format(self.meter_id, self.timestamp.strftime("%Y-%m-%dT%H:%M:%S"))
 
     def as_dict(self) -> dict:
         """Serializes and dumps the Measurement frame as a dict.
@@ -103,11 +106,16 @@ class MeterMeasurement:
         obj = dict({
             'Meter ID: ': str(self.meter_id),
             'Timestamp:': datetime.strftime(self.timestamp, '%Y-%m-%dT%H:%M:%S'),
-            'Measurements': dict()
-        })
-        # Insert all the measurements
-        [obj['Measurements'].update({key: {'value': val.value, 'unit': val.unit}})
-         for key, val in self.Measurements.items()]     # type:
+        })  # type: Dict[str, Any]
+
+        # Build a temporary dict where we insert all the measurements
+        tmp = dict()    # type: Dict[str, Any]
+
+        for key, val in self.Measurements.items():
+            tmp.update({key: {'value': val.value, 'unit': val.unit}})
+
+        # Insert the temporary dictionary with all measurements into the original object
+        obj.update({'Measurements': tmp})
 
         return obj
 

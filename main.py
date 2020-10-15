@@ -19,7 +19,10 @@ def test0():
     omni_power_frame = MeterMeasurement("3232323", datetime.now())
 
     m1 = Measurement(7, "kWh")
+    print(str(m1))
+
     omni_power_frame.add_measurement("A+", m1)
+    print([omni_power_frame])
 
     m2 = Measurement(8, "kWh")
     omni_power_frame.add_measurement("A-", m2)
@@ -83,7 +86,10 @@ def test1():
 
     # See what's in the log
     print("Measurement log for {}:".format(omnipower.name))
+    print("Printing full log overview")
     print(omnipower.measurement_log)
+    print("Printing first element")
+    print(omnipower.measurement_log[0])
 
 
 def test2():
@@ -124,6 +130,44 @@ def test2():
     return omnipower
 
 
+def test3():
+    """
+    This tests the ability to handle long telegrams
+    """
+
+    text = b'2d442d2c5768663230028d206461dd032038931d14b405536e0250592f8b908138d58602eca676ff79e0caf0b14d0e7d'
+    omnipower = OmniPower()
+    telegram = C1Telegram(text)
+    payload = omnipower.decrypt(telegram)[6:]
+    print(payload)
+    result = omnipower.unpack_long_telegram(payload)
+    print(result)
+
+
+def test4():
+    # Make new omnipower meter with default values (our meter)
+    omnipower = OmniPower()
+
+    # Receive a bunch of mixed telegrams from Steffen's and Thomas's list (UTF-8 strings)
+    telegrams = [b'27442d2c5768663230028d206360dd0320c42b87f46fc048d42498b44b5e34f083e93e6af16176313d9c',
+                 b'2d442d2c5768663230028d206461dd032038931d14b405536e0250592f8b908138d58602eca676ff79e0caf0b14d0e7d',
+                 b'27442d2c5768663230028d206562dd03200ac3aea1e613dd9af1a75c68cdedd5fdd2617c1e71a9d0b3b1',
+                 b'2d442d2c5768663230028d206c81dd03202dcd10989cd870e4439ee09a309f7114681d40570623dfae7b3c6214679786',
+                 b'27442d2c5768663230028d206e90dd03201dfbbd7871e6ec990f60ee940532c09e505bd4cac5728e2864']
+
+    # Process the telegrams
+    for telegram in telegrams:
+        # Parse the telegram as C1-type telegram
+        tlg = C1Telegram(telegram)
+
+        # Let OmniPower process it fully, including entering in log
+        omnipower.process_telegram(tlg)
+
+    print(omnipower.measurement_log)
+    print(omnipower.measurement_log[1])
+    print(omnipower.measurement_log[2])
+
+
 # Only run self-tests if started from terminal, not when imported
 if __name__ == '__main__':
     # mypy can be used to test types, i.e. run a type-checker like static type
@@ -131,7 +175,7 @@ if __name__ == '__main__':
     # shows where we could have issues.
 
     # Run demo 0
-    test0()
+    # test0()
 
     # Run demo 1
     # test1()
@@ -139,11 +183,29 @@ if __name__ == '__main__':
     # Run demo 2
     # omnipower_meter = test2()
 
-    # Output the log
-    # print(omnipower.measurement_log)
+    # Run demo 3
+    # test3()
+
+    # Run demo 4
+    # Test ability to handle multiple mixed telegrams
+    test4()
+
+    # Output from the log
+    # print("What is the A+ measurement?")
+    #print(omnipower_meter.measurement_log[1].Measurements['A+'])
 
     # Try to dump all data to a JSON string. This emulates saving to a file
     # logobj = omnipower_meter.dump_log_to_json()
 
     # Try to parse the JSON (like reading from the file) and check the A+ measurement for the last object
     # print(json.loads(logobj)['8'])
+
+    # omni_power_frame = MeterMeasurement('777', datetime.now())
+    # m1 = Measurement(7, 'kWh')
+    # omni_power_frame.add_measurement("A+", m1)
+    # print(omni_power_frame.Measurements['A+'].value == m1.value)
+
+
+
+
+
