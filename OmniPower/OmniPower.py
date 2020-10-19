@@ -1,26 +1,38 @@
-""" Parse Kamstrup OmniPower wm-bus telegrams
+"""
+Parse Kamstrup OmniPower wm-bus telegrams
+*****************************************
 
 :platform: Python 3.5.10 on Linux, OS X
 :synopsis: Implements parsing functionality for C1 telegrams and log handling for data series
 :author: Janus Bo Andersen
 :date: 14 October 2020
 
-- This module implements parsing for the Kamstrup OmniPower meter, single-phase.
-- This meter sends wm-bus C1 (compact one-way) telegrams.
-- Telegrams on wm-bus are little-endian, i.e. LSB first.
+Overview
+========
 
-In a regular measurement data telegram, the data fields are:
+- This module implements parsing for the Kamstrup OmniPower meter, single-phase.
+- The meter sends wm-bus C1 (compact one-way) telegrams.
+- Telegrams on wm-bus are little-endian, i.e. LSB first.
+- The meter sends 1 long and 7 short telegrams, and then repeats.
+- Long telegrams include data record headers (DRH) and data, that is DIF/VIF codes + data.
+- Short telegrams only include data.
+
+Telegram fields
+===============
+
+In a telegram C1 telegram, the data fields are:
 
 +---+-------+-------+-------------+---------------------------------------------+---------------------------------+
 | # | Byte# | Bytes | M-bus field | Description                                 | Expected value (little-endian)  |
 +===+=======+=======+=============+=============================================+=================================+
-| 0 | 0     | 1     | L           | Telegram length                             | 0x27 (39 bytes follow)          |
+| 0 | 0     | 1     | L           | Telegram length                             | 0x27 (39 bytes, short frame), or|
+|   |       |       |             |                                             | 0x2D (45 bytes, long frame)     |
 +---+-------+-------+-------------+---------------------------------------------+---------------------------------+
 | 1 | 1     | 1     | C           | Control field (type and purpose of message) | 0x44 (SND_NR)                   |
 +---+-------+-------+-------------+---------------------------------------------+---------------------------------+
 | 2 | 2-3   | 2     | M           | Manufacturer ID (official ID code)          | 0x2D2C (KAM)                    |
 +---+-------+-------+-------------+---------------------------------------------+---------------------------------+
-| 3 | 4-7   | 4     | A           | Address (meter serial number)               | 0x57686632 (big endian 32666857)|
+| 3 | 4-7   | 4     | A           | Address (meter serial number)               | 0x57686632 (big-endian:32666857)|
 +---+-------+-------+-------------+---------------------------------------------+---------------------------------+
 | 4 | 8     | 1     | Ver.        | Version number of the wm-bus firmware       | 0x30                            |
 +---+-------+-------+-------------+---------------------------------------------+---------------------------------+
@@ -32,14 +44,15 @@ In a regular measurement data telegram, the data fields are:
 +---+-------+-------+-------------+---------------------------------------------+---------------------------------+
 | 8 | 12    | 1     | ACC         | Access field                                | Varies                          |
 +---+-------+-------+-------------+---------------------------------------------+---------------------------------+
-| 9 | 13-16 | 4     | AES_CTR     | AES counter                                 | Varies, used for decryption     |
+| 9 | 13-16 | 4     | AES CTR     | AES counter                                 | Varies, used for decryption     |
 +---+-------+-------+-------------+---------------------------------------------+---------------------------------+
-|10 | 17-39 | 23    | Data        | Contains AES-encrypted data frame           | Encrypted data                  |
+|10 | 17-39 | 23    | Data        | Contains AES-encrypted data frame,          | Encrypted data                  |
+|   | 17-45 | 29    |             | varying for short and long frames           |                                 |
 +---+-------+-------+-------------+---------------------------------------------+---------------------------------+
-|11 | 40-41 | 2     | CRC16       | CRC16 check                                 |                                 |
+|11 |       | 2     | CRC16       | CRC16 check                                 |                                 |
 +---+-------+-------+-------------+---------------------------------------------+---------------------------------+
 
-The first 9 fields of the telegram can be unpacked using the little-endian format `<BBHIBBBBB`, where
+The fields 0-9 of the telegram can be unpacked using the little-endian format `<BBHIBBBBB`, where
 
 - `<` marks little-endian,
 - `B` is an unsigned 1 byte (char),
@@ -47,6 +60,8 @@ The first 9 fields of the telegram can be unpacked using the little-endian forma
 - `I` is an unsigned 4 byte (int)
 
 Telegram examples
+=================
+Encrypted short telegrams:
 
 +---+---+------+----------+---+---+---+---+---+----------+----------------------------------------------------+------+
 |L  |C  |M     |A         |Ver|Med|CI |CC |ACC|AES CTR   |Encrypted payload                                   |CRC 16|
@@ -58,37 +73,73 @@ Telegram examples
 |27 |44 |2d 2c |5768 6632 |30 |02 |8d |20 |8e |11de 0320 |188851bd c4b72dd3 c2954a34 1be369e9 089b4eb3 858169 |494e  |
 +---+---+------+----------+---+---+---+---+---+----------+----------------------------------------------------+------+
 
-The AES-CTR decryption prefix is built from some of the fields (m-bus mode 5). It's packed using the format `<HIBBBIB`.
+Encrypted long telegrams:
+
++---+---+------+----------+---+---+---+---+---+----------+------------------------------------------------------------------+------+
+|L  |C  |M     |A         |Ver|Med|CI |CC |ACC|AES CTR   |Encrypted payload                                                 |CRC 16|
++===+===+======+==========+===+===+===+===+===+==========+==================================================================+======+
+|2D |44 |2D 2C |5768 6632 |30 |02 |8D |20 |64 |61DD 0320 |38931d14 b405536e 0250592f 8b908138 d58602ec a676ff79 e0caf0b1 4d |0e7d  |
++---+---+------+----------+---+---+---+---+---+----------+------------------------------------------------------------------+------+
+
+
+Decryption
+==========
+The AES-128 Mode CTR (or CBC-IV) decryption prefix is built from some of the fields (m-bus mode 8). See EN 13757-7:2018.
+It can be packed using the format `<HIBBBIB`.
 
 +-----+---------+---+---+---+---------+---+
-|M    |A        |Ver|Med|CC |AES_CTR  |Pad|
+|M    |A        |Ver|Med|CC |AES CTR  |Pad|
 +=====+=========+===+===+===+=========+===+
 |2D2C |57686632 |30 |02 |20 |21870320 |00 |
 +-----+---------+---+---+---+---------+---+
 
-A decrypted payload example
 
-+------+-------+----------------+-----------+---------+---------+---------+---------+
-|CRC16 |CI-TPL |Data fmt. sign. |CRC16 data |Field 1  |Field 2  |Field 3  |Field 4  |
-+======+=======+================+===========+=========+=========+=========+=========+
-|1170  |79     |138C            |4491       |CE000000 |00000000 |03000000 |00000000 |
-+------+-------+----------------+-----------+---------+---------+---------+---------+
+Decrypted payload examples
+==========================
 
-Measurement fields start at byte 7, and can be extracted using `<IIII` little-endian format.
-
-The fields in the OmniPower are
+The interpretation of the fields in the OmniPower are
 
 +----------+---------------+----------------+--------------------+--------------------------------------+-----------+
 | Field    | Kamstrup name | Data fmt (DIF) | Value type (VIF/E) | VIF/E meaning                        | DIF VIF/E |
 +==========+===============+================+====================+======================================+===========+
-| Field 1  | A+            | 32-bit uint    | Energy, 10^1 Wh    | Consumption from grid, accum.        | 04  04    |
+| Data 1   | A+            | 32-bit uint    | Energy, 10^1 Wh    | Consumption from grid, accum.        | 04  04    |
 +----------+---------------+----------------+--------------------+--------------------------------------+-----------+
-| Field 2  | A-            | 32-bit uint    | Energy, 10^1 Wh    | Production to grid, accum.           | 04  84 3C |
+| Data 2   | A-            | 32-bit uint    | Energy, 10^1 Wh    | Production to grid, accum.           | 04  84 3C |
 +----------+---------------+----------------+--------------------+--------------------------------------+-----------+
-| Field 3  | P+            | 32-bit uint    | Power,  10^0 W     | Consumption from grid, instantan.    | 04  2B    |
+| Data 3   | P+            | 32-bit uint    | Power,  10^0 W     | Consumption from grid, instantan.    | 04  2B    |
 +----------+---------------+----------------+--------------------+--------------------------------------+-----------+
-| Field 4  | P-            | 32-bit uint    | Power,  10^0 W     | Production to grid, instantan.       | 04  AB 3C |
+| Data 4   | P-            | 32-bit uint    | Power,  10^0 W     | Production to grid, instantan.       | 04  AB 3C |
 +----------+---------------+----------------+--------------------+--------------------------------------+-----------+
+
+
+Decrypted short telegram
+________________________
+
++------+-------+----------------+-----------+---------+---------+---------+---------+
+|CRC16 |TPL-CI |Data fmt. sign. |CRC16 data |Data 1   |Data 2   |Data 3   |Data 4   |
++======+=======+================+===========+=========+=========+=========+=========+
+|1170  |79     |138C            |4491       |CE000000 |00000000 |03000000 |00000000 |
++------+-------+----------------+-----------+---------+---------+---------+---------+
+
+Measurement data starts at byte 7, and can easily be extracted using `<IIII` little-endian format.
+
+In this example, 206 10^1 Wh (2.06 kWh) have been consumed, and the current power draw is 3 10^0 W (0.003 kW).
+
+
+Decrypted long telegram
+_______________________
+
+In this kind of telegram, the DRHs are included.
+
++------+-------+----------+---------+---------------+---------+----------+---------+----------+---------+
+|CRC16 |TPL-CI |DIF/VIF 1 |Data 1   |DIF/VIF/VIFE 2 |Data 2   |DIF/VIF 3 |Data 3   |DIF/VIF 4 |Data 4   |
++======+=======+==========+=========+===============+=========+==========+=========+==========+=========+
+|9831  |78     |04 04     |D7000000 |04 84 3C       |00000000 |04 2B     |03000000 |04 AB 3C  |00000000 |
++------+-------+----------+---------+---------------+---------+----------+---------+----------+---------+
+
+Extraction is slightly more complex, requiring either a longer parsing pattern or perhaps a regex.
+
+In this example, 215 10^1 Wh (2.15 kWh) have been consumed, and the current power draw is 3 10^0 W (0.003 kW).
 
 """
 
@@ -135,7 +186,7 @@ class C1Telegram:
             self.AES_CTR = header_values[9]
 
             # Store original hex values as big-endian inside strings for comparison with human-readable values
-            self.be = {
+            self.big_endian = {
                 'L': hexlify(pack('>B', self.L)),
                 'C': hexlify(pack('>B', self.C)),
                 'M': hexlify(pack('>H', self.M)),
@@ -214,10 +265,10 @@ class OmniPower:
         """
 
         # Comparison is done on lowercase strings and big-endian values, e.g. 2c2d == 2c2d
-        if (telegram.be['A'] == self.meter_id.lower().encode()) and \
-                (telegram.be['M'] == self.manufacturer_id.lower().encode()) and \
-                (telegram.be['version'] == self.version.lower().encode()) and \
-                (telegram.be['medium'] == self.medium.lower().encode()):
+        if (telegram.big_endian['A'] == self.meter_id.lower().encode()) and \
+                (telegram.big_endian['M'] == self.manufacturer_id.lower().encode()) and \
+                (telegram.big_endian['version'] == self.version.lower().encode()) and \
+                (telegram.big_endian['medium'] == self.medium.lower().encode()):
             return True
         else:
             return False
@@ -248,7 +299,7 @@ class OmniPower:
         return hexlify(cipher.decrypt(ciphertext))
 
     @classmethod
-    def unpack_short_telegram(cls, data: bytes) -> Tuple[int, ...]:
+    def unpack_short_telegram_data(cls, data: bytes) -> Tuple[int, ...]:
         """
         Short C1 telegrams only contain field data values, no information about DIF/VIF
         """
@@ -256,7 +307,7 @@ class OmniPower:
         return unpack(cls.short_telegram_fmt, unhexlify(data[7 * 2:]))
 
     @classmethod
-    def unpack_long_telegram(cls, data: bytes) -> Tuple[int, ...]:
+    def unpack_long_telegram_data(cls, data: bytes) -> Tuple[int, ...]:
         """
         Long C1 telegrams contain DIF/VIF information and field data values
         """
@@ -294,9 +345,9 @@ class OmniPower:
             return omnipower_meas
 
         if telegram.L <= OmniPower.short_telegram_lim:
-            measurement_data = OmniPower.unpack_short_telegram(telegram.decrypted)
+            measurement_data = OmniPower.unpack_short_telegram_data(telegram.decrypted)
         else:
-            measurement_data = OmniPower.unpack_long_telegram(telegram.decrypted)
+            measurement_data = OmniPower.unpack_long_telegram_data(telegram.decrypted)
 
         # Store in measurement objects with units
         m1 = Measurement(measurement_data[0] * 10 / 1000, "kWh")  # A+ measurement

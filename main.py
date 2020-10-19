@@ -140,7 +140,7 @@ def test3():
     telegram = C1Telegram(text)
     payload = omnipower.decrypt(telegram)[6:]
     print(payload)
-    result = omnipower.unpack_long_telegram(payload)
+    result = omnipower.unpack_long_telegram_data(payload)
     print(result)
 
 
@@ -149,7 +149,8 @@ def test4():
     omnipower = OmniPower()
 
     # Receive a bunch of mixed telegrams from Steffen's and Thomas's list (UTF-8 strings)
-    telegrams = [b'27442d2c5768663230028d206360dd0320c42b87f46fc048d42498b44b5e34f083e93e6af16176313d9c',
+    telegrams = [b'27442D2C5768663230028D202E21870320D3A4F149B1B8F5783DF7434B8A66A55786499ABE7BAB59ffff',
+                 b'27442d2c5768663230028d206360dd0320c42b87f46fc048d42498b44b5e34f083e93e6af16176313d9c',
                  b'2d442d2c5768663230028d206461dd032038931d14b405536e0250592f8b908138d58602eca676ff79e0caf0b14d0e7d',
                  b'27442d2c5768663230028d206562dd03200ac3aea1e613dd9af1a75c68cdedd5fdd2617c1e71a9d0b3b1',
                  b'2d442d2c5768663230028d206c81dd03202dcd10989cd870e4439ee09a309f7114681d40570623dfae7b3c6214679786',
@@ -162,10 +163,11 @@ def test4():
 
         # Let OmniPower process it fully, including entering in log
         omnipower.process_telegram(tlg)
+        print(tlg.decrypted)
 
-    print(omnipower.measurement_log)
-    print(omnipower.measurement_log[1])
-    print(omnipower.measurement_log[2])
+    #print(omnipower.measurement_log)
+    #print(omnipower.measurement_log[1])
+    #print(omnipower.measurement_log[2])
 
 
 # Only run self-tests if started from terminal, not when imported

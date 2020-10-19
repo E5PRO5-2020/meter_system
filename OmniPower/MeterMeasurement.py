@@ -1,4 +1,6 @@
-"""Generic class for measurements and measurement frames.
+"""
+Generic class for measurements and measurement frames
+*****************************************************
 
 :platform: Python 3.5.10 on Linux, OS X
 :synopsis: This module implements classes for generic measurements taken from a meter.
@@ -47,7 +49,7 @@ class MeterMeasurement:
 
         self.meter_id = meter_id
         self.timestamp = timestamp
-        self.Measurements = OrderedDict()   # type: OrderedDict[str, Any]
+        self.measurements = OrderedDict()   # type: OrderedDict[str, Any]
 
     def add_measurement(self, name: str, measurement: Measurement) -> None:
         """
@@ -55,7 +57,7 @@ class MeterMeasurement:
         """
 
         # Insert new pair into ordered dict. The name is human readable
-        self.Measurements.update({name: measurement})
+        self.measurements.update({name: measurement})
 
     def __str__(self) -> str:
         """
@@ -66,7 +68,7 @@ class MeterMeasurement:
         header = header + "Timestamp: " + str(self.timestamp) + os.linesep
 
         # Iterate over the measurements in the collection, making a combined string
-        text = [k + ": " + str(v.value) + " " + str(v.unit) for k, v in self.Measurements.items()]
+        text = [k + ": " + str(v.value) + " " + str(v.unit) for k, v in self.measurements.items()]
         text_join = os.linesep.join(text)
 
         # Return human readable combined string
@@ -111,7 +113,7 @@ class MeterMeasurement:
         # Build a temporary dict where we insert all the measurements
         tmp = dict()    # type: Dict[str, Any]
 
-        for key, val in self.Measurements.items():
+        for key, val in self.measurements.items():
             tmp.update({key: {'value': val.value, 'unit': val.unit}})
 
         # Insert the temporary dictionary with all measurements into the original object

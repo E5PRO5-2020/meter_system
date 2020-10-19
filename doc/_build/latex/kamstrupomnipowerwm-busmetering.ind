@@ -1,0 +1,67 @@
+\begin{sphinxtheindex}
+\let\bigletter\sphinxstyleindexlettergroup
+\let\spxpagem \sphinxstyleindexpagemain
+\let\spxentry \sphinxstyleindexentry
+\let\spxextra \sphinxstyleindexextra
+
+  \bigletter A
+  \item \spxentry{add\_measurement()}\spxextra{OmniPower.OmniPower.MeterMeasurement method}, 
+		\hyperpage{5}
+  \item \spxentry{add\_measurement\_to\_log()}\spxextra{OmniPower.OmniPower.OmniPower method}, 
+		\hyperpage{4}
+  \item \spxentry{as\_dict()}\spxextra{OmniPower.OmniPower.MeterMeasurement method}, \hyperpage{5}
+
+  \indexspace
+  \bigletter C
+  \item \spxentry{C1Telegram}\spxextra{class in OmniPower.OmniPower}, \hyperpage{4}
+
+  \indexspace
+  \bigletter D
+  \item \spxentry{decrypt()}\spxextra{OmniPower.OmniPower.OmniPower method}, \hyperpage{4}
+  \item \spxentry{decrypt\_using()}\spxextra{OmniPower.OmniPower.C1Telegram method}, \hyperpage{4}
+  \item \spxentry{dump\_log\_to\_json()}\spxextra{OmniPower.OmniPower.OmniPower method}, 
+		\hyperpage{4}
+
+  \indexspace
+  \bigletter E
+  \item \spxentry{extract\_measurement\_frame()}\spxextra{OmniPower.OmniPower.OmniPower method}, 
+		\hyperpage{4}
+
+  \indexspace
+  \bigletter I
+  \item \spxentry{is\_this\_my()}\spxextra{OmniPower.OmniPower.OmniPower method}, \hyperpage{4}
+
+  \indexspace
+  \bigletter J
+  \item \spxentry{json\_dump()}\spxextra{OmniPower.OmniPower.MeterMeasurement method}, 
+		\hyperpage{6}
+
+  \indexspace
+  \bigletter M
+  \item \spxentry{Measurement}\spxextra{class in OmniPower.OmniPower}, \hyperpage{5}
+  \item \spxentry{MeterMeasurement}\spxextra{class in OmniPower.OmniPower}, \hyperpage{5}
+  \item \spxentry{module}
+    \subitem \spxentry{OmniPower.MeterMeasurement}, \hyperpage{5}
+    \subitem \spxentry{OmniPower.OmniPower}, \hyperpage{1}
+
+  \indexspace
+  \bigletter O
+  \item \spxentry{OmniPower}\spxextra{class in OmniPower.OmniPower}, \hyperpage{4}
+  \item \spxentry{OmniPower.MeterMeasurement}
+    \subitem \spxentry{module}, \hyperpage{5}
+  \item \spxentry{OmniPower.OmniPower}
+    \subitem \spxentry{module}, \hyperpage{1}
+
+  \indexspace
+  \bigletter P
+  \item \spxentry{process\_telegram()}\spxextra{OmniPower.OmniPower.OmniPower method}, 
+		\hyperpage{4}
+
+  \indexspace
+  \bigletter U
+  \item \spxentry{unpack\_long\_telegram\_data()}\spxextra{OmniPower.OmniPower.OmniPower class method}, 
+		\hyperpage{4}
+  \item \spxentry{unpack\_short\_telegram\_data()}\spxextra{OmniPower.OmniPower.OmniPower class method}, 
+		\hyperpage{4}
+
+\end{sphinxtheindex}
