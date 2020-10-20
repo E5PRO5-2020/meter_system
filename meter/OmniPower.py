@@ -345,7 +345,7 @@ class OmniPower:
                 # Unpack the found specific 8 characters (4 bytes = 32 bits)
                 # match.group(1) contains these 8 characters
                 # unpack returns a 1-tuple, from which we grab the single integer element with [0]
-                print("Found DIF/VIF/VIFE field {} in data records (long) telegram".format(fmt[0]))
+                # print("Found DIF/VIF/VIFE field {} in data records (long) telegram".format(fmt[0]))
                 return_val[i] = unpack(fmt[1], unhexlify(match.group(1).encode()))[0]
 
         # Finally, return a tuple that we can use to convert and log measurements

@@ -1,6 +1,6 @@
 import pytest
-from OmniPower.MeterMeasurement import Measurement, MeterMeasurement
-from OmniPower.OmniPower import C1Telegram, OmniPower
+from meter.MeterMeasurement import Measurement, MeterMeasurement
+from meter.OmniPower import C1Telegram, OmniPower
 from binascii import hexlify
 from datetime import datetime
 import json
