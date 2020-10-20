@@ -27,25 +27,7 @@ def keys():
 	k4 = "P-"
 	return k1, k2, k3, k4
 
-# Test for MeterMeasurement.Measure
-def test_measure(MeasureFix):
-	# Load in fixture
-	m1, m2, m3, m4, meterID, testdatetime = MeasureFix
-	# Test with fixture-values
-	# assert Measurement.__repr__(m1)=="7 kWh"
-	# assert Measurement.__repr__(m2)=="8 kWh"
-	# assert Measurement.__repr__(m3)=="9 kW"
-	# assert Measurement.__repr__(m4)==" "
-
-	# print("dinmor")
-	# assert Measurement.__iter__(m1)== (m1.value, m1.unit)
-	# assert Measurement.__iter__(m2)== (m2.value, m2.unit)
-	# assert Measurement.__iter__(m3)== (m3.value, m3.unit)
-	# assert Measurement.__iter__(m4)== (m4.value, m4.unit)
-
 def test_MeterMeasure(MeasureFix, keys):
-
-	# Currently the def __repr__(self):-function is not tested in MeterMeasurement.py
 
 	# Load in fixture
 	m1, m2, m3, m4, meterID, testdateTime = MeasureFix
@@ -60,20 +42,19 @@ def test_MeterMeasure(MeasureFix, keys):
 	# Testing add_measurement
 	assert omni_power_frame.measurements[k1].value == m1.value
 	assert omni_power_frame.measurements[k1].unit == m1.unit
-
 	assert omni_power_frame.measurements[k2].value == m2.value
 	assert omni_power_frame.measurements[k2].unit == m2.unit
-
 	assert omni_power_frame.measurements[k3].value == m3.value
 	assert omni_power_frame.measurements[k3].unit == m3.unit
-
 	assert omni_power_frame.measurements[k4].value == m4.value
 	assert omni_power_frame.measurements[k4].unit == m4.unit
-
 	assert omni_power_frame.timestamp == testdateTime
 
+	# Testing as.dict()
+	test_object = omni_power_frame.as_dict()["Measurements"]
+	assert test_object["A+"]== {'unit': 'kWh', 'value': 7}
 
-	# Test for bestemte properties!
+
 
 
 #Setup test for OmniPower class
