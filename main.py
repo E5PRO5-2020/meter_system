@@ -163,10 +163,10 @@ def test4():
 
         # Let OmniPower process it fully, including entering in log
         omnipower.process_telegram(tlg)
-        print(tlg.decrypted)
+        # print(tlg.decrypted)
 
-    #print(omnipower.measurement_log)
-    #print(omnipower.measurement_log[1])
+    print(omnipower.dump_log_to_json())
+    # print(omnipower.measurement_log[2])
     #print(omnipower.measurement_log[2])
 
 
