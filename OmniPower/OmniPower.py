@@ -84,15 +84,24 @@ Encrypted long telegrams:
 
 Decryption
 ==========
-The AES-128 Mode CTR (or CBC-IV) decryption prefix is built from some of the fields (m-bus mode 8). See EN 13757-7:2018.
+- The encrypted wireless m-bus on OmniPower uses AES-128 Mode CTR.
+- See EN 13757-4:2019, p. 54, as ELL (Ext. Link-Layer) with ECN = 001 => AES-CTR.
+- A decryption prefix (initial counter block) is built from some of the fields.
+- See table 54 on p. 55 of EN 13757-4:2019.
+
+
 It can be packed using the format `<HIBBBIB`.
 
-+-----+---------+---+---+---+---------+---+
-|M    |A        |Ver|Med|CC |AES CTR  |Pad|
-+=====+=========+===+===+===+=========+===+
-|2D2C |57686632 |30 |02 |20 |21870320 |00 |
-+-----+---------+---+---+---+---------+---+
++-----+---------+---+---+---+---------+-----+----+
+|M    |A        |Ver|Med|CC |AES CTR  |FN   |BC  |
++=====+=========+===+===+===+=========+=====+====+
+|2D2C |57686632 |30 |02 |20 |21870320 |0000 |00  |
++-----+---------+---+---+---+---------+-----+----+
 
+Prefix: M, ..., AES CTR.
+Counter: FN, BC
+FN: frame number (frame # sent by meter within same session number, in case of multi-frame transmissions).
+BC: Block counter (encryption block number, counts up for each 16 byte block decrypted within the telegram).
 
 Decrypted payload examples
 ==========================
@@ -110,6 +119,10 @@ The interpretation of the fields in the OmniPower are
 +----------+---------------+----------------+--------------------+--------------------------------------+-----------+
 | Data 4   | P-            | 32-bit uint    | Power,  10^0 W     | Production to grid, instantan.       | 04  AB 3C |
 +----------+---------------+----------------+--------------------+--------------------------------------+-----------+
+
+Transport layer control information fields (TPL-CI), ref. EN 13757-7:2018, p. 17, introduce Application Layer (APL) as:
+- 0x78 with full frames (Response from device, full M-Bus frame)
+- 0x79 with compact frames (Response from device, M-Bus compact frame)
 
 
 Decrypted short telegram
@@ -140,6 +153,8 @@ In this kind of telegram, the DRHs are included.
 Extraction is slightly more complex, requiring either a longer parsing pattern or perhaps a regex.
 
 In this example, 215 10^1 Wh (2.15 kWh) have been consumed, and the current power draw is 3 10^0 W (0.003 kW).
+
+
 
 """
 
