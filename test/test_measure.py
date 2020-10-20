@@ -74,21 +74,7 @@ def test_MeterMeasure(MeasureFix, keys):
 
 
 	# Test for bestemte properties!
-	assert MeterMeasurement.as_dict(omni_power_frame)=="{'Timestamp:': '2020-10-20T12:46:35', " \
-												"'Measurements': {" \
-												"'P-': {'unit': ' ', 'value':  }, " \
-												"'A+': {'unit': 'kWh', 'value': 2.15}, " \
-												"'P+': {'unit': 'kW', 'value': 0.003}, " \
-												"'A-': {'unit': 'kWh', 'value': 0.0}}, " \
-												"'Meter ID: ': '32666857'}"
 
-	assert MeterMeasurement.json_dump(omni_power_frame)=="{'Timestamp:': '2020-10-20T12:46:35', " \
-												"'Measurements': {" \
-												"'P-': {'unit': ' ', 'value':  }, " \
-												"'A+': {'unit': 'kWh', 'value': 2.15}, " \
-												"'P+': {'unit': 'kW', 'value': 0.003}, " \
-												"'A-': {'unit': 'kWh', 'value': 0.0}}, " \
-												"'Meter ID: ': '32666857'}"
 
 #Setup test for OmniPower class
 #@pytest.fixture()
