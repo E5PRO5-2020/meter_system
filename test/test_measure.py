@@ -72,7 +72,7 @@ def test_MeterMeasure(MeasureFix, keys):
 
 	assert omni_power_frame.timestamp == testdateTime
 
-	MeterMeasurement.as_dict(omni_power_frame)=="{'Timestamp:': '2020-10-20T12:46:35', " \
+	assert MeterMeasurement.as_dict(omni_power_frame)=="{'Timestamp:': '2020-10-20T12:46:35', " \
 												"'Measurements': {" \
 												"'P-': {'unit': ' ', 'value':  }, " \
 												"'A+': {'unit': 'kWh', 'value': 2.15}, " \
@@ -80,7 +80,7 @@ def test_MeterMeasure(MeasureFix, keys):
 												"'A-': {'unit': 'kWh', 'value': 0.0}}, " \
 												"'Meter ID: ': '32666857'}"
 
-	MeterMeasurement.json_dump(omni_power_frame)=="{'Timestamp:': '2020-10-20T12:46:35', " \
+	assert MeterMeasurement.json_dump(omni_power_frame)=="{'Timestamp:': '2020-10-20T12:46:35', " \
 												"'Measurements': {" \
 												"'P-': {'unit': ' ', 'value':  }, " \
 												"'A+': {'unit': 'kWh', 'value': 2.15}, " \
