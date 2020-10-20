@@ -4,5 +4,5 @@
 :Date: 14 October 2020
 """
 
-import OmniPower.MeterMeasurement
-import OmniPower.OmniPower
+import meter.MeterMeasurement
+import meter.OmniPower

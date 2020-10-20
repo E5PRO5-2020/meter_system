@@ -168,7 +168,7 @@ import re
 from typing import List, Tuple
 
 # And our own implementation
-from OmniPower.MeterMeasurement import MeterMeasurement, Measurement
+from meter.MeterMeasurement import MeterMeasurement, Measurement
 
 
 class C1Telegram:
