@@ -119,7 +119,7 @@ target/
 # Jupyter Notebook
 .ipynb_checkpoints
 # pyenv
-.python-version
+# .python-version
 # celery beat schedule file
 celerybeat-schedule
 # SageMath parsed files
