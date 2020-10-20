@@ -13,4 +13,4 @@ Documentation is live here: [meter-system @ readthedocs.io](https://meter-system
 Compile with Sphinx using the makefile in the docs/ folder (`make html` or `make latexpdf`)
 
 ## Run tests
-coverage run -m pytest
+Run the start script `./starttest.sh`
