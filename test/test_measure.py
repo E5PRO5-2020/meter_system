@@ -72,6 +72,8 @@ def test_MeterMeasure(MeasureFix, keys):
 
 	assert omni_power_frame.timestamp == testdateTime
 
+
+	# Test for bestemte properties!
 	assert MeterMeasurement.as_dict(omni_power_frame)=="{'Timestamp:': '2020-10-20T12:46:35', " \
 												"'Measurements': {" \
 												"'P-': {'unit': ' ', 'value':  }, " \
