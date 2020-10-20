@@ -9,8 +9,8 @@ Documentation is live here: [meter-system @ readthedocs.io](https://meter-system
 - Ensure virtual enviroment active
 - Install libraries from requirements.txt: `pip install -r requirements.txt`
 
-## Build documentation
-Compile with Sphinx using the makefile in the docs/ folder (`make html` or `make latexpdf`)
-
 ## Run tests
 Run the start script `./starttest.sh`
+
+## Build documentation
+Compile with Sphinx using the makefile in the docs/ folder (`make html` or `make latexpdf`)
