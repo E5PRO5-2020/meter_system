@@ -155,8 +155,8 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="module-OmniPower.MeterMeasurement">
-<span id="implementation-of-generic-measurements"></span><h1>Implementation of generic measurements<a class="headerlink" href="#module-OmniPower.MeterMeasurement" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="module-meter.MeterMeasurement">
+<span id="implementation-of-generic-measurements"></span><h1>Implementation of generic measurements<a class="headerlink" href="#module-meter.MeterMeasurement" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="generic-class-for-measurements-and-measurement-frames">
 <h2>Generic class for measurements and measurement frames<a class="headerlink" href="#generic-class-for-measurements-and-measurement-frames" title="Permalink to this headline">¶</a></h2>
 <dl class="field-list simple">
@@ -177,8 +177,8 @@
 <div class="section" id="the-measurement-class">
 <h2>The Measurement class<a class="headerlink" href="#the-measurement-class" title="Permalink to this headline">¶</a></h2>
 <dl class="py class">
-<dt id="OmniPower.OmniPower.Measurement">
-<em class="property">class </em><code class="sig-prename descclassname">OmniPower.OmniPower.</code><code class="sig-name descname">Measurement</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">value</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3.5/library/functions.html#float" title="(in Python v3.5)">float</a></span></em>, <em class="sig-param"><span class="n">unit</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3.5/library/stdtypes.html#str" title="(in Python v3.5)">str</a></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/OmniPower/MeterMeasurement.html#Measurement"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#OmniPower.OmniPower.Measurement" title="Permalink to this definition">¶</a></dt>
+<dt id="meter.MeterMeasurement.Measurement">
+<em class="property">class </em><code class="sig-prename descclassname">meter.MeterMeasurement.</code><code class="sig-name descname">Measurement</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">value</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3.5/library/functions.html#float" title="(in Python v3.5)">float</a></span></em>, <em class="sig-param"><span class="n">unit</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3.5/library/stdtypes.html#str" title="(in Python v3.5)">str</a></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/meter/MeterMeasurement.html#Measurement"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#meter.MeterMeasurement.Measurement" title="Permalink to this definition">¶</a></dt>
 <dd><p>Single physical measurement.
 A single measurement of a physical quantity pair, consisting of a value and a unit.</p>
 </dd></dl>
@@ -187,19 +187,19 @@ A single measurement of a physical quantity pair, consisting of a value and a un
 <div class="section" id="the-metermeasurement-class">
 <h2>The MeterMeasurement class<a class="headerlink" href="#the-metermeasurement-class" title="Permalink to this headline">¶</a></h2>
 <dl class="py class">
-<dt id="OmniPower.OmniPower.MeterMeasurement">
-<em class="property">class </em><code class="sig-prename descclassname">OmniPower.OmniPower.</code><code class="sig-name descname">MeterMeasurement</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">meter_id</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3.5/library/stdtypes.html#str" title="(in Python v3.5)">str</a></span></em>, <em class="sig-param"><span class="n">timestamp</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3.5/library/datetime.html#datetime.datetime" title="(in Python v3.5)">datetime.datetime</a></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/OmniPower/MeterMeasurement.html#MeterMeasurement"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#OmniPower.OmniPower.MeterMeasurement" title="Permalink to this definition">¶</a></dt>
+<dt id="meter.MeterMeasurement.MeterMeasurement">
+<em class="property">class </em><code class="sig-prename descclassname">meter.MeterMeasurement.</code><code class="sig-name descname">MeterMeasurement</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">meter_id</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3.5/library/stdtypes.html#str" title="(in Python v3.5)">str</a></span></em>, <em class="sig-param"><span class="n">timestamp</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3.5/library/datetime.html#datetime.datetime" title="(in Python v3.5)">datetime.datetime</a></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/meter/MeterMeasurement.html#MeterMeasurement"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#meter.MeterMeasurement.MeterMeasurement" title="Permalink to this definition">¶</a></dt>
 <dd><p>A single measurement collection based on one frame from the meter.
 Will contain multiple measurements of physical quantities taken at the same time.</p>
 <dl class="py method">
-<dt id="OmniPower.OmniPower.MeterMeasurement.add_measurement">
-<code class="sig-name descname">add_measurement</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">name</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3.5/library/stdtypes.html#str" title="(in Python v3.5)">str</a></span></em>, <em class="sig-param"><span class="n">measurement</span><span class="p">:</span> <span class="n">OmniPower.MeterMeasurement.Measurement</span></em><span class="sig-paren">)</span> &#x2192; <a class="reference external" href="https://docs.python.org/3.5/library/constants.html#None" title="(in Python v3.5)">None</a><a class="reference internal" href="_modules/OmniPower/MeterMeasurement.html#MeterMeasurement.add_measurement"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#OmniPower.OmniPower.MeterMeasurement.add_measurement" title="Permalink to this definition">¶</a></dt>
+<dt id="meter.MeterMeasurement.MeterMeasurement.add_measurement">
+<code class="sig-name descname">add_measurement</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">name</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3.5/library/stdtypes.html#str" title="(in Python v3.5)">str</a></span></em>, <em class="sig-param"><span class="n">measurement</span><span class="p">:</span> <span class="n"><a class="reference internal" href="#meter.MeterMeasurement.Measurement" title="meter.MeterMeasurement.Measurement">meter.MeterMeasurement.Measurement</a></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference external" href="https://docs.python.org/3.5/library/constants.html#None" title="(in Python v3.5)">None</a><a class="reference internal" href="_modules/meter/MeterMeasurement.html#MeterMeasurement.add_measurement"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#meter.MeterMeasurement.MeterMeasurement.add_measurement" title="Permalink to this definition">¶</a></dt>
 <dd><p>Store a new measurement in the collection.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="OmniPower.OmniPower.MeterMeasurement.as_dict">
-<code class="sig-name descname">as_dict</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <a class="reference external" href="https://docs.python.org/3.5/library/stdtypes.html#dict" title="(in Python v3.5)">dict</a><a class="reference internal" href="_modules/OmniPower/MeterMeasurement.html#MeterMeasurement.as_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#OmniPower.OmniPower.MeterMeasurement.as_dict" title="Permalink to this definition">¶</a></dt>
+<dt id="meter.MeterMeasurement.MeterMeasurement.as_dict">
+<code class="sig-name descname">as_dict</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <a class="reference external" href="https://docs.python.org/3.5/library/stdtypes.html#dict" title="(in Python v3.5)">dict</a><a class="reference internal" href="_modules/meter/MeterMeasurement.html#MeterMeasurement.as_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#meter.MeterMeasurement.MeterMeasurement.as_dict" title="Permalink to this definition">¶</a></dt>
 <dd><p>Serializes and dumps the Measurement frame as a dict.
 Make an object similar to
 {</p>
@@ -239,8 +239,8 @@ Make an object similar to
 </dd></dl>
 
 <dl class="py method">
-<dt id="OmniPower.OmniPower.MeterMeasurement.json_dump">
-<code class="sig-name descname">json_dump</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <a class="reference external" href="https://docs.python.org/3.5/library/stdtypes.html#str" title="(in Python v3.5)">str</a><a class="reference internal" href="_modules/OmniPower/MeterMeasurement.html#MeterMeasurement.json_dump"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#OmniPower.OmniPower.MeterMeasurement.json_dump" title="Permalink to this definition">¶</a></dt>
+<dt id="meter.MeterMeasurement.MeterMeasurement.json_dump">
+<code class="sig-name descname">json_dump</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <a class="reference external" href="https://docs.python.org/3.5/library/stdtypes.html#str" title="(in Python v3.5)">str</a><a class="reference internal" href="_modules/meter/MeterMeasurement.html#MeterMeasurement.json_dump"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#meter.MeterMeasurement.MeterMeasurement.json_dump" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a JSON formatted string of all data in frame.</p>
 </dd></dl>
 

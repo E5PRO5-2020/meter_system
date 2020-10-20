@@ -102,6 +102,7 @@ class MeterMeasurement:
                 }
             }
         }
+
         """
 
         # Build object, and dump timestamp using ISO8601, https://en.wikipedia.org/wiki/ISO_8601

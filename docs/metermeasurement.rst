@@ -3,13 +3,13 @@
 Implementation of generic measurements
 **************************************
 
-.. automodule:: OmniPower.MeterMeasurement
+.. automodule:: meter.MeterMeasurement
 
 
 The Measurement class
 ---------------------
 
-.. module:: OmniPower.OmniPower
+.. module:: meter.MeterMeasurement
    :noindex:
 .. autoclass:: Measurement
    :members:
@@ -18,7 +18,7 @@ The Measurement class
 The MeterMeasurement class
 --------------------------
 
-.. module:: OmniPower.OmniPower
+.. module:: meter.MeterMeasurement
    :noindex:
 .. autoclass:: MeterMeasurement
    :members:

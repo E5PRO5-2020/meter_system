@@ -3,13 +3,13 @@
 OmniPower implementation
 **************************
 
-.. automodule:: OmniPower.OmniPower
+.. automodule:: meter.OmniPower
 
 
 The C1 Telegram class
 --------------------------
 
-.. module:: OmniPower.OmniPower
+.. module:: meter.OmniPower
    :noindex:
 .. autoclass:: C1Telegram
    :members:
@@ -18,7 +18,7 @@ The C1 Telegram class
 The OmniPower class
 --------------------------
 
-.. module:: OmniPower.OmniPower
+.. module:: meter.OmniPower
    :noindex:
 .. autoclass:: OmniPower
    :members:
