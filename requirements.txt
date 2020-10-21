@@ -8,3 +8,4 @@ mypy>=0.790
 coverage
 serial>=0.0.97
 pyserial>=3.4
+termcolor

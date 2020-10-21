@@ -176,9 +176,6 @@ class C1Telegram:
     Implements capture of data fields for a C1 telegram from OmniPower
     """
 
-    def test(self, meter: 'OmniPower') -> str:
-        return 1
-
     def __init__(self, telegram: bytes) -> None:
         """
         Take a telegram (bytestring with hex values) and parses into fields
@@ -221,6 +218,7 @@ class C1Telegram:
             self.prefix = pack('<HIBBBIB', self.M, self.A, self.version, self.medium, self.CC, self.AES_CTR, 0)
 
         except:
+            # TODO: Specify error type caught and handle
             print("Oops!")
 
     def decrypt_using(self, meter: 'OmniPower') -> bool:
@@ -237,6 +235,7 @@ class C1Telegram:
             self.decrypted = meter.decrypt(self)
             return True
         except:
+            # TODO: Specify error type caught and handle
             print("Oh no!")
             return False
 
