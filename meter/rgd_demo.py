@@ -27,15 +27,19 @@ def demo_0():
         # Let OmniPower process it fully, including entering in log
         omnipower.process_telegram(t)
 
-    # See the log
+    # See items now stored in the log
     print(colored("Representation of entire measurement log:", 'red'))
     print(omnipower.measurement_log)
 
-    print(colored("Representation of object 0 from log:", 'red'))
+    print(colored("Representation of first object from log:", 'red'))
     print(omnipower.measurement_log[0])
+
+    print(colored("Representation of last object from log:", 'red'))
+    print(omnipower.measurement_log[len(omnipower.measurement_log)-1])
 
     print(colored("Dump to JSON:", 'red'))
     print(omnipower.dump_log_to_json())
+
 
 if __name__ == "__main__":
     demo_0()
