@@ -10,7 +10,7 @@ Or, read the [PDF](https://github.com/E5PRO5-2020/meter_system/blob/master/kamst
 ## Install environment and libraries
 - Use Python 3.5.10 (best via PyEnv) and setup a virtual environment: `pyenv virtualenv 3.5.10 3.5.10-dev`
 - Ensure virtual enviroment active
-- Install libraries from requirements.txt: `pip install -r requirements.txt`
+- Install libraries from requirements.txt: `pip3 install -r requirements.txt`
 
 
 ## Run tests
