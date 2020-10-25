@@ -14,6 +14,8 @@ import json
 from datetime import datetime
 from typing import Any, Dict
 
+from utils.timezone import zulu_time_str
+
 
 class Measurement:
     """Single physical measurement.
@@ -65,7 +67,7 @@ class MeterMeasurement:
         """
         # Build the header
         header = "Meter ID: " + str(self.meter_id) + os.linesep
-        header = header + "Timestamp: " + str(self.timestamp) + os.linesep
+        header = header + "Timestamp: " + zulu_time_str(self.timestamp) + os.linesep
 
         # Iterate over the measurements in the collection, making a combined string
         text = [k + ": " + str(v.value) + " " + str(v.unit) for k, v in self.measurements.items()]
@@ -75,14 +77,14 @@ class MeterMeasurement:
         return header + text_join
 
     def __repr__(self) -> str:
-        return "MeterMeasurement('{}', {})".format(self.meter_id, self.timestamp.strftime("%Y-%m-%dT%H:%M:%S"))
+        return "MeterMeasurement('{}', {})".format(self.meter_id, zulu_time_str(self.timestamp))
 
     def as_dict(self) -> dict:
         """Serializes and dumps the Measurement frame as a dict.
         Make an object similar to
         {
             "Meter ID: ": "3232323",
-            "Timestamp:": "2020-10-13T17:36:53",
+            "Timestamp:": "2020-10-13T17:36:53Z",
             "Measurements": {
                 "A+": {
                     "unit": "kWh",
@@ -108,7 +110,7 @@ class MeterMeasurement:
         # Build object, and dump timestamp using ISO8601, https://en.wikipedia.org/wiki/ISO_8601
         obj = dict({
             'Meter ID: ': str(self.meter_id),
-            'Timestamp:': datetime.strftime(self.timestamp, '%Y-%m-%dT%H:%M:%S'),
+            'Timestamp:': zulu_time_str(self.timestamp),
         })  # type: Dict[str, Any]
 
         # Build a temporary dict where we insert all the measurements

@@ -2,11 +2,17 @@
 This file is a demo for RGD
 """
 
-from meter.OmniPower import OmniPower, C1Telegram
 from termcolor import colored
+from datetime import datetime
+
+from meter.OmniPower import OmniPower, C1Telegram
+from utils.timezone import ZuluTime, zulu_time_str
 
 
 def demo_0():
+
+    # Set up timezone
+    zulu_time = ZuluTime()
 
     # Set up OmniPower with our default settings
     omnipower = OmniPower()
@@ -21,13 +27,21 @@ def demo_0():
 
     # Process the telegrams
     for telegram in telegrams:
+        # Profiling
+        # TODO: Profile this on Raspberry Pi
+        now1 = datetime.now(tz=zulu_time)
+
         # Parse the telegram as C1-type telegram
         t = C1Telegram(telegram)
 
         # Let OmniPower process it fully, including entering in log
         omnipower.process_telegram(t)
 
-        print(t.decrypted)
+        # Profiling
+        now2 = omnipower.measurement_log[-1].timestamp
+        delta = (now2 - now1).microseconds
+
+        print("Delay from start to timestamp {} ms".format(delta))
 
     # See items now stored in the log
     print(colored("Representation of entire measurement log:", 'red'))
@@ -41,6 +55,9 @@ def demo_0():
 
     print(colored("Dump to JSON:", 'red'))
     print(omnipower.dump_log_to_json())
+
+    print(colored("Example of time with Zoneinfo:", 'red'))
+    print(zulu_time_str(omnipower.measurement_log[0].timestamp))
 
 
 if __name__ == "__main__":
