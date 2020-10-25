@@ -84,6 +84,8 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="omnipower.html">OmniPower implementation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="metermeasurement.html">Implementation of generic measurements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="util_crc16wmbus.html">Utils: CRC16 for wm-bus</a></li>
+<li class="toctree-l1"><a class="reference internal" href="util_timezone.html">Utils: Timezone handling</a></li>
 </ul>
 
             
@@ -160,7 +162,9 @@
  | <a href="#M"><strong>M</strong></a>
  | <a href="#O"><strong>O</strong></a>
  | <a href="#P"><strong>P</strong></a>
+ | <a href="#T"><strong>T</strong></a>
  | <a href="#U"><strong>U</strong></a>
+ | <a href="#Z"><strong>Z</strong></a>
  
 </div>
 <h2 id="A">A</h2>
@@ -183,6 +187,12 @@
       <li><a href="omnipower.html#meter.OmniPower.C1Telegram">C1Telegram (class in meter.OmniPower)</a>
 </li>
   </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="util_crc16wmbus.html#utils.crc16_wmbus.crc16_wmbus">crc16_wmbus() (in module utils.crc16_wmbus)</a>
+</li>
+      <li><a href="util_crc16wmbus.html#utils.crc16_wmbus.CrcCheckException">CrcCheckException (class in utils.crc16_wmbus)</a>
+</li>
+  </ul></td>
 </tr></table>
 
 <h2 id="D">D</h2>
@@ -190,9 +200,11 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="omnipower.html#meter.OmniPower.OmniPower.decrypt">decrypt() (meter.OmniPower.OmniPower method)</a>
 </li>
+      <li><a href="omnipower.html#meter.OmniPower.C1Telegram.decrypt_using">decrypt_using() (meter.OmniPower.C1Telegram method)</a>
+</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="omnipower.html#meter.OmniPower.C1Telegram.decrypt_using">decrypt_using() (meter.OmniPower.C1Telegram method)</a>
+      <li><a href="util_timezone.html#utils.timezone.ZuluTime.dst">dst() (utils.timezone.ZuluTime method)</a>
 </li>
       <li><a href="omnipower.html#meter.OmniPower.OmniPower.dump_log_to_json">dump_log_to_json() (meter.OmniPower.OmniPower method)</a>
 </li>
@@ -254,6 +266,10 @@
 </li>
         <li><a href="omnipower.html#module-meter.OmniPower">meter.OmniPower</a>
 </li>
+        <li><a href="util_crc16wmbus.html#module-utils.crc16_wmbus">utils.crc16_wmbus</a>
+</li>
+        <li><a href="util_timezone.html#module-utils.timezone">utils.timezone</a>
+</li>
       </ul></li>
   </ul></td>
 </tr></table>
@@ -274,14 +290,50 @@
   </ul></td>
 </tr></table>
 
+<h2 id="T">T</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="util_timezone.html#utils.timezone.ZuluTime.tzname">tzname() (utils.timezone.ZuluTime method)</a>
+</li>
+  </ul></td>
+</tr></table>
+
 <h2 id="U">U</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="omnipower.html#meter.OmniPower.OmniPower.unpack_long_telegram_data">unpack_long_telegram_data() (meter.OmniPower.OmniPower class method)</a>
 </li>
+      <li><a href="omnipower.html#meter.OmniPower.OmniPower.unpack_short_telegram_data">unpack_short_telegram_data() (meter.OmniPower.OmniPower class method)</a>
+</li>
+      <li><a href="util_timezone.html#utils.timezone.ZuluTime.utcoffset">utcoffset() (utils.timezone.ZuluTime method)</a>
+</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="omnipower.html#meter.OmniPower.OmniPower.unpack_short_telegram_data">unpack_short_telegram_data() (meter.OmniPower.OmniPower class method)</a>
+      <li>
+    utils.crc16_wmbus
+
+      <ul>
+        <li><a href="util_crc16wmbus.html#module-utils.crc16_wmbus">module</a>
+</li>
+      </ul></li>
+      <li>
+    utils.timezone
+
+      <ul>
+        <li><a href="util_timezone.html#module-utils.timezone">module</a>
+</li>
+      </ul></li>
+  </ul></td>
+</tr></table>
+
+<h2 id="Z">Z</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="util_timezone.html#utils.timezone.zulu_time_str">zulu_time_str() (in module utils.timezone)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="util_timezone.html#utils.timezone.ZuluTime">ZuluTime (class in utils.timezone)</a>
 </li>
   </ul></td>
 </tr></table>

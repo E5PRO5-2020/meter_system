@@ -91,8 +91,9 @@
 <li class="toctree-l3"><a class="reference internal" href="#telegram-examples">Telegram examples</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#decryption">Decryption</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#decrypted-payload-examples">Decrypted payload examples</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#decrypted-short-telegram">Decrypted short telegram</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#decrypted-long-telegram">Decrypted long telegram</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#data-integrity-check-crc16">Data integrity check (CRC16)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#decrypted-short-telegram-payload">Decrypted short telegram payload</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#decrypted-long-telegram-payload">Decrypted long telegram payload</a></li>
 </ul>
 </li>
 </ul>
@@ -102,6 +103,8 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="metermeasurement.html">Implementation of generic measurements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="util_crc16wmbus.html">Utils: CRC16 for wm-bus</a></li>
+<li class="toctree-l1"><a class="reference internal" href="util_timezone.html">Utils: Timezone handling</a></li>
 </ul>
 
             
@@ -489,7 +492,7 @@ BC: Block counter (encryption block number, counts up for each 16 byte block dec
 </div>
 <div class="section" id="decrypted-payload-examples">
 <h3>Decrypted payload examples<a class="headerlink" href="#decrypted-payload-examples" title="Permalink to this headline">¶</a></h3>
-<p>The interpretation of the fields in the OmniPower are</p>
+<p>The interpretation of the fields in the OmniPower is</p>
 <table class="docutils align-default">
 <colgroup>
 <col style="width: 9%" />
@@ -539,11 +542,18 @@ BC: Block counter (encryption block number, counts up for each 16 byte block dec
 </tr>
 </tbody>
 </table>
-<p>Transport layer control information fields (TPL-CI), ref. EN 13757-7:2018, p. 17, introduce Application Layer (APL) as:
-- 0x78 with full frames (Response from device, full M-Bus frame)
-- 0x79 with compact frames (Response from device, M-Bus compact frame)</p>
-<div class="section" id="decrypted-short-telegram">
-<h4>Decrypted short telegram<a class="headerlink" href="#decrypted-short-telegram" title="Permalink to this headline">¶</a></h4>
+<p>Transport layer control information fields (TPL-CI), ref. EN 13757-7:2018, p. 17, introduce Application Layer (APL) as:</p>
+<ul class="simple">
+<li><p>0x78 with full frames (Response from device, full M-Bus frame)</p></li>
+<li><p>0x79 with compact frames (Response from device, M-Bus compact frame)</p></li>
+</ul>
+<div class="section" id="data-integrity-check-crc16">
+<h4>Data integrity check (CRC16)<a class="headerlink" href="#data-integrity-check-crc16" title="Permalink to this headline">¶</a></h4>
+<p>The first 2 bytes (16 bits) of a payload is always the CRC16 value of the sent message.
+This value must be checked versus CRC16 calculated on the received payload.</p>
+</div>
+<div class="section" id="decrypted-short-telegram-payload">
+<h4>Decrypted short telegram payload<a class="headerlink" href="#decrypted-short-telegram-payload" title="Permalink to this headline">¶</a></h4>
 <table class="docutils align-default">
 <colgroup>
 <col style="width: 8%" />
@@ -581,8 +591,8 @@ BC: Block counter (encryption block number, counts up for each 16 byte block dec
 <p>Measurement data starts at byte 7, and can easily be extracted using <cite>&lt;IIII</cite> little-endian format.</p>
 <p>In this example, 206 10^1 Wh (2.06 kWh) have been consumed, and the current power draw is 3 10^0 W (0.003 kW).</p>
 </div>
-<div class="section" id="decrypted-long-telegram">
-<h4>Decrypted long telegram<a class="headerlink" href="#decrypted-long-telegram" title="Permalink to this headline">¶</a></h4>
+<div class="section" id="decrypted-long-telegram-payload">
+<h4>Decrypted long telegram payload<a class="headerlink" href="#decrypted-long-telegram-payload" title="Permalink to this headline">¶</a></h4>
 <p>In this kind of telegram, the DRHs are included.</p>
 <table class="docutils align-default">
 <colgroup>
@@ -662,14 +672,16 @@ Passed values are hex encoded as string, e.g. ‘2C2D’ for value 0x2C2D.</p>
 <dl class="py method">
 <dt id="meter.OmniPower.OmniPower.decrypt">
 <code class="sig-name descname">decrypt</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">telegram</span><span class="p">:</span> <span class="n"><a class="reference internal" href="#meter.OmniPower.C1Telegram" title="meter.OmniPower.C1Telegram">meter.OmniPower.C1Telegram</a></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference external" href="https://docs.python.org/3.5/library/functions.html#bytes" title="(in Python v3.5)">bytes</a><a class="reference internal" href="_modules/meter/OmniPower.html#OmniPower.decrypt"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#meter.OmniPower.OmniPower.decrypt" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="simple">
-<dt>Decrypt a telegram. Requires:</dt><dd><ul class="simple">
+<dd><p>Decrypt a telegram. Returns decrypted bytes.
+Raises CrcCheckException if CRCs do not match after decryption.</p>
+<p>Requires:</p>
+<blockquote>
+<div><ul class="simple">
 <li><p>the prefix from the telegram (telegram.prefix), and</p></li>
-<li><p>the encryption key from the meter.</p></li>
+<li><p>the encryption key stored in the meter object.</p></li>
 </ul>
-</dd>
-</dl>
-<p>Decrypts the data stored telegram.encrypted</p>
+</div></blockquote>
+<p>Decrypts the data stored in field telegram.encrypted</p>
 </dd></dl>
 
 <dl class="py method">

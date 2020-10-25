@@ -80,31 +80,8 @@ class MeterMeasurement:
         return "MeterMeasurement('{}', {})".format(self.meter_id, zulu_time_str(self.timestamp))
 
     def as_dict(self) -> dict:
-        """Serializes and dumps the Measurement frame as a dict.
-        Make an object similar to
-        {
-            "Meter ID: ": "3232323",
-            "Timestamp:": "2020-10-13T17:36:53Z",
-            "Measurements": {
-                "A+": {
-                    "unit": "kWh",
-                    "value": 7
-                },
-                "A-": {
-                    "unit": "kWh",
-                    "value": 8
-                },
-                "P+": {
-                    "unit": "kW",
-                    "value": 9
-                },
-                "P-": {
-                    "unit": "kW",
-                    "value": 10
-                }
-            }
-        }
-
+        """
+        Serializes and outputs the Measurement frame as a structured dict.
         """
 
         # Build object, and dump timestamp using ISO8601, https://en.wikipedia.org/wiki/ISO_8601

@@ -59,6 +59,12 @@ def demo_0():
     print(colored("Example of time with Zoneinfo:", 'red'))
     print(zulu_time_str(omnipower.measurement_log[0].timestamp))
 
+    print(colored("Demonstrate corrupted telegram with failed CRC check:", 'red'))
+    # Correct encrypted payload portion is 1dfbbd7871e6ec990f60ee940532c09e505bd4cac5728e
+    # Changed last hex digit to f, so erroneously received 1dfbbd7871e6ec990f60ee940532c09e505bd4cac5728f
+    t = C1Telegram(b'27442d2c5768663230028d206e90dd03201dfbbd7871e6ec990f60ee940532c09e505bd4cac5728f2864')
+    omnipower.process_telegram(t)
+
 
 if __name__ == "__main__":
     demo_0()
