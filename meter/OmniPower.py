@@ -169,6 +169,10 @@ from typing import List, Tuple
 
 # And our own implementation
 from meter.MeterMeasurement import MeterMeasurement, Measurement
+from utils.timezone import ZuluTime
+
+# Set timezone
+zulu_time = ZuluTime()
 
 
 class C1Telegram:
@@ -356,7 +360,7 @@ class OmniPower:
         """
 
         # Create a measurement frame with static data from this meter and current time
-        omnipower_meas = MeterMeasurement(self.meter_id, datetime.now())
+        omnipower_meas = MeterMeasurement(self.meter_id, datetime.now(tz=zulu_time))
 
         if not telegram.decrypted:
             return omnipower_meas
