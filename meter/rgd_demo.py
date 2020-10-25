@@ -26,9 +26,10 @@ def demo_0():
                  b'27442d2c5768663230028d206e90dd03201dfbbd7871e6ec990f60ee940532c09e505bd4cac5728e2864']
 
     # Process the telegrams
+    print(colored("Start processing and profiling:", 'red'))
     for telegram in telegrams:
-        # Profiling
-        # TODO: Profile this on Raspberry Pi
+        # Profiling start
+        # On Raspberry Pi 3b+ a single telegram takes about 900-1100 us (microsec)
         now1 = datetime.now(tz=zulu_time)
 
         # Parse the telegram as C1-type telegram
@@ -37,11 +38,10 @@ def demo_0():
         # Let OmniPower process it fully, including entering in log
         omnipower.process_telegram(t)
 
-        # Profiling
+        # Profiling end
         now2 = omnipower.measurement_log[-1].timestamp
         delta = (now2 - now1).microseconds
-
-        print("Delay from start to timestamp {} ms".format(delta))
+        print("Delay from start to timestamp {} µs".format(delta))
 
     # See items now stored in the log
     print(colored("Representation of entire measurement log:", 'red'))
@@ -51,17 +51,18 @@ def demo_0():
     print(omnipower.measurement_log[0])
 
     print(colored("Representation of last object from log:", 'red'))
-    print(omnipower.measurement_log[len(omnipower.measurement_log)-1])
+    print(omnipower.measurement_log[-1])
 
-    print(colored("Dump to JSON:", 'red'))
+    print(colored("Dump to JSON string:", 'red'))
     print(omnipower.dump_log_to_json())
 
-    print(colored("Example of time with Zoneinfo:", 'red'))
+    print(colored("Example of time with Zone info:", 'red'))
     print(zulu_time_str(omnipower.measurement_log[0].timestamp))
 
-    print(colored("Demonstrate corrupted telegram with failed CRC check:", 'red'))
-    # Correct encrypted payload portion is 1dfbbd7871e6ec990f60ee940532c09e505bd4cac5728e
-    # Changed last hex digit to f, so erroneously received 1dfbbd7871e6ec990f60ee940532c09e505bd4cac5728f
+    print(colored("Demo corrupted telegram with failed CRC check and raised exception:", 'red'))
+    # Correct encrypted payload portion is 0x1dfbbd7871e6ec990f60ee940532c09e505bd4cac5728e
+    # Changed last hex digit to 0xf, so erroneously received 0x1dfbbd7871e6ec990f60ee940532c09e505bd4cac5728f
+    # Last 4 hex digits 0x2864 are CRC16 from IM871-A and are not relevant here
     t = C1Telegram(b'27442d2c5768663230028d206e90dd03201dfbbd7871e6ec990f60ee940532c09e505bd4cac5728f2864')
     omnipower.process_telegram(t)
 
