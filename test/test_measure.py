@@ -1,14 +1,10 @@
-
 import pytest
-import os
-import sys
 from meter.MeterMeasurement import Measurement, MeterMeasurement
 from meter.OmniPower import C1Telegram, OmniPower
 from binascii import hexlify
 from datetime import datetime
 import json
 
-sys.path.insert(0, os.path.abspath('..'))
 
 # Setup fixture for Measurement class
 @pytest.fixture()
@@ -67,7 +63,7 @@ def test_MeterMeasure(MeasureFix, keys):
 
 	# Remaining missed lines for MeterMeasurement-class are human readable functions
 
-def OmniTest():
+def test_OmniTest():
 	omnipower = OmniPower()
 	telegram = '27442d2c5768663230028d208e11de0320188851bdc4b72dd3c2954a341be369e9089b4eb3858169494e'.encode()
 	tlg = C1Telegram(telegram)
