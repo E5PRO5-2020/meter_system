@@ -13,6 +13,9 @@ Kamstrup OmniPower wm-bus metering's documentation
    omnipower
    metermeasurement
 
+   util_crc16wmbus
+   util_timezone
+
 
 Indices and tables
 ==================

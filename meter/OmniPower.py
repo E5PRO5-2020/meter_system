@@ -106,7 +106,7 @@ BC: Block counter (encryption block number, counts up for each 16 byte block dec
 Decrypted payload examples
 ==========================
 
-The interpretation of the fields in the OmniPower are
+The interpretation of the fields in the OmniPower is
 
 +----------+---------------+----------------+--------------------+--------------------------------------+-----------+
 | Field    | Kamstrup name | Data fmt (DIF) | Value type (VIF/E) | VIF/E meaning                        | DIF VIF/E |
@@ -121,12 +121,18 @@ The interpretation of the fields in the OmniPower are
 +----------+---------------+----------------+--------------------+--------------------------------------+-----------+
 
 Transport layer control information fields (TPL-CI), ref. EN 13757-7:2018, p. 17, introduce Application Layer (APL) as:
+
 - 0x78 with full frames (Response from device, full M-Bus frame)
 - 0x79 with compact frames (Response from device, M-Bus compact frame)
 
+Data integrity check (CRC16)
+____________________________
+The first 2 bytes (16 bits) of a payload is always the CRC16 value of the sent message.
+This value must be checked versus CRC16 calculated on the received payload.
 
-Decrypted short telegram
-________________________
+
+Decrypted short telegram payload
+________________________________
 
 +------+-------+----------------+-----------+---------+---------+---------+---------+
 |CRC16 |TPL-CI |Data fmt. sign. |CRC16 data |Data 1   |Data 2   |Data 3   |Data 4   |
@@ -139,8 +145,8 @@ Measurement data starts at byte 7, and can easily be extracted using `<IIII` lit
 In this example, 206 10^1 Wh (2.06 kWh) have been consumed, and the current power draw is 3 10^0 W (0.003 kW).
 
 
-Decrypted long telegram
-_______________________
+Decrypted long telegram payload
+_______________________________
 
 In this kind of telegram, the DRHs are included.
 
@@ -153,8 +159,6 @@ In this kind of telegram, the DRHs are included.
 Extraction is slightly more complex, requiring either a longer parsing pattern or perhaps a regex.
 
 In this example, 215 10^1 Wh (2.15 kWh) have been consumed, and the current power draw is 3 10^0 W (0.003 kW).
-
-
 
 """
 
@@ -170,6 +174,7 @@ from typing import List, Tuple
 # And our own implementation
 from meter.MeterMeasurement import MeterMeasurement, Measurement
 from utils.timezone import ZuluTime
+from utils.crc16_wmbus import crc16_wmbus, CrcCheckException
 
 # Set timezone
 zulu_time = ZuluTime()
@@ -236,11 +241,15 @@ class C1Telegram:
             return False
 
         try:
+            # Store decrypted value in field decrypted
             self.decrypted = meter.decrypt(self)
             return True
+        except CrcCheckException as e:
+            # Bad message received, CRC check fail
+            print(e)
+            return False
         except:
-            # TODO: Specify error type caught and handle
-            print("Oh no!")
+            # TODO: Blanket broad exception - bad idea, test and fix!
             return False
 
 
@@ -296,11 +305,16 @@ class OmniPower:
 
     def decrypt(self, telegram: 'C1Telegram') -> bytes:
         """
-        Decrypt a telegram. Requires:
-         - the prefix from the telegram (telegram.prefix), and
-         - the encryption key from the meter.
+        Decrypt a telegram. Returns decrypted bytes.
+        Raises CrcCheckException if CRCs do not match after decryption.
 
-        Decrypts the data stored telegram.encrypted
+        Requires:
+
+         - the prefix from the telegram (telegram.prefix), and
+         - the encryption key stored in the meter object.
+
+        Decrypts the data stored in field telegram.encrypted
+
         """
 
         # Get relevant variables
@@ -317,7 +331,18 @@ class OmniPower:
         cipher = AES.new(key, AES.MODE_CTR, counter=counter)
 
         # Perform decryption
-        return hexlify(cipher.decrypt(ciphertext))
+        decryption = hexlify(cipher.decrypt(ciphertext))
+
+        # Raise exception if CRC check fails
+        crc16_recv = decryption[0:4]
+        crc16_calc = crc16_wmbus(decryption[4:])
+
+        # Perform comparison on lowercase, just in case something is UPPER'ed
+        # Raise an exception if CRC check fails
+        if crc16_recv.lower() != crc16_calc.lower():
+            raise CrcCheckException(crc16_recv, crc16_calc, "CRC check fail. Do not match!")
+
+        return decryption
 
     @classmethod
     def unpack_short_telegram_data(cls, data: bytes) -> Tuple[int, ...]:
@@ -397,11 +422,19 @@ class OmniPower:
         # Confirm that the telegram belongs to this meter
         if self.is_this_my(telegram):
 
-            # decrypt the telegram, then extract measurements and store these in own log
-            telegram.decrypt_using(self)
-            self.add_measurement_to_log(self.extract_measurement_frame(telegram))
-            return True
+            # Try to decrypt the telegram,
+            # and then extract measurements and store these in own log
+            try:
+                telegram.decrypt_using(self)
+                self.add_measurement_to_log(self.extract_measurement_frame(telegram))
+                return True
+            except CrcCheckException as e:
+                # CRC check has failed
+                print(e)
+                return False
+
         else:
+            # This is not my telegram
             return False
 
     def dump_log_to_json(self) -> str:
