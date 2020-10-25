@@ -27,6 +27,8 @@ def demo_0():
         # Let OmniPower process it fully, including entering in log
         omnipower.process_telegram(t)
 
+        print(t.decrypted)
+
     # See items now stored in the log
     print(colored("Representation of entire measurement log:", 'red'))
     print(omnipower.measurement_log)
