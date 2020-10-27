@@ -43,6 +43,7 @@ def test0():
     print(my_obj['Measurements'])
 
 
+
 def test1():
     """
     Self-test to demo stepwise functions for OmniPower and C1Telegram
@@ -177,7 +178,7 @@ if __name__ == '__main__':
     # shows where we could have issues.
 
     # Run demo 0
-    # test0()
+     test0()
 
     # Run demo 1
     # test1()
@@ -190,7 +191,7 @@ if __name__ == '__main__':
 
     # Run demo 4
     # Test ability to handle multiple mixed telegrams
-    test4()
+    # test4()
 
     # Output from the log
     # print("What is the A+ measurement?")
