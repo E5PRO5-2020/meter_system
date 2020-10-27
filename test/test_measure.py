@@ -17,6 +17,9 @@ from typing import List, Tuple
 # Setup fixture for Measurement class
 @pytest.fixture()
 def MeasureFix():
+	"""
+	Setup-fixture for Measurement-class
+	"""
 	m1 = Measurement(7, "kWh")
 	m2 = Measurement(8, "kWh")
 	m3 = Measurement(9, "kW")
@@ -29,6 +32,9 @@ def MeasureFix():
 # Setup fixture for keys
 @pytest.fixture()
 def keys():
+	"""
+	Setup-fixture for keys
+	"""
 	k1 = "A+"
 	k2 = "A-"
 	k3 = "P+"
@@ -60,7 +66,10 @@ def omnipower_setup():
 
 
 def test_MeterMeasure(MeasureFix, keys):
-
+	"""
+	Test the MeterMeasurement class functionality
+	Jakob, 27/10-2020
+	"""
 	# Load in fixture
 	m1, m2, m3, m4, meterID, testdateTime = MeasureFix
 	k1, k2, k3, k4 = keys
@@ -96,6 +105,10 @@ def test_MeterMeasure(MeasureFix, keys):
 	# Remaining missed lines for MeterMeasurement-class are human readable functions
 
 def test_OmniTest():
+	"""
+	Test the OmniPower class functionality (not yet fully implemented)
+	Jakob, 27/10-2020
+	"""
 	omnipower = OmniPower()
 	telegram = '27442d2c5768663230028d208e11de0320188851bdc4b72dd3c2954a341be369e9089b4eb3858169494e'.encode()
 	tlg = C1Telegram(telegram)
