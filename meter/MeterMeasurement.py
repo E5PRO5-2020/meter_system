@@ -86,8 +86,8 @@ class MeterMeasurement:
 
         # Build object, and dump timestamp using ISO8601, https://en.wikipedia.org/wiki/ISO_8601
         obj = dict({
-            'Meter ID: ': str(self.meter_id),
-            'Timestamp:': zulu_time_str(self.timestamp),
+            'MeterID': str(self.meter_id),
+            'Timestamp': zulu_time_str(self.timestamp),
         })  # type: Dict[str, Any]
 
         # Build a temporary dict where we insert all the measurements
