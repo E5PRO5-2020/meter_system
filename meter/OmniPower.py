@@ -174,7 +174,7 @@ from typing import List, Tuple
 # And our own implementation
 from meter.MeterMeasurement import MeterMeasurement, Measurement
 from utils.timezone import ZuluTime
-from utils.crc16_wmbus import crc16_wmbus, CrcCheckException
+from utils.crc16_wmbus import crc16_wmbus, crc16_check, CrcCheckException
 
 # Set timezone
 zulu_time = ZuluTime()
@@ -232,18 +232,19 @@ class C1Telegram:
 
     def decrypt_using(self, meter: 'OmniPower') -> bool:
         """
-        Decrypts a telegram using the key from the specified meter.
-        Updates the decrypted field of self.
+        Decrypts a telegram and inserts it into telegram (self)
+        Uses a meter object and its key to perform decryption.
         Requires instantiated OmniPower meter with valid AES-key.
         """
-
-        if not meter.AES_key:
-            return False
 
         try:
             # Store decrypted value in field decrypted
             self.decrypted = meter.decrypt(self)
             return True
+        except AesKeyException as e:
+            # Missing key or malformed
+            print(e)
+            return False
         except CrcCheckException as e:
             # Bad message received, CRC check fail
             print(e)
@@ -317,6 +318,10 @@ class OmniPower:
 
         """
 
+        # Check that 16 byte (128 bit) key has 32 hex digits
+        if len(self.AES_key) != 32:
+            raise AesKeyException
+
         # Get relevant variables
         key_in = self.AES_key               # UTF-8 formatted
         ciphertext = telegram.encrypted     # ASCII string
@@ -333,14 +338,8 @@ class OmniPower:
         # Perform decryption
         decryption = hexlify(cipher.decrypt(ciphertext))
 
-        # Raise exception if CRC check fails
-        crc16_recv = decryption[0:4]
-        crc16_calc = crc16_wmbus(decryption[4:])
-
-        # Perform comparison on lowercase, just in case something is UPPER'ed
-        # Raise an exception if CRC check fails
-        if crc16_recv.lower() != crc16_calc.lower():
-            raise CrcCheckException(crc16_recv, crc16_calc, "CRC check fail. Do not match!")
+        # Will raise exception if CRC check failed, to be caught upstream
+        crc16_check(decryption)
 
         return decryption
 
@@ -388,14 +387,23 @@ class OmniPower:
         omnipower_meas = MeterMeasurement(self.meter_id, datetime.now(tz=zulu_time))
 
         if not telegram.decrypted:
+            # TODO: Do better error handling here, instead of just dumping empty objects
             return omnipower_meas
 
-        if telegram.L <= OmniPower.short_telegram_lim:
-            measurement_data = OmniPower.unpack_short_telegram_data(telegram.decrypted)
-        else:
-            measurement_data = OmniPower.unpack_long_telegram_data(telegram.decrypted)
+        # Look at TPL-CI field and determine long (frame with DRH) / short (Compact frame) type
+        #print("TPL-CI: {}".format(telegram.decrypted[4:6]))
+        #if telegram.L <= OmniPower.short_telegram_lim:
 
-        # Store in measurement objects with units
+        tpl_ci = telegram.decrypted[4:6]
+        if tpl_ci == b'79':
+            measurement_data = OmniPower.unpack_short_telegram_data(telegram.decrypted)
+        elif tpl_ci == b'78':
+            measurement_data = OmniPower.unpack_long_telegram_data(telegram.decrypted)
+        else:
+            # TODO: Better error handling... What to do if neither 0x78 nor 0x79?
+            return omnipower_meas
+
+        # Convert and store in measurement objects with units
         m1 = Measurement(measurement_data[0] * 10 / 1000, "kWh")  # A+ measurement
         m2 = Measurement(measurement_data[1] * 10 / 1000, "kWh")  # A- measurement
         m3 = Measurement(measurement_data[2] / 1000, "kW")  # P+ measurement
@@ -409,37 +417,41 @@ class OmniPower:
 
         return omnipower_meas
 
-    def add_measurement_to_log(self, measurement: MeterMeasurement) -> None:
+    def add_measurement_to_log(self, measurement: MeterMeasurement) -> bool:
         """
         Pushes a new measurement to the tail end of the log
         """
-        self.measurement_log.append(measurement)
+        try:
+            self.measurement_log.append(measurement)
+            return True
+        except:
+            # TODO: Specify potential exceptions / errors
+            return False
 
     def process_telegram(self, telegram: 'C1Telegram') -> bool:
         """
-        Does entire processing chain for a telegram, including adding to log
+        Does entire processing chain for a telegram, including adding to log.
+        Returns True if processing is OK and added to log OK.
+        Otherwise False.
         """
         # Confirm that the telegram belongs to this meter
         if self.is_this_my(telegram):
 
             # Try to decrypt the telegram,
-            # and then extract measurements and store these in own log
-            try:
-                telegram.decrypt_using(self)
-                self.add_measurement_to_log(self.extract_measurement_frame(telegram))
-                return True
-            except CrcCheckException as e:
-                # CRC check has failed
-                print(e)
+            if telegram.decrypt_using(self):
+                # and then extract measurements and store these in own log
+                # returns true if okay
+                return self.add_measurement_to_log(self.extract_measurement_frame(telegram))
+            else:
+                # decrypt_using(...) returned false as message could not be decrypted
                 return False
-
         else:
-            # This is not my telegram
+            # This is not even my telegram
             return False
 
     def dump_log_to_json(self) -> str:
         """
-        Returns a JSON object of all measurement frames in log, with an incremented number for each observation
+        Returns a JSON string of all measurement frames in log, with an incremented number for each observation.
         """
         dump = {}
 
@@ -448,3 +460,18 @@ class OmniPower:
 
         # Return JSON-string
         return json.dumps(dump)
+
+
+class AesKeyException(Exception):
+    """
+    Use this to raise an exception when an AES key is missing or too short.
+    """
+    def __init__(self, exception_message: str):
+        self.exception_message = exception_message
+
+        # Invoke constructor for base class
+        super().__init__(self.exception_message)
+
+    def __str__(self):
+        # String representation of exception if printed
+        return "AES key missing from meter object or malformed."

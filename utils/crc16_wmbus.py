@@ -112,6 +112,25 @@ def crc16_wmbus(message: bytes) -> bytes:
     return crc_hex
 
 
+def crc16_check(payload: bytes) -> bool:
+    """
+    Takes a payload and splits into CRC16-field and message.
+    Computes CRC16 on the message and compares to CRC16-field.
+    Return True if match.
+    Raises CrcCheckException if no match.
+    """
+
+    crc16_recv = payload[0:4]
+    crc16_calc = crc16_wmbus(payload[4:])
+
+    # Perform comparison on lowercase, just in case something is UPPER'ed
+    # Raise an exception if CRC check fails
+    if crc16_recv.lower() == crc16_calc.lower():
+        return True
+    else:
+        raise CrcCheckException(crc16_recv, crc16_calc, "CRC check fail. No match.")
+
+
 class CrcCheckException(Exception):
     """
     Use this to raise an exception when a CRC16 check
