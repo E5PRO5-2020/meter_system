@@ -40,7 +40,7 @@ class ZuluTime(tzinfo):
         """
         Name of timezone.
         """
-        return "UTC"
+        return "Zulu time (UTC)"
 
     def dst(self, dt):
         """

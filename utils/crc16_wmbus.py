@@ -144,7 +144,7 @@ class CrcCheckException(Exception):
         # Invoke constructor for base class
         super().__init__(self.exception_message)
 
-    def __str__(self):
+    def __str__(self) -> str:
         # String representation of exception if printed
         return "CRC received ({}) does not match CRC calculated ({}).".format(self.crc_recv.decode(), self.crc_calc.decode())
 

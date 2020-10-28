@@ -82,6 +82,7 @@
             
               <p class="caption"><span class="caption-text">Table of contents</span></p>
 <ul>
+<li class="toctree-l1"><a class="reference internal" href="DriverClass.html">Implementation of iM871-A driver</a></li>
 <li class="toctree-l1"><a class="reference internal" href="omnipower.html">OmniPower implementation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="metermeasurement.html">Implementation of generic measurements</a></li>
 <li class="toctree-l1"><a class="reference internal" href="util_crc16wmbus.html">Utils: CRC16 for wm-bus</a></li>
@@ -162,6 +163,8 @@
  | <a href="#M"><strong>M</strong></a>
  | <a href="#O"><strong>O</strong></a>
  | <a href="#P"><strong>P</strong></a>
+ | <a href="#R"><strong>R</strong></a>
+ | <a href="#S"><strong>S</strong></a>
  | <a href="#T"><strong>T</strong></a>
  | <a href="#U"><strong>U</strong></a>
  | <a href="#Z"><strong>Z</strong></a>
@@ -172,9 +175,11 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="metermeasurement.html#meter.MeterMeasurement.MeterMeasurement.add_measurement">add_measurement() (meter.MeterMeasurement.MeterMeasurement method)</a>
 </li>
+      <li><a href="omnipower.html#meter.OmniPower.OmniPower.add_measurement_to_log">add_measurement_to_log() (meter.OmniPower.OmniPower method)</a>
+</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="omnipower.html#meter.OmniPower.OmniPower.add_measurement_to_log">add_measurement_to_log() (meter.OmniPower.OmniPower method)</a>
+      <li><a href="omnipower.html#meter.OmniPower.AesKeyException">AesKeyException (class in meter.OmniPower)</a>
 </li>
       <li><a href="metermeasurement.html#meter.MeterMeasurement.MeterMeasurement.as_dict">as_dict() (meter.MeterMeasurement.MeterMeasurement method)</a>
 </li>
@@ -186,8 +191,12 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="omnipower.html#meter.OmniPower.C1Telegram">C1Telegram (class in meter.OmniPower)</a>
 </li>
+      <li><a href="DriverClass.html#driver.DriverClass.IM871A.close">close() (driver.DriverClass.IM871A method)</a>
+</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="util_crc16wmbus.html#utils.crc16_wmbus.crc16_check">crc16_check() (in module utils.crc16_wmbus)</a>
+</li>
       <li><a href="util_crc16wmbus.html#utils.crc16_wmbus.crc16_wmbus">crc16_wmbus() (in module utils.crc16_wmbus)</a>
 </li>
       <li><a href="util_crc16wmbus.html#utils.crc16_wmbus.CrcCheckException">CrcCheckException (class in utils.crc16_wmbus)</a>
@@ -221,6 +230,10 @@
 
 <h2 id="I">I</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="DriverClass.html#driver.DriverClass.IM871A">IM871A (class in driver.DriverClass)</a>
+</li>
+  </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="omnipower.html#meter.OmniPower.OmniPower.is_this_my">is_this_my() (meter.OmniPower.OmniPower method)</a>
 </li>
@@ -280,18 +293,50 @@
       <li><a href="omnipower.html#meter.OmniPower.OmniPower">OmniPower (class in meter.OmniPower)</a>
 </li>
   </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="DriverClass.html#driver.DriverClass.IM871A.open">open() (driver.DriverClass.IM871A method)</a>
+</li>
+  </ul></td>
 </tr></table>
 
 <h2 id="P">P</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="DriverClass.html#driver.DriverClass.IM871A.ping">ping() (driver.DriverClass.IM871A method)</a>
+</li>
+  </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="omnipower.html#meter.OmniPower.OmniPower.process_telegram">process_telegram() (meter.OmniPower.OmniPower method)</a>
 </li>
   </ul></td>
 </tr></table>
 
+<h2 id="R">R</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="DriverClass.html#driver.DriverClass.IM871A.read_data">read_data() (driver.DriverClass.IM871A method)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="DriverClass.html#driver.DriverClass.IM871A.reset_module">reset_module() (driver.DriverClass.IM871A method)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="S">S</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="DriverClass.html#driver.DriverClass.IM871A.setup_linkmode">setup_linkmode() (driver.DriverClass.IM871A method)</a>
+</li>
+  </ul></td>
+</tr></table>
+
 <h2 id="T">T</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="omnipower.html#meter.OmniPower.TelegramParseException">TelegramParseException (class in meter.OmniPower)</a>
+</li>
+  </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="util_timezone.html#utils.timezone.ZuluTime.tzname">tzname() (utils.timezone.ZuluTime method)</a>
 </li>

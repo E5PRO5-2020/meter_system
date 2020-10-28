@@ -22,3 +22,12 @@ The OmniPower class
    :noindex:
 .. autoclass:: OmniPower
    :members:
+
+
+Exception classes
+--------------------
+.. currentmodule:: meter.OmniPower
+.. autoclass:: TelegramParseException
+   :members:
+.. autoclass:: AesKeyException
+   :members:

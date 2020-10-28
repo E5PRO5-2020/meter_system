@@ -37,7 +37,7 @@
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Implementation of generic measurements" href="metermeasurement.html" />
-    <link rel="prev" title="Kamstrup OmniPower wm-bus metering’s documentation" href="index.html" /> 
+    <link rel="prev" title="Implementation of iM871-A driver" href="DriverClass.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -84,10 +84,13 @@
             
               <p class="caption"><span class="caption-text">Table of contents</span></p>
 <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="DriverClass.html">Implementation of iM871-A driver</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">OmniPower implementation</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#parse-kamstrup-omnipower-wm-bus-telegrams">Parse Kamstrup OmniPower wm-bus telegrams</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#version-history">Version history</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#overview">Overview</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#telegram-fields">Telegram fields</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#aes-counter-session-number">AES counter / Session number</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#telegram-examples">Telegram examples</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#decryption">Decryption</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#decrypted-payload-examples">Decrypted payload examples</a><ul>
@@ -100,6 +103,7 @@
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#the-c1-telegram-class">The C1 Telegram class</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#the-omnipower-class">The OmniPower class</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#exception-classes">Exception classes</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="metermeasurement.html">Implementation of generic measurements</a></li>
@@ -185,9 +189,17 @@
 <dd class="field-odd"><p>Janus Bo Andersen</p>
 </dd>
 <dt class="field-even">date</dt>
-<dd class="field-even"><p>14 October 2020</p>
+<dd class="field-even"><p>28 October 2020</p>
 </dd>
 </dl>
+<div class="section" id="version-history">
+<h3>Version history<a class="headerlink" href="#version-history" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>Ver 1.0: Set up parser and decryption. Janus.</p></li>
+<li><p>Ver 2.0: Implement CRC16, timezone. Janus.</p></li>
+<li><p>Ver 2.1: More robust exception handling, parse ELL-SN. Janus</p></li>
+</ul>
+</div>
 <div class="section" id="overview">
 <h3>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
@@ -288,9 +300,9 @@
 <tr class="row-odd"><td><p>9</p></td>
 <td><p>13-16</p></td>
 <td><p>4</p></td>
-<td><p>AES CTR</p></td>
-<td><p>AES counter</p></td>
-<td><p>Varies, used for decryption</p></td>
+<td><p>AES CTR / SN</p></td>
+<td><p>AES counter (Session number)</p></td>
+<td><p>Varies, see below</p></td>
 </tr>
 <tr class="row-even"><td><p>10</p></td>
 <td><p>17-39
@@ -318,6 +330,81 @@ varying for short and long frames</p></td>
 <li><p><cite>H</cite> is an unsigned 2 byte (short),</p></li>
 <li><p><cite>I</cite> is an unsigned 4 byte (int)</p></li>
 </ul>
+</div>
+<div class="section" id="aes-counter-session-number">
+<h3>AES counter / Session number<a class="headerlink" href="#aes-counter-session-number" title="Permalink to this headline">¶</a></h3>
+<p>The AES_CTR / Extended Link Layer SN field (ELL-SN) is is structured as per EN 13757-4, p. 54.</p>
+<p>The example shows ELL-SN value of 0x01870320 (little-endian) -&gt; 0x20038701 (big-endian). Bit readout:</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 17%" />
+<col style="width: 21%" />
+<col style="width: 21%" />
+<col style="width: 21%" />
+<col style="width: 21%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Byte:</p></th>
+<th class="head"><p>3</p></th>
+<th class="head"><p>2</p></th>
+<th class="head"><p>1</p></th>
+<th class="head"><p>0</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Hex:</p></td>
+<td><p>0x20</p></td>
+<td><p>0x03</p></td>
+<td><p>0x87</p></td>
+<td><p>0x01</p></td>
+</tr>
+<tr class="row-odd"><td><p>Binary:</p></td>
+<td><p>0010 0000</p></td>
+<td><p>0000 0011</p></td>
+<td><p>1000 0111</p></td>
+<td><p>0000 0001</p></td>
+</tr>
+</tbody>
+</table>
+<p>Should give the following slicing and interpretation:</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 16%" />
+<col style="width: 12%" />
+<col style="width: 57%" />
+<col style="width: 16%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Bits:</p></th>
+<th class="head"><p>31-29</p></th>
+<th class="head"><p>28-04</p></th>
+<th class="head"><p>03-00</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Field:</p></td>
+<td><p>ENC</p></td>
+<td><p>Time</p></td>
+<td><p>Session</p></td>
+</tr>
+<tr class="row-odd"><td><p>Example:</p></td>
+<td><p>001</p></td>
+<td><p>0 0000 0000 0011 1000 0111 0000</p></td>
+<td><p>0001</p></td>
+</tr>
+<tr class="row-even"><td><p>Hex:</p></td>
+<td><p>0x1</p></td>
+<td><p>0x3870 (14448)</p></td>
+<td><p>0x1</p></td>
+</tr>
+</tbody>
+</table>
+<ul class="simple">
+<li><p>ENC (Encryption): 0 -&gt; No encryption, 1 -&gt; AES-CTR mode, higher -&gt; reserved.</p></li>
+<li><p>Time: Minute counter since 01/01/2013 (?), or since meter started, requires RTC set on meter.   So time measurement was taken about 10 days after the meter was started.</p></li>
+<li><p>Session: Incremented by meter for each transmission, unless using partial/fractured frames.</p></li>
+</ul>
+<p>Parsing. The whole ELL-SN field is read out and masks are used to extract fields.</p>
 </div>
 <div class="section" id="telegram-examples">
 <h3>Telegram examples<a class="headerlink" href="#telegram-examples" title="Permalink to this headline">¶</a></h3>
@@ -445,8 +532,8 @@ varying for short and long frames</p></td>
 <div class="section" id="decryption">
 <h3>Decryption<a class="headerlink" href="#decryption" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
-<li><p>The encrypted wireless m-bus on OmniPower uses AES-128 Mode CTR.</p></li>
-<li><p>See EN 13757-4:2019, p. 54, as ELL (Ext. Link-Layer) with ECN = 001 =&gt; AES-CTR.</p></li>
+<li><p>The wireless m-bus on OmniPower uses AES-128 Mode CTR (if enabled, otherwise no encryption).</p></li>
+<li><p>See EN 13757-4:2019, p. 54, as ELL (Ext. Link-Layer) with ENC = 0x1 =&gt; AES-CTR.</p></li>
 <li><p>A decryption prefix (initial counter block) is built from some of the fields.</p></li>
 <li><p>See table 54 on p. 55 of EN 13757-4:2019.</p></li>
 </ul>
@@ -468,7 +555,7 @@ varying for short and long frames</p></td>
 <th class="head"><p>Ver</p></th>
 <th class="head"><p>Med</p></th>
 <th class="head"><p>CC</p></th>
-<th class="head"><p>AES CTR</p></th>
+<th class="head"><p>AES_CTR</p></th>
 <th class="head"><p>FN</p></th>
 <th class="head"><p>BC</p></th>
 </tr>
@@ -485,10 +572,12 @@ varying for short and long frames</p></td>
 </tr>
 </tbody>
 </table>
-<p>Prefix: M, …, AES CTR.
-Counter: FN, BC
-FN: frame number (frame # sent by meter within same session number, in case of multi-frame transmissions).
-BC: Block counter (encryption block number, counts up for each 16 byte block decrypted within the telegram).</p>
+<ul class="simple">
+<li><p>AES Prefix (initialization vector): Fields M, …, AES_CTR, FN.</p></li>
+<li><p>FN: frame number (frame # sent by meter within same session number, in case of multi-frame transmissions).</p></li>
+<li><p>AES Counter: BC</p></li>
+<li><p>BC: Block counter (encryption block number, counts up for each 16 byte block decrypted within the telegram).</p></li>
+</ul>
 </div>
 <div class="section" id="decrypted-payload-examples">
 <h3>Decrypted payload examples<a class="headerlink" href="#decrypted-payload-examples" title="Permalink to this headline">¶</a></h3>
@@ -648,8 +737,8 @@ This value must be checked versus CRC16 calculated on the received payload.</p>
 <dl class="py method">
 <dt id="meter.OmniPower.C1Telegram.decrypt_using">
 <code class="sig-name descname">decrypt_using</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">meter</span><span class="p">:</span> <span class="n"><a class="reference internal" href="#meter.OmniPower.OmniPower" title="meter.OmniPower.OmniPower">meter.OmniPower.OmniPower</a></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference external" href="https://docs.python.org/3.5/library/functions.html#bool" title="(in Python v3.5)">bool</a><a class="reference internal" href="_modules/meter/OmniPower.html#C1Telegram.decrypt_using"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#meter.OmniPower.C1Telegram.decrypt_using" title="Permalink to this definition">¶</a></dt>
-<dd><p>Decrypts a telegram using the key from the specified meter.
-Updates the decrypted field of self.
+<dd><p>Decrypts a telegram and inserts it into telegram (self)
+Uses a meter object and its key to perform decryption.
 Requires instantiated OmniPower meter with valid AES-key.</p>
 </dd></dl>
 
@@ -665,7 +754,7 @@ Requires instantiated OmniPower meter with valid AES-key.</p>
 Passed values are hex encoded as string, e.g. ‘2C2D’ for value 0x2C2D.</p>
 <dl class="py method">
 <dt id="meter.OmniPower.OmniPower.add_measurement_to_log">
-<code class="sig-name descname">add_measurement_to_log</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">measurement</span><span class="p">:</span> <span class="n"><a class="reference internal" href="metermeasurement.html#meter.MeterMeasurement.MeterMeasurement" title="meter.MeterMeasurement.MeterMeasurement">meter.MeterMeasurement.MeterMeasurement</a></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference external" href="https://docs.python.org/3.5/library/constants.html#None" title="(in Python v3.5)">None</a><a class="reference internal" href="_modules/meter/OmniPower.html#OmniPower.add_measurement_to_log"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#meter.OmniPower.OmniPower.add_measurement_to_log" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">add_measurement_to_log</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">measurement</span><span class="p">:</span> <span class="n"><a class="reference internal" href="metermeasurement.html#meter.MeterMeasurement.MeterMeasurement" title="meter.MeterMeasurement.MeterMeasurement">meter.MeterMeasurement.MeterMeasurement</a></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference external" href="https://docs.python.org/3.5/library/functions.html#bool" title="(in Python v3.5)">bool</a><a class="reference internal" href="_modules/meter/OmniPower.html#OmniPower.add_measurement_to_log"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#meter.OmniPower.OmniPower.add_measurement_to_log" title="Permalink to this definition">¶</a></dt>
 <dd><p>Pushes a new measurement to the tail end of the log</p>
 </dd></dl>
 
@@ -687,7 +776,7 @@ Raises CrcCheckException if CRCs do not match after decryption.</p>
 <dl class="py method">
 <dt id="meter.OmniPower.OmniPower.dump_log_to_json">
 <code class="sig-name descname">dump_log_to_json</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <a class="reference external" href="https://docs.python.org/3.5/library/stdtypes.html#str" title="(in Python v3.5)">str</a><a class="reference internal" href="_modules/meter/OmniPower.html#OmniPower.dump_log_to_json"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#meter.OmniPower.OmniPower.dump_log_to_json" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns a JSON object of all measurement frames in log, with an incremented number for each observation</p>
+<dd><p>Returns a JSON string of all measurement frames in log, with an incremented number for each observation.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -705,7 +794,9 @@ Raises CrcCheckException if CRCs do not match after decryption.</p>
 <dl class="py method">
 <dt id="meter.OmniPower.OmniPower.process_telegram">
 <code class="sig-name descname">process_telegram</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">telegram</span><span class="p">:</span> <span class="n"><a class="reference internal" href="#meter.OmniPower.C1Telegram" title="meter.OmniPower.C1Telegram">meter.OmniPower.C1Telegram</a></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference external" href="https://docs.python.org/3.5/library/functions.html#bool" title="(in Python v3.5)">bool</a><a class="reference internal" href="_modules/meter/OmniPower.html#OmniPower.process_telegram"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#meter.OmniPower.OmniPower.process_telegram" title="Permalink to this definition">¶</a></dt>
-<dd><p>Does entire processing chain for a telegram, including adding to log</p>
+<dd><p>Does entire processing chain for a telegram, including adding to log.
+Returns True if processing is OK and added to log OK.
+Otherwise False.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -723,6 +814,21 @@ Raises CrcCheckException if CRCs do not match after decryption.</p>
 </dd></dl>
 
 </div>
+<div class="section" id="exception-classes">
+<h2>Exception classes<a class="headerlink" href="#exception-classes" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt id="meter.OmniPower.TelegramParseException">
+<em class="property">class </em><code class="sig-prename descclassname">meter.OmniPower.</code><code class="sig-name descname">TelegramParseException</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">exception_message</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3.5/library/stdtypes.html#str" title="(in Python v3.5)">str</a></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/meter/OmniPower.html#TelegramParseException"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#meter.OmniPower.TelegramParseException" title="Permalink to this definition">¶</a></dt>
+<dd><p>Use this to raise an exception if a bytestream telegram fails to parse into C1 format.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt id="meter.OmniPower.AesKeyException">
+<em class="property">class </em><code class="sig-prename descclassname">meter.OmniPower.</code><code class="sig-name descname">AesKeyException</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">exception_message</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3.5/library/stdtypes.html#str" title="(in Python v3.5)">str</a></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/meter/OmniPower.html#AesKeyException"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#meter.OmniPower.AesKeyException" title="Permalink to this definition">¶</a></dt>
+<dd><p>Use this to raise an exception when an AES key is missing or wrong length.</p>
+</dd></dl>
+
+</div>
 </div>
 
 
@@ -736,7 +842,7 @@ Raises CrcCheckException if CRCs do not match after decryption.</p>
         <a href="metermeasurement.html" class="btn btn-neutral float-right" title="Implementation of generic measurements" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="index.html" class="btn btn-neutral float-left" title="Kamstrup OmniPower wm-bus metering’s documentation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="DriverClass.html" class="btn btn-neutral float-left" title="Implementation of iM871-A driver" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   
