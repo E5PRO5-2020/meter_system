@@ -43,32 +43,26 @@ def test_OmniTest():
     # Long telegrams
     long_telegram = b'2d442d2c5768663230028d206461dd032038931d14b405536e0250592f8b908138d58602eca676ff79e0caf0b14d0e7d'
     longC1 = C1Telegram(long_telegram)
-    payload = omnipower.decrypt(longC1)[6:]
-    assert payload == b'0404d700000004843c00000000042b0300000004ab3c00000000'
-    result = omnipower.unpack_long_telegram_data(payload)
-    assert result == (215, 0, 3, 0)
+    assert omnipower.process_telegram(longC1) == True
 
     # Short telegram
     short_telegram = b'27442D2C5768663230028D202E21870320D3A4F149B1B8F5783DF7434B8A66A55786499ABE7BAB59ffff'
     shortC1 = C1Telegram(short_telegram)
     assert omnipower.process_telegram(shortC1) == True
 
-    # Missing line 241
-    # if not meter.AES_key:
-    #	return False
+    notmy_short_telegram = b'27442D2C5768663130028D202E21870320D3A4F149B1B8F5783DF7434B8A66A55786499ABE7BAB59ffff'
+    notmy_short_c1 = C1Telegram(notmy_short_telegram)
+    assert omnipower.is_this_my(notmy_short_c1) == False
 
-    # Missing line 247-253
-    # Exception handling ( Do we want to test this? )
+    omnipower.AES_key = None
+    assert shortC1.decrypt_using(omnipower) == False
 
-    # Missing Line 304 - Exception handling of decrypt()
+    # Missing line 247-253 - CrcCheckException
 
     # Missing line 391 - extract_measurement_frame() - if not telegram.decrypted: return false
+    # Implementation is changing on this part. Do not test at the moment!
 
-    # Missing line 396 - unpack_long_telegram(telegram.decrypted)
-    assert omnipower.process_telegram(shortC1) == True
-
-    # omnipower.extract_measurement_frame(shortC1)
-
+    # Missing line 431-438 - Exception handling of CRC check
 
 def test_json_full_log(omnipower_setup):
     """
