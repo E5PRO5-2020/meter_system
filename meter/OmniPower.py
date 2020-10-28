@@ -5,7 +5,15 @@ Parse Kamstrup OmniPower wm-bus telegrams
 :platform: Python 3.5.10 on Linux, OS X
 :synopsis: Implements parsing functionality for C1 telegrams and log handling for data series
 :author: Janus Bo Andersen
-:date: 14 October 2020
+:date: 28 October 2020
+
+Version history
+===============
+
+- Ver 1.0: Set up parser and decryption. Janus.
+- Ver 2.0: Implement CRC16, timezone. Janus.
+- Ver 2.1: More robust exception handling, parse ELL-SN. Janus
+
 
 Overview
 ========
@@ -44,7 +52,7 @@ In a telegram C1 telegram, the data fields are:
 +---+-------+-------+-------------+---------------------------------------------+---------------------------------+
 | 8 | 12    | 1     | ACC         | Access field                                | Varies                          |
 +---+-------+-------+-------------+---------------------------------------------+---------------------------------+
-| 9 | 13-16 | 4     | AES CTR     | AES counter                                 | Varies, used for decryption     |
+| 9 | 13-16 | 4     | AES CTR / SN| AES counter (Session number)                | Varies, see below               |
 +---+-------+-------+-------------+---------------------------------------------+---------------------------------+
 |10 | 17-39 | 23    | Data        | Contains AES-encrypted data frame,          | Encrypted data                  |
 |   | 17-45 | 29    |             | varying for short and long frames           |                                 |
@@ -58,6 +66,41 @@ The fields 0-9 of the telegram can be unpacked using the little-endian format `<
 - `B` is an unsigned 1 byte (char),
 - `H` is an unsigned 2 byte (short),
 - `I` is an unsigned 4 byte (int)
+
+AES counter / Session number
+============================
+
+The AES_CTR / Extended Link Layer SN field (ELL-SN) is is structured as per EN 13757-4, p. 54.
+
+The example shows ELL-SN value of 0x01870320 (little-endian) -> 0x20038701 (big-endian). Bit readout:
+
++---------+-----------+-----------+-----------+-----------+
+|Byte:    | 3         | 2         | 1         | 0         |
++=========+===========+===========+===========+===========+
+|Hex:     | 0x20      | 0x03      | 0x87      | 0x01      |
++---------+-----------+-----------+-----------+-----------+
+|Binary:  | 0010 0000 | 0000 0011 | 1000 0111 | 0000 0001 |
++---------+-----------+-----------+-----------+-----------+
+
+Should give the following slicing and interpretation:
+
++---------+-------+---------------------------------+---------+
+|Bits:    | 31-29 | 28-04                           | 03-00   |
++=========+=======+=================================+=========+
+|Field:   | ENC   | Time                            | Session |
++---------+-------+---------------------------------+---------+
+|Example: | 001   | 0 0000 0000 0011 1000 0111 0000 | 0001    |
++---------+-------+---------------------------------+---------+
+|Hex:     | 0x1   | 0x3870 (14448)                  | 0x1     |
++---------+-------+---------------------------------+---------+
+
+- ENC (Encryption): 0 -> No encryption, 1 -> AES-CTR mode, higher -> reserved.
+- Time: Minute counter since 01/01/2013 (?), or since meter started, requires RTC set on meter. \
+  So time measurement was taken about 10 days after the meter was started.
+- Session: Incremented by meter for each transmission, unless using partial/fractured frames.
+
+Parsing. The whole ELL-SN field is read out and masks are used to extract fields.
+
 
 Telegram examples
 =================
@@ -84,8 +127,8 @@ Encrypted long telegrams:
 
 Decryption
 ==========
-- The encrypted wireless m-bus on OmniPower uses AES-128 Mode CTR.
-- See EN 13757-4:2019, p. 54, as ELL (Ext. Link-Layer) with ECN = 001 => AES-CTR.
+- The wireless m-bus on OmniPower uses AES-128 Mode CTR (if enabled, otherwise no encryption).
+- See EN 13757-4:2019, p. 54, as ELL (Ext. Link-Layer) with ENC = 0x1 => AES-CTR.
 - A decryption prefix (initial counter block) is built from some of the fields.
 - See table 54 on p. 55 of EN 13757-4:2019.
 
@@ -93,15 +136,16 @@ Decryption
 It can be packed using the format `<HIBBBIB`.
 
 +-----+---------+---+---+---+---------+-----+----+
-|M    |A        |Ver|Med|CC |AES CTR  |FN   |BC  |
+|M    |A        |Ver|Med|CC |AES_CTR  |FN   |BC  |
 +=====+=========+===+===+===+=========+=====+====+
 |2D2C |57686632 |30 |02 |20 |21870320 |0000 |00  |
 +-----+---------+---+---+---+---------+-----+----+
 
-Prefix: M, ..., AES CTR.
-Counter: FN, BC
-FN: frame number (frame # sent by meter within same session number, in case of multi-frame transmissions).
-BC: Block counter (encryption block number, counts up for each 16 byte block decrypted within the telegram).
+- AES Prefix (initialization vector): Fields M, ..., AES_CTR, FN.
+- FN: frame number (frame # sent by meter within same session number, in case of multi-frame transmissions).
+- AES Counter: BC
+- BC: Block counter (encryption block number, counts up for each 16 byte block decrypted within the telegram).
+
 
 Decrypted payload examples
 ==========================
@@ -185,19 +229,34 @@ class C1Telegram:
     Implements capture of data fields for a C1 telegram from OmniPower
     """
 
+    # Define slices for C1 telegram
+    # These byte positions are multiplied by *2 to get hex digit count
+    header_slice = slice(0, 17*2)       # Byte 0-16 (inclusive)
+    ell_sn_slice = slice(13*2, 17*2)    # Bytes 13-16 (inclusive)
+    payload_start_byte = 17
+    im871a_crc_bytes = 2
+
     def __init__(self, telegram: bytes) -> None:
         """
         Take a telegram (bytestring with hex values) and parses into fields
         """
         try:
-            header = telegram[0:17 * 2]                             # Non-encrypted part, discard after parsing
-            self.encrypted = telegram[17 * 2:len(telegram) - 4]     # Encrypted part of telegram, keep after parsing
-            self.decrypted = bytes()                                # Empty string until decrypted
-            self.CRC16 = telegram[len(telegram) - 4:]
+            # Pull out non-encrypted header. Will discard this variable after parsing it
+            header = telegram[self.header_slice]
 
+            # Encrypted part of telegram, keep after parsing
+            self.encrypted = telegram[self.payload_start_byte * 2 : len(telegram) - self.im871a_crc_bytes * 2]
+
+            # The payload message is set as an empty bytestring until decrypted
+            self.decrypted = bytes()
+
+            # The CRC16 from the IM871-A dongle, always at the end
+            self.im871_crc = telegram[len(telegram) - self.im871a_crc_bytes * 2 : ]
+
+            # Unpack header values into a tuple
             header_values = unpack('<BBHIBBBBBI', unhexlify(header))
 
-            # Extract fields by field numbers
+            # Extract fields by field numbers, see first table in documentation
             self.L = header_values[0]
             self.C = header_values[1]
             self.M = header_values[2]
@@ -209,7 +268,17 @@ class C1Telegram:
             self.ACC = header_values[8]
             self.AES_CTR = header_values[9]
 
-            # Store original hex values as big-endian inside strings for comparison with human-readable values
+            # The ELL-SN (AES_CTR) field is a composite 4-byte session number (SN) field.
+            # Including encryption method, minute counter and session number
+            ell_sn = self.parse_ell_sn(telegram[self.ell_sn_slice])
+            self.SN = {
+                "ENC": ell_sn[0],
+                "Time": ell_sn[1],
+                "Session": ell_sn[2],
+            }
+
+            # Store original hex values as big-endian inside strings
+            # for comparison with human-readable values
             self.big_endian = {
                 'L': hexlify(pack('>B', self.L)),
                 'C': hexlify(pack('>B', self.C)),
@@ -224,11 +293,26 @@ class C1Telegram:
             }
 
             # Compute decryption prefix
+            # See recipe in documentation, currently FN=0
             self.prefix = pack('<HIBBBIB', self.M, self.A, self.version, self.medium, self.CC, self.AES_CTR, 0)
 
-        except:
+        except Exception as e:
             # TODO: Specify error type caught and handle
-            print("Oops!")
+            # Raise exception for upstream handling. and propagate the existing exception
+            raise TelegramParseException("Failed to parse.") from e
+
+    @staticmethod
+    def parse_ell_sn(sn_field: bytes) -> Tuple[int, ...]:
+
+        # Get 32 bit from little-endian format
+        ell_sn = unpack('<I', unhexlify(sn_field))[0]
+
+        # Get bits using masks
+        enc = (ell_sn & (0xe << 28)) >> 29       # Get bits 31-29
+        time = (ell_sn & (0x1ffffff << 4)) >> 4  # Get bits 28-04
+        session = ell_sn & 0xf                   # Get bits 03-00
+
+        return enc, time, session
 
     def decrypt_using(self, meter: 'OmniPower') -> bool:
         """
@@ -260,12 +344,23 @@ class OmniPower:
     Passed values are hex encoded as string, e.g. '2C2D' for value 0x2C2D.
     """
 
+    # Required AES key digits (128 bit -> 16 bytes -> 32 hex digits)
+    # Anything else must be a malformed key
+    aes_req_key_digits = 2*16
+
     # Byte limit for short, data-only telegrams from OmniPower.
     # Larger telegrams also contain DIF/VIF information
     short_telegram_lim = 39
 
+    # TPL-CI field value for different C1 frame formats
+    tpl_ci_field = slice(4, 6)
+    tpl_ci_compact = b'79'      # This kind is data-only
+    tpl_ci_drh = b'78'          # This kind has DIF/VIF information too
+
     # Short telegram format is contiguous frame of 4 32-bit uints
+    # The data begins at byte 7 of the payload
     short_telegram_fmt = '<IIII'
+    short_telegram_data_slice = slice(7*2, None)
 
     # Long telegram format contains DIF/VIF/VIF followed by values.
     # The DIF 04 specifies a 32-bit uint, so the little-endian format '<I' is used.
@@ -319,8 +414,8 @@ class OmniPower:
         """
 
         # Check that 16 byte (128 bit) key has 32 hex digits
-        if len(self.AES_key) != 32:
-            raise AesKeyException
+        if len(self.AES_key) != self.aes_req_key_digits:
+            raise AesKeyException("Bad key length, {}".format(len(self.AES_key)))
 
         # Get relevant variables
         key_in = self.AES_key               # UTF-8 formatted
@@ -349,7 +444,7 @@ class OmniPower:
         Short C1 telegrams only contain field data values, no information about DIF/VIF
         """
         # Extract the measurements into a 4-tuple
-        return unpack(cls.short_telegram_fmt, unhexlify(data[7 * 2:]))
+        return unpack(cls.short_telegram_fmt, unhexlify(data[cls.short_telegram_data_slice]))
 
     @classmethod
     def unpack_long_telegram_data(cls, data: bytes) -> Tuple[int, ...]:
@@ -394,10 +489,10 @@ class OmniPower:
         #print("TPL-CI: {}".format(telegram.decrypted[4:6]))
         #if telegram.L <= OmniPower.short_telegram_lim:
 
-        tpl_ci = telegram.decrypted[4:6]
-        if tpl_ci == b'79':
+        tpl_ci = telegram.decrypted[self.tpl_ci_field]
+        if tpl_ci == self.tpl_ci_compact:
             measurement_data = OmniPower.unpack_short_telegram_data(telegram.decrypted)
-        elif tpl_ci == b'78':
+        elif tpl_ci == self.tpl_ci_drh:
             measurement_data = OmniPower.unpack_long_telegram_data(telegram.decrypted)
         else:
             # TODO: Better error handling... What to do if neither 0x78 nor 0x79?
@@ -464,7 +559,7 @@ class OmniPower:
 
 class AesKeyException(Exception):
     """
-    Use this to raise an exception when an AES key is missing or too short.
+    Use this to raise an exception when an AES key is missing or wrong length.
     """
     def __init__(self, exception_message: str):
         self.exception_message = exception_message
@@ -474,4 +569,19 @@ class AesKeyException(Exception):
 
     def __str__(self):
         # String representation of exception if printed
-        return "AES key missing from meter object or malformed."
+        return "AES key missing from meter object or malformed: {}.".format(self.exception_message)
+
+
+class TelegramParseException(Exception):
+    """
+    Use this to raise an exception if a bytestream telegram fails to parse into C1 format.
+    """
+    def __init__(self, exception_message: str):
+        self.exception_message = exception_message
+
+        # Invoke constructor for base class
+        super().__init__(self.exception_message)
+
+    def __str__(self):
+        # String representation of exception if printed
+        return "Byte object could not be parsed as a C1 telegram: {}.".format(self.exception_message)

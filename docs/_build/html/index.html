@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Kamstrup OmniPower wm-bus metering’s documentation &mdash; Kamstrup OmniPower wm-bus metering development documentation</title>
+  <title>Kamstrup OmniPower wm-bus metering &mdash; Kamstrup OmniPower wm-bus metering development documentation</title>
   
 
   
@@ -36,7 +36,7 @@
     
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="OmniPower implementation" href="omnipower.html" /> 
+    <link rel="next" title="Implementation of iM871-A driver" href="DriverClass.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -83,6 +83,7 @@
             
               <p class="caption"><span class="caption-text">Table of contents</span></p>
 <ul>
+<li class="toctree-l1"><a class="reference internal" href="DriverClass.html">Implementation of iM871-A driver</a></li>
 <li class="toctree-l1"><a class="reference internal" href="omnipower.html">OmniPower implementation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="metermeasurement.html">Implementation of generic measurements</a></li>
 <li class="toctree-l1"><a class="reference internal" href="util_crc16wmbus.html">Utils: CRC16 for wm-bus</a></li>
@@ -133,7 +134,7 @@
     
       <li><a href="#" class="icon icon-home"></a> &raquo;</li>
         
-      <li>Kamstrup OmniPower wm-bus metering’s documentation</li>
+      <li>Kamstrup OmniPower wm-bus metering</li>
     
     
       <li class="wy-breadcrumbs-aside">
@@ -152,15 +153,23 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="kamstrup-omnipower-wm-bus-metering-s-documentation">
-<h1>Kamstrup OmniPower wm-bus metering’s documentation<a class="headerlink" href="#kamstrup-omnipower-wm-bus-metering-s-documentation" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="kamstrup-omnipower-wm-bus-metering">
+<h1>Kamstrup OmniPower wm-bus metering<a class="headerlink" href="#kamstrup-omnipower-wm-bus-metering" title="Permalink to this headline">¶</a></h1>
+<p>This documentation covers the system to read the
+Kamstrup OmniPower 1-phase meter over wm-bus
+using a iM871-A transceiver.</p>
 <div class="toctree-wrapper compound">
 <p class="caption"><span class="caption-text">Table of contents</span></p>
 <ul>
+<li class="toctree-l1"><a class="reference internal" href="DriverClass.html">Implementation of iM871-A driver</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="DriverClass.html#generic-driver-class-for-wm-bus-usb-dongle-im871a">Generic driver class for WM-Bus USB-dongle IM871A</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="omnipower.html">OmniPower implementation</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="omnipower.html#parse-kamstrup-omnipower-wm-bus-telegrams">Parse Kamstrup OmniPower wm-bus telegrams</a></li>
 <li class="toctree-l2"><a class="reference internal" href="omnipower.html#the-c1-telegram-class">The C1 Telegram class</a></li>
 <li class="toctree-l2"><a class="reference internal" href="omnipower.html#the-omnipower-class">The OmniPower class</a></li>
+<li class="toctree-l2"><a class="reference internal" href="omnipower.html#exception-classes">Exception classes</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="metermeasurement.html">Implementation of generic measurements</a><ul>
@@ -171,7 +180,7 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="util_crc16wmbus.html">Utils: CRC16 for wm-bus</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="util_crc16wmbus.html#crc16-for-wm-bus">CRC16 for wm-bus</a></li>
-<li class="toctree-l2"><a class="reference internal" href="util_crc16wmbus.html#crc16-function">CRC16 function</a></li>
+<li class="toctree-l2"><a class="reference internal" href="util_crc16wmbus.html#crc16-functions">CRC16 functions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="util_crc16wmbus.html#crc-check-exception">CRC check exception</a></li>
 </ul>
 </li>
@@ -201,7 +210,7 @@
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="omnipower.html" class="btn btn-neutral float-right" title="OmniPower implementation" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="DriverClass.html" class="btn btn-neutral float-right" title="Implementation of iM871-A driver" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
     </div>

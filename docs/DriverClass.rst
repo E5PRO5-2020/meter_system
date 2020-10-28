@@ -1,5 +1,5 @@
-Implementation of generic measurements
-**************************************
+Implementation of iM871-A driver
+********************************
 
 .. automodule:: driver.DriverClass
    :noindex:

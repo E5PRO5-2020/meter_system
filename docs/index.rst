@@ -3,13 +3,18 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Kamstrup OmniPower wm-bus metering's documentation
-==================================================
+Kamstrup OmniPower wm-bus metering
+==================================
+
+This documentation covers the system to read the
+Kamstrup OmniPower 1-phase meter over wm-bus
+using a iM871-A transceiver.
 
 .. toctree::
    :caption: Table of contents
    :maxdepth: 2
 
+   DriverClass
    omnipower
    metermeasurement
 
