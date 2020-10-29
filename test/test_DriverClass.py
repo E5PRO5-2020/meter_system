@@ -46,7 +46,7 @@ def test_driver(IM871A_setup, input_data):
     # Missing Line 80 - return true if FIFO is created
     #assert test_Driver.__init__(USB_Port) == True
     
-    assert processed_data == test_driver.read_data(raw_data)
+    assert processed_data == hex(raw_data)
 
     # Missing Line 84 - __create_pipe() print(err)
 
