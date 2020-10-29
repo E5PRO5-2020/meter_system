@@ -43,17 +43,19 @@ def test_driver(IM871A_setup, input_data):
     assert test_driver.setup_linkmode('') == False
     assert test_driver.setup_linkmode('c1a') == True
 
+
     # Missing Line 80 - return true if FIFO is created
     #assert test_Driver.__init__(USB_Port) == True
     
-    assert processed_data == raw_data.hex()
 
     # Missing Line 84 - __create_pipe() print(err)
 
     # Missing Line 100-102 - __init_open exception
 
-    # Missing Line 133-151 - read_data()
+    # Missing Line 133-153 - read_data()
     # Maybe make a file the reader can read from, instead of the USB
+    assert processed_data == raw_data.hex()
+
 
     # Missing Line 161-163 - ping() port.SerialTimeoutException
 
