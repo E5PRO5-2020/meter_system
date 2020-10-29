@@ -146,7 +146,7 @@ class IM871A:
                     fp = open(self.pipe, "w")
                     fp.write(data_conv[6::] + '\n')
                     fp.close()
-                    break
+                    breakt
                 except IOError as err:
                     print(err)
                     return False
