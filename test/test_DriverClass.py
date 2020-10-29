@@ -3,36 +3,50 @@ import pytest
 import driver.DriverClass
 from driver.DriverClass import IM871A
 
+
+# Data from DriverClass testrun
+# Raw USB data:  b'\xa5\x82\x03!D-,\x12P\x00d\x1b\x16\x8d ?\x02\xd9\xf3" Z\x06G\xe3hH\xe4\x0cE"V\x90~P\x1d\xe9\xfdl'
+# After conversion:  a5820321442d2c125000641b168d203f02d9f322205a0647e36848e40c452256907e501de9fd6c
+
 @pytest.fixture()
 def IM871A_setup():
     USB_Port = '/dev/ttyUSB0'
     return USB_Port
 
+@pytest.fixture()
+def input_data():
+    raw_usb_data = b'\xa5\x82\x03!D-,\x12P\x00d\x1b\x16\x8d ?\x02\xd9\xf3" Z\x06G\xe3hH\xe4\x0cE"V\x90~P\x1d\xe9\xfdl'
+    processed_data = 'a5820321442d2c125000641b168d203f02d9f322205a0647e36848e40c452256907e501de9fd6c'
 
+    return raw_usb_data, processed_data
 
-def test_driver(IM871A_setup):
+def test_driver(IM871A_setup, input_data):
     # Instantiate DriverClass 
     USB_Port = IM871A_setup
-    test_Driver = IM871A(USB_Port)
+    test_driver = IM871A(USB_Port)
+
+    raw_data, processed_data = input_data()
 
     # Testing ping
-    assert test_Driver.ping() == True
+    assert test_driver.ping() == True
 
     # Testing Linkmode. Last mode is 'c1a' to be able to test read_data()
-    assert test_Driver.setup_linkmode('s1') == True
-    assert test_Driver.setup_linkmode('s1m') == True
-    assert test_Driver.setup_linkmode('s2') == True
-    assert test_Driver.setup_linkmode('t1') == True
-    assert test_Driver.setup_linkmode('t2') == True
-    assert test_Driver.setup_linkmode('c2a') == True
-    assert test_Driver.setup_linkmode('c2b') == True
-    assert test_Driver.setup_linkmode('c1b') == True
-    assert test_Driver.setup_linkmode('ha') == False
-    assert test_Driver.setup_linkmode('') == False
-    assert test_Driver.setup_linkmode('c1a') == True
+    assert test_driver.setup_linkmode('s1') == True
+    assert test_driver.setup_linkmode('s1m') == True
+    assert test_driver.setup_linkmode('s2') == True
+    assert test_driver.setup_linkmode('t1') == True
+    assert test_driver.setup_linkmode('t2') == True
+    assert test_driver.setup_linkmode('c2a') == True
+    assert test_driver.setup_linkmode('c2b') == True
+    assert test_driver.setup_linkmode('c1b') == True
+    assert test_driver.setup_linkmode('ha') == False
+    assert test_driver.setup_linkmode('') == False
+    assert test_driver.setup_linkmode('c1a') == True
 
     # Missing Line 80 - return true if FIFO is created
     #assert test_Driver.__init__(USB_Port) == True
+    
+    assert processed_data == test_driver.read_data(raw_data)
 
     # Missing Line 84 - __create_pipe() print(err)
 
@@ -66,11 +80,11 @@ def test_driver(IM871A_setup):
     # assert USBport.read_data() == True
 
     # Closing port to test open function
-    test_Driver.close()
-    assert test_Driver.open() == True
+    test_driver.close()
+    assert test_driver.open() == True
 
     # Testing reset
-    assert test_Driver.reset_module() == True
+    assert test_driver.reset_module() == True
 
     # Testing several functions
     #assert initialize() == True

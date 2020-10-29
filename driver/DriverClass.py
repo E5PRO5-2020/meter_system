@@ -138,7 +138,9 @@ class IM871A:
                 return False
 
             if len(data) != 0:
+                print("Raw USB data: ", data)
                 data_conv = data.hex()
+                print("After conversion: ", data_conv)
                 # Output to named pipe
                 try:   
                     fp = open(self.pipe, "w")
