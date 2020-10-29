@@ -25,7 +25,7 @@ def test_driver(IM871A_setup, input_data):
     USB_Port = IM871A_setup
     test_driver = IM871A(USB_Port)
 
-    raw_data, processed_data = input_data()
+    raw_data, processed_data = input_data
 
     # Testing ping
     assert test_driver.ping() == True
