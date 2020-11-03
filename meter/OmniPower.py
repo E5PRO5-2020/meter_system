@@ -13,6 +13,7 @@ Version history
 - Ver 1.0: Set up parser and decryption. Janus.
 - Ver 2.0: Implement CRC16, timezone. Janus.
 - Ver 2.1: More robust exception handling, parse ELL-SN. Janus
+- Ver 2.2: Utilize new MeterMeasurement.is_empty() in validation during parsing. Janus
 
 
 Overview
@@ -475,7 +476,7 @@ class OmniPower:
 
     def extract_measurement_frame(self, telegram: 'C1Telegram') -> MeterMeasurement:
         """
-        Requires that the telegram is already decrypted, otherwise returns empty measurement
+        Requires that the telegram is already decrypted, otherwise returns empty measurement frame.
         """
 
         # Create a measurement frame with static data from this meter and current time
@@ -529,19 +530,24 @@ class OmniPower:
         Returns True if processing is OK and added to log OK.
         Otherwise False.
         """
-        # Confirm that the telegram belongs to this meter
-        if self.is_this_my(telegram):
+        # Confirm that the telegram belongs to this meter, then
+        # try to decrypt the telegram
+        if self.is_this_my(telegram) and telegram.decrypt_using(self):
 
-            # Try to decrypt the telegram,
-            if telegram.decrypt_using(self):
-                # and then extract measurements and store these in own log
-                # returns true if okay
-                return self.add_measurement_to_log(self.extract_measurement_frame(telegram))
+            # extract measurements
+            measurement_frame = self.extract_measurement_frame(telegram)
+
+            # Confirm not empty
+            if not measurement_frame.is_empty():
+
+                # then add measurement frame to log and return True if okay
+                return self.add_measurement_to_log(measurement_frame)
+
             else:
-                # decrypt_using(...) returned false as message could not be decrypted
+                # Is empty. No data was added, so nothing to be logged
                 return False
         else:
-            # This is not even my telegram
+            # This is not my telegram or telegram failed to decrypt
             return False
 
     def dump_log_to_json(self) -> str:

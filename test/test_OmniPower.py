@@ -1,13 +1,14 @@
+
+# Includes from standard library
 import pytest
-from meter.MeterMeasurement import Measurement, MeterMeasurement
-from meter.OmniPower import C1Telegram, OmniPower, TelegramParseException, AesKeyException, CrcCheckException
-from utils.timezone import zulu_time_str
-# Includes from other files
-from datetime import datetime
 import json
 
+# Include implementation to be tested
+from meter.OmniPower import C1Telegram, OmniPower, TelegramParseException, AesKeyException, CrcCheckException
+from utils.timezone import zulu_time_str
 
-@pytest.fixture()
+
+@pytest.fixture
 def omnipower_base():
     """
     Creates an good OmniPower object with no data in log
@@ -22,7 +23,7 @@ def omnipower_base():
     return omnipower
 
 
-@pytest.fixture()
+@pytest.fixture
 def omnipower_setup(omnipower_base):
     """
     Sets up an omnipower test fixture with at least one telegram stored in log
@@ -43,7 +44,7 @@ def omnipower_setup(omnipower_base):
     return omnipower
 
 
-@pytest.fixture()
+@pytest.fixture
 def omnipower_with_no_aes_key(omnipower_base):
     """
     Creates a good OmniPower object with empty AES key
@@ -54,7 +55,7 @@ def omnipower_with_no_aes_key(omnipower_base):
     return omnipower
 
 
-@pytest.fixture()
+@pytest.fixture
 def bad_telegrams_list():
     """
     Sets up a list of bad telegrams that must cause exceptions at various places
@@ -64,10 +65,10 @@ def bad_telegrams_list():
     return bad_telegrams
 
 
-@pytest.fixture()
+@pytest.fixture
 def good_telegrams_list():
     """
-    Sets up a list of bad telegrams that must cause exceptions at various places
+    Sets up a list of good telegrams
     """
 
     good_telegrams = [b'27442d2c5768663230028d208e11de0320188851bdc4b72dd3c2954a341be369e9089b4eb3858169494e',
@@ -75,9 +76,12 @@ def good_telegrams_list():
     return good_telegrams
 
 
-@pytest.fixture()
+@pytest.fixture
 def bad_payload_list():
-    # Mangled telegram
+    """
+    Sets up a mangled telegram
+    """
+
     # Correct encrypted payload portion is 0x1dfbbd7871e6ec990f60ee940532c09e505bd4cac5728e
     # Changed last hex digit to 0xf, so erroneously received 0x1dfbbd7871e6ec990f60ee940532c09e505bd4cac5728f
     # Last 4 hex digits 0x2864 are CRC16 from IM871-A and are not relevant here
@@ -149,11 +153,12 @@ def test_OmniTest(omnipower_base):
 
     # Missing line 431-438 - Exception handling of CRC check
 
+
 def test_json_full_log(omnipower_setup):
     """
-	Test that a full log of MeterMeasurement objects dumped to JSON can all be recovered correctly
-	Janus, 26 Oct 2020
-	"""
+    Test that a full log of MeterMeasurement objects dumped to JSON can all be recovered correctly
+    Janus, 26 Oct 2020
+    """
 
     # Set up fixture
     omnipower = omnipower_setup
@@ -197,14 +202,14 @@ def test_c1telegram_must_raise_exception(bad_telegrams_list):
 
 def test_decrypt_must_raise_aes_key_error(omnipower_with_no_aes_key, good_telegrams_list):
     """
-    To be
+    If AES key is not OK, decrypt must raise an AesKeyException
     """
 
     # Fixtures
     omnipower = omnipower_with_no_aes_key
     good_data = good_telegrams_list
 
-    # Set a bad key
+    # Set a bad key (at least something not 128-bit)
     omnipower.AES_key = b'badkey'
 
     # Make C1 telegrams with known good data
@@ -215,10 +220,10 @@ def test_decrypt_must_raise_aes_key_error(omnipower_with_no_aes_key, good_telegr
         omnipower.decrypt(c1_tlgs[0])
 
 
-
 def test_decrypt_must_raise_crc_check_error(omnipower_base, bad_payload_list):
     """
-    To be
+    If the payload has been modified or mangled, CRC16 check must fail,
+    and a CrcCheckException is raised, which passes through .decrypt().
     """
 
     omnipower = omnipower_base
@@ -231,20 +236,19 @@ def test_decrypt_must_raise_crc_check_error(omnipower_base, bad_payload_list):
         omnipower.decrypt(bad_payload)
 
 
-def test_decrypt_using_must_return_false_for_bad_input(omnipower_with_no_aes_key, good_telegrams_list):
+def test_decrypt_using_must_return_false_for_bad_key(omnipower_with_no_aes_key, good_telegrams_list):
     """
-    ERROR PART 2 DOES NOT WORK CORRECTLY
+    Decrypt_using is the telegram that attempts to decrypt itself using a meter object.
+    If the AES key in the meter object is bad, it cannot be used for decryption.
+    Then decrypt_using must return False to signify failed operation.
     Test strategy:
-    1. Good telegram + bad AES key -> AesKeyException
-    2. Bad payload + good AES key -> CrcCheckException
+    Good telegram + bad AES key -> AesKeyException
     """
 
     # Fixtures
     omnipower_nokey = omnipower_with_no_aes_key
     good_data = good_telegrams_list
 
-    ####
-    # Test part 1.
     # Set a bad key
     omnipower_nokey.AES_key = b'badkey'
 
@@ -253,13 +257,18 @@ def test_decrypt_using_must_return_false_for_bad_input(omnipower_with_no_aes_key
 
     # Must return False due to caught AesKeyException
     for t in c1_tlgs:
-        assert t.decrypt_using(omnipower_nokey) == False
+        assert t.decrypt_using(omnipower_nokey) is False
 
 
-def test_decrypt_using_must_return_false_for_bad_input(omnipower_base, bad_payload_list):
+def test_decrypt_using_must_return_false_for_bad_payload(omnipower_base, bad_payload_list):
+    """
+    Decrypt_using is the telegram that attempts to decrypt itself using a meter object.
+    If the payload is bad, the meter object cannot successfully validate CRC16.
+    Then decrypt_using must return False to signify failed operation.
+    Test strategy:
+    Bad payload + good AES key -> CrcCheckException
+    """
 
-    ####
-    # Test part 2
     # Get object with good key
     omnipower_goodkey = omnipower_base
 
@@ -267,17 +276,45 @@ def test_decrypt_using_must_return_false_for_bad_input(omnipower_base, bad_paylo
     bad_payload = bad_payload_list[0]
 
     # Function must return False due to caught CrcKeyException
-    assert bad_payload.decrypt_using(omnipower_goodkey) == False
+    assert bad_payload.decrypt_using(omnipower_goodkey) is False
 
-def test_extract_measurement_frame_fail(omnipower_base, good_telegrams_list):
+
+def test_extract_measurement_frame_returns_empty_if_tlg_not_decrypted(omnipower_base, good_telegrams_list):
     """
-    Aloha
+    Expect OmniPower's extract_measurement_frame to return an empty object
+    if the telegram has not been decrypted, so there is no data to extract.
+    Per spec., it must then return an empty object.
+    Test strategy, used the implemented method .is_empty() to test this.
     """
+
+    # Get fixtures: meter and one good telegram
     omnipower = omnipower_base
-    c1_tlgs = [C1Telegram(t) for t in good_telegrams_list]
+    t = C1Telegram(good_telegrams_list[0])
 
-    # Expect that TelegramParseException is raised
-    #with pytest.raises(TelegramParseException):
-    #    omnipower.extract_measurement_frame(c1_tlgs[0])
-    # Janus hjælp mig! eller skriv noget bedre kode!
-    assert omnipower.extract_measurement_frame(c1_tlgs[0]).measurements == ''
+    # Telegram NOT decrypted yet. So expect that an empty frame is returned as nothing to parse
+    assert omnipower.extract_measurement_frame(t).is_empty()
+
+
+def test_process_telegram_returns_false_if_not_parsable(omnipower_base, good_telegrams_list):
+    """
+    Expect OmniPower's process_telegram to return False
+    if the telegram cannot be parsed / handled by OmniPower.
+    Reasons:
+
+    - Not sent from this meter
+    - decrypt_using returns false (tested above)
+    - empty frame returned (tested above)
+    - add_measurement_to_log fails (not tested)
+
+    """
+
+    # Get meter and one good telegram (into UTF-8)
+    omnipower = omnipower_base
+    tlg = good_telegrams_list[0].decode()
+
+    # Change address in telegram so no longer appears from this meter and make into bytes again
+    tlg = tlg[0:8] + "999999" + tlg[14:]
+
+    # Make telegram and attempt to process. Expect False if not sent by this meter
+    t = C1Telegram(tlg.encode())
+    assert omnipower.process_telegram(t) is False

@@ -6,6 +6,10 @@ Generic class for measurements and measurement frames
 :synopsis: This module implements classes for generic measurements taken from a meter.
 :authors: Janus Bo Andersen, Jakob Aaboe Vestergaard
 :date: 13 October 2020
+
+Changelog:
+03 Nov 2020: Added is_empty() method to MeterMeasurement. Janus.
+
 """
 
 import os
@@ -60,6 +64,12 @@ class MeterMeasurement:
 
         # Insert new pair into ordered dict. The name is human readable
         self.measurements.update({name: measurement})
+
+    def is_empty(self):
+        """
+        Must return True if no measurements have been added, otherwise False
+        """
+        return len(self.measurements.keys()) == 0
 
     def __str__(self) -> str:
         """
