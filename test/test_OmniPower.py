@@ -119,12 +119,16 @@ def test_OmniTest(omnipower_base):
     # Missing line 299-302 - Raise exception for upstream handling. and propagate the existing exception
 
     # Missing line 330-331 - AES key exception
+    # Implemented, but somehow coverage says it's missing
 
     # Missing line 334-335 - CRC Check fail
+    # Implemented
 
     # Missing line 418 - AesKeyException("Bad key length")
+    # Tested alongside line 330-331
 
     # Missing line 486 - if.not telegramdecrypted (Not implemented yet)
+    #
 
     # Missing line 499 - Length of telegram check (Not implemented yet)
 
@@ -211,6 +215,7 @@ def test_decrypt_must_raise_aes_key_error(omnipower_with_no_aes_key, good_telegr
         omnipower.decrypt(c1_tlgs[0])
 
 
+
 def test_decrypt_must_raise_crc_check_error(omnipower_base, bad_payload_list):
     """
     To be
@@ -263,3 +268,16 @@ def test_decrypt_using_must_return_false_for_bad_input(omnipower_base, bad_paylo
 
     # Function must return False due to caught CrcKeyException
     assert bad_payload.decrypt_using(omnipower_goodkey) == False
+
+def test_extract_measurement_frame_fail(omnipower_base, good_telegrams_list):
+    """
+    Aloha
+    """
+    omnipower = omnipower_base
+    c1_tlgs = [C1Telegram(t) for t in good_telegrams_list]
+
+    # Expect that TelegramParseException is raised
+    #with pytest.raises(TelegramParseException):
+    #    omnipower.extract_measurement_frame(c1_tlgs[0])
+    # Janus hjælp mig! eller skriv noget bedre kode!
+    assert omnipower.extract_measurement_frame(c1_tlgs[0]).measurements == ''
