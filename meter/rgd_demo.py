@@ -87,6 +87,19 @@ def demo_0():
     t = C1Telegram(b'27442d2c5768663230028d206e90dd03201dfbbd7871e6ec990f60ee940532c09e505bd4cac5728f2864')
     omnipower.process_telegram(t)
 
+    print(colored("Demo bad telegram and raised exception:", 'red'))
+    try:
+        t = C1Telegram(b'bad')
+        omnipower.process_telegram(t)
+    except Exception as e:
+        print(e)
+
+
+    print(colored("Demo bad AES key and raised exception:", 'red'))
+    omnipower.AES_key = "1234"
+    t = C1Telegram(telegrams[0])
+    omnipower.process_telegram(t)
+
 
 if __name__ == "__main__":
     demo_0()

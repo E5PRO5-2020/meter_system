@@ -19,6 +19,7 @@ using a iM871-A transceiver.
    metermeasurement
 
    util_crc16wmbus
+   util_crc16im871a
    util_timezone
 
 
