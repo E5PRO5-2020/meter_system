@@ -57,7 +57,29 @@ def test_OmniTest():
     omnipower.AES_key = None
     assert shortC1.decrypt_using(omnipower) == False
 
-    # Missing line 247-253 - CrcCheckException
+    # Missing line 299-302 - Raise exception for upstream handling. and propagate the existing exception
+
+    # Missing line 330-331 - AES key exception
+
+    # Missing line 334-335 - CRC Check fail
+
+    # Missing line 418 - AesKeyException("Bad key length")
+
+    # Missing line 486 - if.not telegramdecrypted (Not implemented yet)
+
+    # Missing line 499 - Length of telegram check (Not implemented yet)
+
+    # Missing line 522-524 - exception add_measurement
+
+    # Missing line 542-545 - is_this_my() false
+
+    # Missing line 565-568 - AesKeyException
+
+    # Missing line 572 - AesKeyException
+
+    # Missing line 580-583 - TelegramParseException
+
+    # Missing line 587 - TelegramParseException
 
     # Missing line 391 - extract_measurement_frame() - if not telegram.decrypted: return false
     # Implementation is changing on this part. Do not test at the moment!
