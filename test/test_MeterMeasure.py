@@ -1,3 +1,7 @@
+"""
+Tests for the functionality of MeterMeasurement implementation.
+
+"""
 
 # Includes from standard library
 import pytest
@@ -58,8 +62,7 @@ def keys():
 @pytest.fixture()
 def omnipower_setup():
     """
-    Sets up an omnipower test fixture with at least one telegram stored in log
-    Janus, 26 Oct 2020
+    Sets up an omnipower test fixture with at least one telegram stored in log.
     """
 
     # Maybe not a good idea to do default initialization here,
@@ -120,8 +123,7 @@ def test_MeterMeasure(MeasureFix, keys):
 
 def test_json_single_measurement(omnipower_setup):
     """
-	Test that a single MeterMeasurement dumped to JSON can be recovered correctly
-	Janus, 26 Oct 2020
+	Test that a single MeterMeasurement dumped to JSON can be recovered correctly.
 	"""
 
     # Set up fixture

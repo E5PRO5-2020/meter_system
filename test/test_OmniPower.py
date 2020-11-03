@@ -1,3 +1,7 @@
+"""
+Tests for the functionality of OmniPower implementation.
+
+"""
 
 # Includes from standard library
 import pytest
@@ -11,7 +15,7 @@ from utils.timezone import zulu_time_str
 @pytest.fixture
 def omnipower_base():
     """
-    Creates an good OmniPower object with no data in log
+    Creates an good OmniPower object with no data in log.
     """
 
     omnipower = OmniPower(name='Kamstrup OmniPower one-phase',
@@ -26,8 +30,7 @@ def omnipower_base():
 @pytest.fixture
 def omnipower_setup(omnipower_base):
     """
-    Sets up an omnipower test fixture with at least one telegram stored in log
-    Janus, 26 Oct 2020
+    Sets up an omnipower test fixture with at least one telegram stored in log.
     """
 
     omnipower = omnipower_base
@@ -47,7 +50,7 @@ def omnipower_setup(omnipower_base):
 @pytest.fixture
 def omnipower_with_no_aes_key(omnipower_base):
     """
-    Creates a good OmniPower object with empty AES key
+    Creates a good OmniPower object with empty AES key.
     """
 
     omnipower = omnipower_base
@@ -58,7 +61,7 @@ def omnipower_with_no_aes_key(omnipower_base):
 @pytest.fixture
 def bad_telegrams_list():
     """
-    Sets up a list of bad telegrams that must cause exceptions at various places
+    Sets up a list of bad telegrams that must cause exceptions at various places.
     """
 
     bad_telegrams = [b'xyz', b'', ""]
@@ -68,7 +71,7 @@ def bad_telegrams_list():
 @pytest.fixture
 def good_telegrams_list():
     """
-    Sets up a list of good telegrams
+    Sets up a list of good telegrams.
     """
 
     good_telegrams = [b'27442d2c5768663230028d208e11de0320188851bdc4b72dd3c2954a341be369e9089b4eb3858169494e',
@@ -79,7 +82,7 @@ def good_telegrams_list():
 @pytest.fixture
 def bad_payload_list():
     """
-    Sets up a mangled telegram
+    Sets up a mangled telegram.
     """
 
     # Correct encrypted payload portion is 0x1dfbbd7871e6ec990f60ee940532c09e505bd4cac5728e
@@ -156,8 +159,7 @@ def test_OmniTest(omnipower_base):
 
 def test_json_full_log(omnipower_setup):
     """
-    Test that a full log of MeterMeasurement objects dumped to JSON can all be recovered correctly
-    Janus, 26 Oct 2020
+    Test that a full log of MeterMeasurement objects dumped to JSON can all be recovered correctly.
     """
 
     # Set up fixture
@@ -190,7 +192,7 @@ def test_json_full_log(omnipower_setup):
 
 def test_c1telegram_must_raise_exception(bad_telegrams_list):
     """
-    Test that C1 Telegram initialized with bad bytestream raises exception
+    Test that C1 Telegram initialized with bad bytestream raises exception.
     """
 
     bad_data = bad_telegrams_list
@@ -202,7 +204,7 @@ def test_c1telegram_must_raise_exception(bad_telegrams_list):
 
 def test_decrypt_must_raise_aes_key_error(omnipower_with_no_aes_key, good_telegrams_list):
     """
-    If AES key is not OK, decrypt must raise an AesKeyException
+    If AES key is not OK, decrypt must raise an AesKeyException.
     """
 
     # Fixtures
@@ -242,7 +244,7 @@ def test_decrypt_using_must_return_false_for_bad_key(omnipower_with_no_aes_key, 
     If the AES key in the meter object is bad, it cannot be used for decryption.
     Then decrypt_using must return False to signify failed operation.
     Test strategy:
-    Good telegram + bad AES key -> AesKeyException
+    Good telegram + bad AES key -> AesKeyException.
     """
 
     # Fixtures
@@ -266,7 +268,7 @@ def test_decrypt_using_must_return_false_for_bad_payload(omnipower_base, bad_pay
     If the payload is bad, the meter object cannot successfully validate CRC16.
     Then decrypt_using must return False to signify failed operation.
     Test strategy:
-    Bad payload + good AES key -> CrcCheckException
+    Bad payload + good AES key -> CrcCheckException.
     """
 
     # Get object with good key

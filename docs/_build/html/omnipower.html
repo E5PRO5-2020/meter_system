@@ -110,6 +110,7 @@
 <li class="toctree-l1"><a class="reference internal" href="util_crc16wmbus.html">Utils: CRC16 for wm-bus</a></li>
 <li class="toctree-l1"><a class="reference internal" href="util_crc16im871a.html">Utils: CRC16 for IM871-A</a></li>
 <li class="toctree-l1"><a class="reference internal" href="util_timezone.html">Utils: Timezone handling</a></li>
+<li class="toctree-l1"><a class="reference internal" href="test.html">Unit tests</a></li>
 </ul>
 
             
@@ -199,6 +200,7 @@
 <li><p>Ver 1.0: Set up parser and decryption. Janus.</p></li>
 <li><p>Ver 2.0: Implement CRC16, timezone. Janus.</p></li>
 <li><p>Ver 2.1: More robust exception handling, parse ELL-SN. Janus</p></li>
+<li><p>Ver 2.2: Utilize new MeterMeasurement.is_empty() in validation during parsing. Janus</p></li>
 </ul>
 </div>
 <div class="section" id="overview">
@@ -783,7 +785,7 @@ Raises CrcCheckException if CRCs do not match after decryption.</p>
 <dl class="py method">
 <dt id="meter.OmniPower.OmniPower.extract_measurement_frame">
 <code class="sig-name descname">extract_measurement_frame</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">telegram</span><span class="p">:</span> <span class="n"><a class="reference internal" href="#meter.OmniPower.C1Telegram" title="meter.OmniPower.C1Telegram">meter.OmniPower.C1Telegram</a></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="metermeasurement.html#meter.MeterMeasurement.MeterMeasurement" title="meter.MeterMeasurement.MeterMeasurement">meter.MeterMeasurement.MeterMeasurement</a><a class="reference internal" href="_modules/meter/OmniPower.html#OmniPower.extract_measurement_frame"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#meter.OmniPower.OmniPower.extract_measurement_frame" title="Permalink to this definition">¶</a></dt>
-<dd><p>Requires that the telegram is already decrypted, otherwise returns empty measurement</p>
+<dd><p>Requires that the telegram is already decrypted, otherwise returns empty measurement frame.</p>
 </dd></dl>
 
 <dl class="py method">

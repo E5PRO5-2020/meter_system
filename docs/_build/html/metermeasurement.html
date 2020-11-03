@@ -95,6 +95,7 @@
 <li class="toctree-l1"><a class="reference internal" href="util_crc16wmbus.html">Utils: CRC16 for wm-bus</a></li>
 <li class="toctree-l1"><a class="reference internal" href="util_crc16im871a.html">Utils: CRC16 for IM871-A</a></li>
 <li class="toctree-l1"><a class="reference internal" href="util_timezone.html">Utils: Timezone handling</a></li>
+<li class="toctree-l1"><a class="reference internal" href="test.html">Unit tests</a></li>
 </ul>
 
             
@@ -178,6 +179,8 @@
 <dd class="field-even"><p>13 October 2020</p>
 </dd>
 </dl>
+<p>Changelog:
+03 Nov 2020: Added is_empty() method to MeterMeasurement. Janus.</p>
 </div>
 <div class="section" id="the-measurement-class">
 <h2>The Measurement class<a class="headerlink" href="#the-measurement-class" title="Permalink to this headline">¶</a></h2>
@@ -206,6 +209,12 @@ Will contain multiple measurements of physical quantities taken at the same time
 <dt id="meter.MeterMeasurement.MeterMeasurement.as_dict">
 <code class="sig-name descname">as_dict</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <a class="reference external" href="https://docs.python.org/3.5/library/stdtypes.html#dict" title="(in Python v3.5)">dict</a><a class="reference internal" href="_modules/meter/MeterMeasurement.html#MeterMeasurement.as_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#meter.MeterMeasurement.MeterMeasurement.as_dict" title="Permalink to this definition">¶</a></dt>
 <dd><p>Serializes and outputs the Measurement frame as a structured dict.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="meter.MeterMeasurement.MeterMeasurement.is_empty">
+<code class="sig-name descname">is_empty</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/meter/MeterMeasurement.html#MeterMeasurement.is_empty"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#meter.MeterMeasurement.MeterMeasurement.is_empty" title="Permalink to this definition">¶</a></dt>
+<dd><p>Must return True if no measurements have been added, otherwise False</p>
 </dd></dl>
 
 <dl class="py method">

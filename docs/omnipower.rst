@@ -13,6 +13,7 @@ The C1 Telegram class
    :noindex:
 .. autoclass:: C1Telegram
    :members:
+   :private-members:
 
 
 The OmniPower class
@@ -22,6 +23,7 @@ The OmniPower class
    :noindex:
 .. autoclass:: OmniPower
    :members:
+   :private-members:
 
 
 Exception classes
@@ -29,5 +31,7 @@ Exception classes
 .. currentmodule:: meter.OmniPower
 .. autoclass:: TelegramParseException
    :members:
+   :private-members:
 .. autoclass:: AesKeyException
    :members:
+   :private-members:
