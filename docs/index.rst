@@ -22,6 +22,8 @@ using a iM871-A transceiver.
    util_crc16im871a
    util_timezone
 
+   test
+
 
 Indices and tables
 ==================

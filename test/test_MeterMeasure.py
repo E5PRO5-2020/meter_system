@@ -1,26 +1,41 @@
-import pytest
-from meter.MeterMeasurement import Measurement, MeterMeasurement
-from meter.OmniPower import C1Telegram, OmniPower
-from utils.timezone import zulu_time_str
+"""
+Tests for the functionality of MeterMeasurement implementation.
 
-# Includes from other files
+"""
+
+# Includes from standard library
+import pytest
 from datetime import datetime
 import json
-from binascii import hexlify, unhexlify
-from struct import *
-from Crypto.Cipher import AES
-from Crypto.Util import Counter
-import json
-import re
-from typing import List, Tuple
+
+# Include our objects to be tested
+from meter.MeterMeasurement import Measurement, MeterMeasurement
+from meter.OmniPower import C1Telegram, OmniPower
+from utils.timezone import zulu_time_str, ZuluTime
+
+
+@pytest.fixture
+def initialized_measurement_frame():
+    """
+    Sets up a measurement frame with ID and fixed Zulu timestamp, but no data.
+    """
+    zulu_time = ZuluTime()
+    return MeterMeasurement("32666857", datetime(year=2020,
+                                                 month=9,
+                                                 day=1,
+                                                 hour=12,
+                                                 minute=30,
+                                                 second=0,
+                                                 microsecond=0,
+                                                 tzinfo=zulu_time))
 
 
 # Setup fixture for Measurement class
 @pytest.fixture()
 def MeasureFix():
     """
-	Setup-fixture for Measurement-class
-	"""
+    Setup-fixture for Measurement-class
+    """
     m1 = Measurement(7, "kWh")
     m2 = Measurement(8, "kWh")
     m3 = Measurement(9, "kW")
@@ -35,8 +50,8 @@ def MeasureFix():
 @pytest.fixture()
 def keys():
     """
-	Setup-fixture for keys
-	"""
+    Setup-fixture for keys
+    """
     k1 = "A+"
     k2 = "A-"
     k3 = "P+"
@@ -47,9 +62,8 @@ def keys():
 @pytest.fixture()
 def omnipower_setup():
     """
-	Sets up an omnipower test fixture with at least one telegram stored in log
-	Janus, 26 Oct 2020
-	"""
+    Sets up an omnipower test fixture with at least one telegram stored in log.
+    """
 
     # Maybe not a good idea to do default initialization here,
     # as we are likely to remove deafult values in the future
@@ -109,8 +123,7 @@ def test_MeterMeasure(MeasureFix, keys):
 
 def test_json_single_measurement(omnipower_setup):
     """
-	Test that a single MeterMeasurement dumped to JSON can be recovered correctly
-	Janus, 26 Oct 2020
+	Test that a single MeterMeasurement dumped to JSON can be recovered correctly.
 	"""
 
     # Set up fixture
@@ -134,3 +147,12 @@ def test_json_single_measurement(omnipower_setup):
     for measurement_name, measurement_obj in json_recovered_dict['Measurements'].items():
         assert measurement_obj['value'] == ref_obj.measurements[measurement_name].value
         assert measurement_obj['unit'] == ref_obj.measurements[measurement_name].unit
+
+
+def test_meter_measurement_returns_empty(initialized_measurement_frame):
+    """
+    A MeterMeasurement with no data added must return True on is_empty() method.
+    """
+
+    frame = initialized_measurement_frame
+    assert frame.is_empty()

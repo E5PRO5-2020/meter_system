@@ -42,8 +42,6 @@ import struct
 import os
 import subprocess
 import errno
-from binascii import hexlify
-from struct import pack
 
 # Definitions imported from WMBus_HCI_Spec_V1_6.pdf
 IM871A_SERIAL_SOF = 0xA5
@@ -80,7 +78,6 @@ class IM871A:
         try:
             os.mkfifo(FIFO)
             return True
-
         except OSError as err:
             # If error is 'File exists' don't show error
             if err.errno != errno.EEXIST:
@@ -126,38 +123,6 @@ class IM871A:
 
 
 
-    def __CRC16_check(self, message: bytes) -> bool:
-        """
-        Argument must be the entire message from IM871-A as byte string
-        Function returns TRUE if the check sum matches the expected CRC16 value
-        """
-        Checksum = message[-4:]                         # Store the expected CRC16 value
-        data = message[2:-4]                            # Removes SOF field and CRC16 value
-
-        hex_radix = 16
-        g = 0x8408                                      # Generator polynomial, g(x)
-        crc = 0xFFFF                                    # Init value for CCITT CRC16
-
-        for byte in range(0, len(data), 2):             # Loop over all bytes in message
-            b = int(data[byte:byte + 2], hex_radix)     # Make byte value from hex digits
-
-            for _ in range(0, 8):                       # Repeat for 8 bits in a byte
-                if (b & 1) ^ (crc & 1):                 # Is there a remainder for division by the poly for this bit?
-                    crc = (crc >> 1) ^ g                # Get remainder from division
-                else:
-                    crc >>= 1                           # Just advance to next bit in division
-                b >>= 1                                 # Move on to next bit in this byte of the message
-
-        crc = crc ^ 0xFFFF                              # Perform final complement
-        crc16 = hexlify(pack('<H', crc))                # CRC16 as little-endian
-    
-        if Checksum == crc16:                           # Check if sum matches expected CRC16 value
-            return True                        
-        else:
-            return False
-
-
-
     def read_data(self) -> bool:
         """
         Read single dataframe from meters sending with the specified link mode.
@@ -173,18 +138,18 @@ class IM871A:
                 return False
 
             if len(data) != 0:
-                if self.__CRC16_check(hexlify(data)):
-                    data_conv = data.hex()
-
-                    # Output to named pipe
-                    try:
-                        fp = open(self.pipe, "w")
-                        fp.write(data_conv[6::] + '\n')
-                        fp.close()
-                        break
-                    except IOError as err:
-                        print(err)
-                        return False
+                print("Raw USB data: ", data)
+                data_conv = data.hex()
+                print("After conversion: ", data_conv)
+                # Output to named pipe
+                try:   
+                    fp = open(self.pipe, "w")
+                    fp.write(data_conv[6::] + '\n')
+                    fp.close()
+                    breakt
+                except IOError as err:
+                    print(err)
+                    return False
         return True
         
 
@@ -301,15 +266,7 @@ class IM871A:
 
     def close(self):
         """
-        Close the connection to IM871A
+        Close the port
         """
         self.IM871.close()
         print("Port " + self.Port + " is closed")
-
-
-
-    def __del__(self):
-        """ 
-        Destructor for closing when going out of scope
-        """
-        self.close()
