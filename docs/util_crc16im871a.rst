@@ -7,4 +7,6 @@ Utils: CRC16 for IM871-A
 CRC16 function
 --------------------
 .. currentmodule:: utils.crc16_im871a
-.. autofunction:: crc16_im871a
+.. autofunction:: crc16_im871a_check
+.. autofunction:: crc16_im871a_calc
+

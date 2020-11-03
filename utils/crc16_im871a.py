@@ -16,33 +16,26 @@ from binascii import hexlify
 from struct import pack
 
 
-def crc16_im871a(m: bytes) -> bool:
+def crc16_im871a_calc(m: bytes) -> bytes:
     """
     Compute CRC16 (CCITT) for a message received serially from IM871-A.
-    Full message example: a5 8203 27442d2c5768663230028d20cd12340720519df247ff65e751662a300bc4e5c67da86477f0182637 c1ab.
-
-    V1.0 Argument m must:
+    Argument must:
 
     - NOT contain the first field, e.g. 0xA5.
     - Start and contain the control field, e.g. 0x8203.
-    - Contain full payload, e.g. 0x2744...2637
+    - Contain full payload, e.g. 0x2744...2637.
     - NOT contain the trailing 2 bytes of expected CRC16 value, e.g. 0xC1AB.
 
-    V1.1 Update:
-
-    - Argument must be the intire message from IM871-A
-    - Function returns TRUE when the check sum matches the expected CRC16 value  
+    Full message example: a5 8203 27442d2c5768663230028d20cd12340720519df247ff65e751662a300bc4e5c67da86477f0182637 c1ab.
 
     """
-    Checksum = m[-4:]                               # Store the expected CRC16 value
-    data = m[2:-4]                                  # Removes SOF field and CRC16 value
 
     hex_radix = 16
     g = 0x8408                                      # Generator polynomial, g(x)
     crc = 0xFFFF                                    # Init value for CCITT CRC16
 
-    for byte in range(0, len(data), 2):             # Loop over all bytes in message
-        b = int(data[byte:byte + 2], hex_radix)     # Make byte value from hex digits
+    for byte in range(0, len(m), 2):                # Loop over all bytes in message
+        b = int(m[byte:byte + 2], hex_radix)        # Make byte value from hex digits
 
         for _ in range(0, 8):                       # Repeat for 8 bits in a byte
             if (b & 1) ^ (crc & 1):                 # Is there a remainder for division by the poly for this bit?
@@ -54,8 +47,22 @@ def crc16_im871a(m: bytes) -> bool:
     crc = crc ^ 0xFFFF                              # Perform final complement
     crc16 = hexlify(pack('<H', crc))                # CRC16 as little-endian
     
-    if Checksum == crc16:                           # Check if sum matches expected CRC16 value
-        return True                        
+    return crc16
+
+
+def crc16_im871a_check(m: bytes) -> bool:
+    """
+    Confirm CRC16 integrity of a full bytestring received from IM871-A.
+    Argument must be the entire message from IM871-A.
+    Function returns TRUE when the check sum matches the expected CRC16 value.
+    """
+
+    checksum = m[-4:]                               # Store the expected CRC16 value
+    data = m[2:-4]                                  # Removes SOF field and CRC16 value
+    crc16 = crc16_im871a_calc(data)
+
+    if checksum == crc16:                           # Check if sum matches expected CRC16 value
+        return True
     else:
         return False
 
@@ -76,6 +83,10 @@ def test_crc16():
                     (b'a5820327442d2c5768663230028d201d22e00920ab4b8e693509c3c3e562d34c5d0734d5e1414c23a8d1ec8fa9')]
 
     for test_vector in test_full_frames:
-        assert crc16_im871a(test_vector) == True
-        
+        assert crc16_im871a_check(test_vector) == True
 
+
+if __name__ == '__main__':
+    print("Self test:")
+    test_crc16()
+    print("OK.")
