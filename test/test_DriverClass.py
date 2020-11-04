@@ -100,5 +100,5 @@ def test_driver(IM871A_setup, input_data):
 
 def test_init_open_exception(IM871A_bad_setup):
     bad_usb_port = IM871A_bad_setup
-    bad_usb_port_driver = IM871A(bad_usb_port)
-    assert IM871A(bad_usb_port) == False
+    bad_usb_port_driver = IM871A()
+    assert IM871A() == False
