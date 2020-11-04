@@ -84,7 +84,6 @@ class PipeWriter:
 
     def __init__(self):
         self.message = str()
-        pass
 
     def write(self, message):
         # Store the message
@@ -106,7 +105,7 @@ def patched_driver(mock_obj):
     """
 
     # Instantiate object
-    test_port = '/dev/ttyMonster'
+    test_port = '/dev/ttyReMoni'
     test_pipe = test_port.split('tty')[1] + '_pipe'
     d = IM871A(test_port)
 
@@ -150,12 +149,12 @@ def test_setup_linkmode(patched_driver):
 
 @pytest.mark.skipif(os.uname()[1] == 'raspberrypi', reason="Only run mocked tests when not on Gateway")
 @mock.patch("builtins.open", return_value=PipeWriter(), autospec=True)
-def test_read_data(mock_obj, patched_driver):
+def test_read_data(mock_obj: mock.MagicMock, patched_driver):
     """
     Patch out the pipe dependency to an instance of local PipeWriter-type object that we can easily read.
     """
 
-    d = patched_driver  # Get fixture
+    d = patched_driver          # Get fixture
 
     # Require that read_data() returns True
     assert d.read_data()
@@ -163,6 +162,8 @@ def test_read_data(mock_obj, patched_driver):
     # Require that read_data() has entered correct message into "pipe"
     assert mock_obj.return_value.message == test_vectors()[0][2]
 
+    # Require that it was written into correct pipe with correct mode: open('ReMoni_pipe', 'w')
+    assert mock_obj.call_args_list == [(('ReMoni_pipe', 'w'), )]
 
 
 
