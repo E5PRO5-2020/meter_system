@@ -15,10 +15,14 @@ def IM871A_setup():
     return USB_Port
 
 @pytest.fixture()
+def IM871A_bad_setup():
+    bad_USB_Port = '/dev/ttyUSB1'
+    return bad_USB_Port
+
+@pytest.fixture()
 def input_data():
     raw_usb_data = b'\xa5\x82\x03!D-,\x12P\x00d\x1b\x16\x8d ?\x02\xd9\xf3" Z\x06G\xe3hH\xe4\x0cE"V\x90~P\x1d\xe9\xfdl'
     processed_data = 'a5820321442d2c125000641b168d203f02d9f322205a0647e36848e40c452256907e501de9fd6c'
-
     return raw_usb_data, processed_data
 
 def test_driver(IM871A_setup, input_data):
@@ -48,11 +52,12 @@ def test_driver(IM871A_setup, input_data):
 
         # Missing Line 80 - return true if FIFO is created
         #assert test_Driver.__init__(USB_Port) == True
+        # Being reworked, not testing
 
 
         # Missing Line 84 - __create_pipe() print(err)
+        # Being reworked, not testing
 
-        # Missing Line 100-102 - __init_open exception
 
         # Missing Line 133-153 - read_data()
         # Maybe make a file the reader can read from, instead of the USB
@@ -92,3 +97,8 @@ def test_driver(IM871A_setup, input_data):
 
         # Testing several functions
         #assert initialize() == True
+
+def test_init_open_exception(IM871A_bad_setup):
+    bad_usb_port = IM871A_bad_setup
+    bad_usb_port_driver = IM871A(bad_usb_port)
+    assert bad_usb_port_driver == False
