@@ -81,9 +81,41 @@ def omnipower_setup():
     return omnipower
 
 
-def test_MeterMeasure(MeasureFix, keys):
+def test_add_measurement(MeasureFix, keys):
     """
-	Test the MeterMeasurement class functionality
+    Test the "add_measurement"-method from MeterMeasurement
+    Jakob, 27/10-2020
+    """
+    # Load in fixture
+    m1, m2, m3, m4, meterID, testdateTime = MeasureFix
+    k1, k2, k3, k4 = keys
+
+    # Test with fixture-values
+    # Instantiate MeterMeasurement object and test __init__function
+    omni_power_frame = MeterMeasurement(meterID, testdateTime)
+    assert omni_power_frame.meter_id == meterID
+    assert omni_power_frame.timestamp == testdateTime
+
+    # Adding measurements and asserting result
+    omni_power_frame.add_measurement(k1, m1)
+    omni_power_frame.add_measurement(k2, m2)
+    omni_power_frame.add_measurement(k3, m3)
+    omni_power_frame.add_measurement(k4, m4)
+    assert omni_power_frame.measurements[k1].value == m1.value
+    assert omni_power_frame.measurements[k1].unit == m1.unit
+    assert omni_power_frame.measurements[k2].value == m2.value
+    assert omni_power_frame.measurements[k2].unit == m2.unit
+    assert omni_power_frame.measurements[k3].value == m3.value
+    assert omni_power_frame.measurements[k3].unit == m3.unit
+    assert omni_power_frame.measurements[k4].value == m4.value
+    assert omni_power_frame.measurements[k4].unit == m4.unit
+    assert omni_power_frame.timestamp == testdateTime
+
+
+
+def test_as_dict(MeasureFix, keys):
+    """
+	Test the "as_dict" method from MeterMeasurement
 	Jakob, 27/10-2020
 	"""
     # Load in fixture
