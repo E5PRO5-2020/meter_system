@@ -16,7 +16,7 @@ def IM871A_setup():
 
 @pytest.fixture()
 def IM871A_bad_setup():
-    bad_USB_Port = '/dev/ttyUSB1'
+    bad_USB_Port = 'somethingrandom'
     return bad_USB_Port
 
 @pytest.fixture()
@@ -100,5 +100,5 @@ def test_driver(IM871A_setup, input_data):
 
 def test_init_open_exception(IM871A_bad_setup):
     bad_usb_port = IM871A_bad_setup
-    bad_usb_port_driver = IM871A()
-    assert IM871A('hest') == False
+    #bad_usb_port_driver = IM871A()
+    assert IM871A(bad_usb_port) == False
