@@ -1,8 +1,8 @@
 # Run the tests
-python -m pytest test/
+#python -m pytest -rs test/
 
-# Check the coverage
-coverage run -m pytest
+# Check the coverage, -rs shows skipped tests
+coverage run -m pytest -rs
 sleep 0.2s
 coverage report -m --omit="${PYENV_VIRTUAL_ENV}*"
 
