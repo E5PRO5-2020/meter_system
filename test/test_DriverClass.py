@@ -3,6 +3,12 @@ Tests for IM871-A driver.
 Uses mocked tests when not on Gateway.
 On Gateway, tests run using hardware peripheral.
 
+Future dev.:
+
+- Try spec=True to investigate if MagicMock can correctly spec the patched classes and functions.
+- E.g. when patching serial.Serial, the MagicMock should appear to have all relevant methods.
+- This could eliminate some need for spec'ing our own test doubles (fakes).
+
 """
 
 import pytest
@@ -95,9 +101,9 @@ class PipeWriter:
 
 
 @pytest.fixture
-@mock.patch("driver.DriverClass.port.Serial", return_value=PatchSerial(test_vectors()[0][0]), autospec=True)
 @mock.patch("driver.DriverClass.os.mkfifo")
-def patched_driver(mock_obj, mock_obj_fifo):
+@mock.patch("driver.DriverClass.port.Serial", return_value=PatchSerial(test_vectors()[0][0]), autospec=True)
+def patched_driver(mock_obj_serial, mock_obj_fifo):
     """
     Make a driver fixture where we've patched (bypass/override) the port.Serial dependency with our own fake object.
     The port.Serial-function (serial.Serial) is used when the driver tries to establish serial connection.
@@ -108,6 +114,9 @@ def patched_driver(mock_obj, mock_obj_fifo):
     # Instantiate object with a dummy device name
     test_device = '/dev/ttyReMoni'
     d = IM871A(test_device)
+
+    # Ensure correct ordering
+    assert type(mock_obj_serial.return_value) is PatchSerial
 
     # Return patched object
     return d
