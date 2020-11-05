@@ -96,24 +96,24 @@ class PipeWriter:
 
 @pytest.fixture
 @mock.patch("driver.DriverClass.port.Serial", return_value=PatchSerial(test_vectors()[0][0]), autospec=True)
-def patched_driver(mock_obj):
+@mock.patch("driver.DriverClass.os.mkfifo")
+def patched_driver(mock_obj, mock_obj_fifo):
     """
-    Make a driver fixture where we've patched out the port.Serial dependency.
-    Use unittest to patch (bypass/override) the port.Serial-function (serial.Serial),
-    which is used when the driver tries to establish serial connection.
-    Also set up that we test on one specific test vector.
+    Make a driver fixture where we've patched (bypass/override) the port.Serial dependency with our own fake object.
+    The port.Serial-function (serial.Serial) is used when the driver tries to establish serial connection.
+    Patch os.mkfifo to prevent making FIFO (pipe) in the local OS during object construction.
+    Set up that we test on one specific test vector.
     """
 
-    # Instantiate object
-    test_port = '/dev/ttyReMoni'
-    test_pipe = test_port.split('tty')[1] + '_pipe'
-    d = IM871A(test_port)
+    # Instantiate object with a dummy device name
+    test_device = '/dev/ttyReMoni'
+    d = IM871A(test_device)
 
     # Return patched object
     return d
 
 
-@pytest.mark.skipif(os.uname()[1] == 'raspberrypi', reason="Only run mocked tests when not on Gateway")
+@pytest.mark.skipif(os.uname()[1] == 'raspberrypi', reason="Don't run mocked tests on Gateway")
 def test_constructor_destructor(patched_driver):
     """
     Test construction and destruction of a driver object is OK.
@@ -122,6 +122,7 @@ def test_constructor_destructor(patched_driver):
     d = patched_driver              # Get fixture
 
     # Assert existence of these objects
+    # If Port is /dev/ttyReMoni, then require pipe to be named ReMoni_pipe as per spec
     assert d.Port
     assert d.pipe == d.Port.split('tty')[1] + '_pipe'
 
@@ -130,7 +131,7 @@ def test_constructor_destructor(patched_driver):
     assert d.__del__() is None
 
 
-@pytest.mark.skipif(os.uname()[1] == 'raspberrypi', reason="Only run mocked tests when not on Gateway")
+@pytest.mark.skipif(os.uname()[1] == 'raspberrypi', reason="Don't run mocked tests on Gateway")
 def test_close(patched_driver):
     d = patched_driver  # Get fixture
 
@@ -139,7 +140,7 @@ def test_close(patched_driver):
     assert d.close() is None
 
 
-@pytest.mark.skipif(os.uname()[1] == 'raspberrypi', reason="Only run mocked tests when not on Gateway")
+@pytest.mark.skipif(os.uname()[1] == 'raspberrypi', reason="Don't run mocked tests on Gateway")
 def test_setup_linkmode(patched_driver):
     d = patched_driver  # Get fixture
 
@@ -147,7 +148,7 @@ def test_setup_linkmode(patched_driver):
     assert d.setup_linkmode('c1a')
 
 
-@pytest.mark.skipif(os.uname()[1] == 'raspberrypi', reason="Only run mocked tests when not on Gateway")
+@pytest.mark.skipif(os.uname()[1] == 'raspberrypi', reason="Don't run mocked tests on Gateway")
 @mock.patch("builtins.open", return_value=PipeWriter(), autospec=True)
 def test_read_data(mock_obj: mock.MagicMock, patched_driver):
     """
@@ -169,6 +170,7 @@ def test_read_data(mock_obj: mock.MagicMock, patched_driver):
 
 ### Jakob's tests here ###
 
+@pytest.mark.skipif(os.uname()[1] != 'raspberrypi', reason="Only run this test on Gateway")
 def test_driver(IM871A_setup, input_data):
     if os.uname()[1] == 'raspberrypi':
         # Instantiate DriverClass
