@@ -201,7 +201,7 @@ pytest.mark.skipif(os.uname()[1] != 'raspberrypi', reason="Only run this test on
 def test_CRC_check(IM871A_setup):
     USB_port = IM871A_setup
     test_driver = IM871A(USB_port)
-    raw_data = b'\\xa5\\x82\\x03!D-,\\x12P\\x00d\\x1b\\x16\\x8d ?\\x02\\xd9\\xf3" Z\\x06G\\xe3hH\\xe4\\x0cE"V\\x90~P\\x1d\\xe9\\xfdl'
+    raw_data = '\\xa5\\x82\\x03!D-,\\x12P\\x00d\\x1b\\x16\\x8d ?\\x02\\xd9\\xf3" Z\\x06G\\xe3hH\\xe4\\x0cE"V\\x90~P\\x1d\\xe9\\xfdl'
     assert test_driver._IM871A__CRC16_check(raw_data)
 
 @pytest.mark.skipif(os.uname()[1] != 'raspberrypi', reason="Only run this test on Gateway")
