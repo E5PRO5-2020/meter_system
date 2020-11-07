@@ -196,18 +196,16 @@ def test_driver(IM871A_setup, input_data):
         assert test_driver.setup_linkmode('c1a') == True
 
 
-        # Missing Line 80 - return true if FIFO is created
+        # Missing Line 82 - return true if FIFO is created
         #assert test_Driver.__init__(USB_Port) == True
         # Being reworked, not testing
 
 
-        # Missing Line 84 - __create_pipe() print(err)
+        # Missing Line 87 - __create_pipe() print(err)
         # Being reworked, not testing
 
 
-        # Missing Line 133-153 - read_data()
-        # Maybe make a file the reader can read from, instead of the USB
-        assert processed_data == raw_data.hex()
+        # Missing Line 103-105 - init_open SerialException
 
 
         # Missing Line 161-163 - ping() port.SerialTimeoutException
@@ -246,7 +244,23 @@ def test_driver(IM871A_setup, input_data):
 
 
 #Not working
-#def test_init_open_exception(IM871A_bad_setup):
-#    bad_usb_port = IM871A_bad_setup
-#    bad_usb_port_driver = IM871A(bad_usb_port)
-#    assert bad_usb_port_driver.__init__.__init_open(bad_usb_port) == False
+@pytest.mark.skipif(os.uname()[1] != 'raspberrypi', reason="Only run this test on Gateway")
+def test_init_open_exception(IM871A_bad_setup):
+    # Missing Line 103-105 - init_open SerialException
+    bad_usb_port = IM871A_bad_setup
+    bad_usb_port_driver = IM871A(bad_usb_port)
+    # Ved ikke hvordan jeg fanger IM871A.__init_open for at teste linje 103-105
+
+@pytest.mark.skipif(os.uname()[1] != 'raspberrypi', reason="Only run this test on Gateway")
+def test_SerialTimeoutException(IM871A_bad_setup):
+    # Missing Line 171-173- ping() port.SerialTimeoutException
+    # Dette er pakket ind i en while True
+    bad_usb_port = IM871A_bad_setup
+    with pytest.raises(SerialException):
+        bad_usb_port.read_data(100)
+#        while True:
+#            try:
+#                data = self.IM871.read(100)
+#            except (AttributeError, port.SerialException) as err:
+#                print(err)
+#                return False
