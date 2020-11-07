@@ -266,7 +266,6 @@ def test_SerialTimeoutException(IM871A_bad_setup):
 
 #pytest.mark.skipif(os.uname()[1] != 'raspberrypi', reason="Only run this test on Gateway")
 @pytest.mark.skipif(os.uname()[1] != 'Skipped', reason="Can't get it to work :(")
-
 def test_read_data_from_usb(IM871A_setup):
     # Missing Line 171-173- ping() port.SerialTimeoutException
     # Dette er pakket ind i en while True
@@ -284,11 +283,15 @@ def test_read_data_from_usb(IM871A_setup):
                     break
     assert succes
 
+pytest.mark.skipif(os.uname()[1] != 'raspberrypi', reason="Only run this test on Gateway")
+def test_pingself_timout(IM871A_bad_setup):
+    bad_USB_port = IM871A(IM871A_bad_setup)
+
+    assert not bad_USB_port.ping()
 
 
 
 
 
 
-# Da denne funktion har en While True, så hænger RPi sig selv ved test. Coverage 100% CPU usage
 
