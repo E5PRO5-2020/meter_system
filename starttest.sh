@@ -1,12 +1,14 @@
 # Run the tests
 #python -m pytest -rs test/
 
+# Check if FIFO is created, if not; create fifo
 FILE=./USB0_pipe
 if test -f "$FILE"; then
   echo "$FILE exists."
 else 
   mkfifo USB0_pipe
 fi
+
 # Ensure recipient for pipe, and save pipe output into file
 cat USB0_pipe > test/pipe_data.txt &
 
@@ -22,9 +24,8 @@ echo "MyPy results for /meter/"
 mypy meter
 echo "MyPy result for /test/"
 mypy test
+echo "MyPy result for /driver/"
+mypy driver
 
-#Uncomment to test driver folder
-#echo "MyPy result for /driver/"
-#mypy driver
-
+# Remove the pipe used for testing
 rm ./$FILE
