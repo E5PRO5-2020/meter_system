@@ -273,11 +273,11 @@ def test_read_data_from_usb(IM871A_setup):
 
     #assert USB_port.read_data()
 
-    with open(USB_port.pipe), "r" as fifo:
-        while True:
-            data = fifo.read()
-            if len(data) == 0:
-                break
+    #with open(USB_port.pipe), "r" as fifo:
+    #    while True:
+    #        data = fifo.read()
+    #        if len(data) == 0:
+    #            break
 
 
 
