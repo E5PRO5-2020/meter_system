@@ -1,7 +1,7 @@
 # Run the tests
 #python -m pytest -rs test/
 
-FILE=./test/USB0_pipe
+FILE=./USB0_pipe
 if test -f "$FILE"; then
   echo "$FILE exists."
 else 
@@ -27,4 +27,4 @@ mypy test
 #echo "MyPy result for /driver/"
 #mypy driver
 
-rm FILE
+rm ./$FILE
