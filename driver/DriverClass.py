@@ -290,7 +290,7 @@ class IM871A:
         It opens with the path given when instantiating the class.
         """
         try:
-            self.IM871A.open()
+            self.IM871.open()
             print("Port " + self.Port + " is opened")
             return True
         except (AttributeError, port.SerialException) as err:
@@ -303,7 +303,7 @@ class IM871A:
         """
         Close the connection to IM871A
         """
-        self.IM871A.close()
+        self.IM871.close()
         print("Port " + self.Port + " is closed")
 
 
