@@ -269,7 +269,7 @@ def test_read_data_from_usb(IM871A_setup):
     USB_port = IM871A(IM871A_setup)
 
     assert USB_port.Port
-    assert USB_port.pipe == d.Port.split('tty')[1] + '_pipe'
+    assert USB_port.pipe == USB_port.Port.split('tty')[1] + '_pipe'
 
     #assert USB_port.read_data()
 
