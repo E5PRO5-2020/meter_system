@@ -268,7 +268,10 @@ def test_read_data_from_usb(IM871A_setup):
     # Dette er pakket ind i en while True
     USB_port = IM871A(IM871A_setup)
 
-    assert USB_port.read_data()
+    assert USB_port.Port
+    assert USB_port.pipe == d.Port.split('tty')[1] + '_pipe'
+
+    #assert USB_port.read_data()
 
     with open(USB_port.pipe), "r" as fifo:
         while True:
