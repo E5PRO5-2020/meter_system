@@ -183,7 +183,7 @@ pytest.mark.skipif(os.uname()[1] != 'raspberrypi', reason="Only run this test on
 def test_object_instatiated_false(IM871A_bad_setup):
     USB_port = IM871A_bad_setup
     test_driver = IM871A(USB_port)
-    assert not test_driver.is_open()
+    assert test_driver.is_open() is False
 
 
 pytest.mark.skipif(os.uname()[1] != 'raspberrypi', reason="Only run this test on Gateway")
