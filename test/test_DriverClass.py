@@ -31,7 +31,7 @@ def IM871A_bad_setup():
 @pytest.fixture()
 def input_data():
     raw_usb_data = b'\xa5\x82\x03!D-,\x12P\x00d\x1b\x16\x8d ?\x02\xd9\xf3" Z\x06G\xe3hH\xe4\x0cE"V\x90~P\x1d\xe9\xfdl'
-    processed_data = 'a5820321442d2c125000641b168d203f02d9f322205a0647e36848e40c452256907e501de9fd6c'
+    processed_data = b'a5820321442d2c125000641b168d203f02d9f322205a0647e36848e40c452256907e501de9fd6c'
     return raw_usb_data, processed_data
 
 
@@ -202,7 +202,7 @@ def test_CRC_check(IM871A_setup, input_data):
     USB_port = IM871A_setup
     test_driver_CRC = IM871A(USB_port)
     raw_data, processed_data = input_data
-    processed_data = b'a5820321442d2c125000641b168d203f02d9f322205a0647e36848e40c452256907e501de9fd6c'
+
     assert test_driver_CRC._IM871A__CRC16_check(processed_data) == True
 
 @pytest.mark.skipif(os.uname()[1] != 'raspberrypi', reason="Only run this test on Gateway")
