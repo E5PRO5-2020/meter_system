@@ -193,7 +193,8 @@ def test_SerialTimeoutException(IM871A_bad_setup):
 
 pytest.mark.skipif(os.uname()[1] != 'raspberrypi', reason="Only run this test on Gateway")
 def test_pingself_timout(IM871A_bad_setup):
-    test_driver_bad = IM871A(IM871A_bad_setup)
+    USB_port = IM871A_bad_setup
+    test_driver_bad = IM871A(USB_port)
     test_driver_bad.open()
     assert not test_driver_bad.ping()
     test_driver_bad.close()
@@ -201,43 +202,41 @@ def test_pingself_timout(IM871A_bad_setup):
 
 pytest.mark.skipif(os.uname()[1] != 'raspberrypi', reason="Only run this test on Gateway")
 def test_CRC_check(IM871A_setup):
-    test_driver = IM871A(IM871A_setup)
+    USB_port = IM871A_setup
+    test_driver = IM871A(USB_port)
     raw_data, processed_data = input_data
     test_driver.open()
     assert test_driver._IM871A__CRC16_check(raw_data)
     test_driver.close()
 
 @pytest.mark.skipif(os.uname()[1] != 'raspberrypi', reason="Only run this test on Gateway")
-def test_driver(IM871A_setup, input_data):
-    if os.uname()[1] == 'raspberrypi':
-        # Instantiate DriverClass
-        USB_Port = IM871A_setup
-        test_driver = IM871A(USB_Port)
+def test_driver(IM871A_setup):
+    # Instantiate DriverClass
+    USB_Port = IM871A_setup
+    test_driver = IM871A(USB_Port)
 
-        raw_data, processed_data = input_data
+    # Testing ping
+    assert test_driver.ping() == True
 
-        # Testing ping
-        assert test_driver.ping() == True
+    # Testing Linkmode. Last mode is 'c1a' to be able to test read_data()
+    assert test_driver.setup_linkmode('s1') == True
+    assert test_driver.setup_linkmode('s1m') == True
+    assert test_driver.setup_linkmode('s2') == True
+    assert test_driver.setup_linkmode('t1') == True
+    assert test_driver.setup_linkmode('t2') == True
+    assert test_driver.setup_linkmode('c2a') == True
+    assert test_driver.setup_linkmode('c2b') == True
+    assert test_driver.setup_linkmode('c1b') == True
+    assert test_driver.setup_linkmode('ha') == False
+    assert test_driver.setup_linkmode('') == False
+    assert test_driver.setup_linkmode('c1a') == True
 
-        # Testing Linkmode. Last mode is 'c1a' to be able to test read_data()
-        assert test_driver.setup_linkmode('s1') == True
-        assert test_driver.setup_linkmode('s1m') == True
-        assert test_driver.setup_linkmode('s2') == True
-        assert test_driver.setup_linkmode('t1') == True
-        assert test_driver.setup_linkmode('t2') == True
-        assert test_driver.setup_linkmode('c2a') == True
-        assert test_driver.setup_linkmode('c2b') == True
-        assert test_driver.setup_linkmode('c1b') == True
-        assert test_driver.setup_linkmode('ha') == False
-        assert test_driver.setup_linkmode('') == False
-        assert test_driver.setup_linkmode('c1a') == True
+    # Closing port to test open function
+    test_driver.close()
+    assert test_driver.open() == True
 
-        # Closing port to test open function
-        test_driver.close()
-        assert test_driver.open() == True
-
-        # Testing reset
-        assert test_driver.reset_module() == True
+    # Testing reset
+    assert test_driver.reset_module() == True
 
 
 
