@@ -284,12 +284,16 @@ def test_read_data_from_usb(IM871A_setup):
     assert succes
 
 pytest.mark.skipif(os.uname()[1] != 'raspberrypi', reason="Only run this test on Gateway")
-def test_pingself_timout(IM871A_bad_setup):
+def test_pingself_timout(IM871A_bad_setup, IM871A_setup):
     bad_USB_port = IM871A(IM871A_bad_setup)
-
     assert not bad_USB_port.ping()
 
+    USB_port = IM871A(IM871A_setup)
+    with pytest.raises(port.SerialException):
+        bad_USB_port.ping()
 
+
+pytest.mark.skipif(os.uname()[1] != 'raspberrypi', reason="Only run this test on Gateway")
 
 
 
