@@ -178,7 +178,6 @@ def test_init_open_exception(IM871A_bad_setup):
     test_driver_bad = IM871A_bad_setup
     test_driver_bad.open()
     test_driver_bad = IM871A(test_driver_bad)
-    test_driver_bad.close()
     # Ved ikke hvordan jeg fanger IM871A.__init_open for at teste linje 103-105
 
 @pytest.mark.skipif(os.uname()[1] != 'Does not work', reason="Doesn't work, but is saved")
@@ -194,7 +193,7 @@ pytest.mark.skipif(os.uname()[1] != 'raspberrypi', reason="Only run this test on
 def test_pingself_timout(IM871A_bad_setup):
     USB_port = IM871A_bad_setup
     test_driver_bad = IM871A(USB_port)
-    test_driver_bad.open()
+    #test_driver_bad.open()
     assert not test_driver_bad.ping()
 
 
