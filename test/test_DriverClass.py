@@ -207,6 +207,7 @@ def test_read_data(IM871A_setup, input_data):
     test_driver.setup_linkmode('c1a')
     assert test_driver.read_data()
 
+    # Ensure that data was received at the other end of the pipe
     p = os.path.abspath('test/pipe_data.txt')
     fp = open(p, 'r')
     val_read_from_serial = fp.readline()
