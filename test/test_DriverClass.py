@@ -267,4 +267,4 @@ def test_read_data_from_usb(IM871A_setup):
     # Missing Line 171-173- ping() port.SerialTimeoutException
     # Dette er pakket ind i en while True
     USB_port = IM871A(IM871A_setup)
-    assert USB_port.read_data() == True
+    assert USB_port.read_data(100) == True
