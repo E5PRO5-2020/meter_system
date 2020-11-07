@@ -26,3 +26,5 @@ mypy test
 #Uncomment to test driver folder
 #echo "MyPy result for /driver/"
 #mypy driver
+
+rm FILE
