@@ -2,7 +2,7 @@
 #python -m pytest -rs test/
 
 # Ensure recipient for pipe, and save pipe output into file
-cat USB0_pipe > testfile.txt &
+cat USB0_pipe > test/pipe_data.txt &
 
 # Setup pipe reader
 
