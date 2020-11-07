@@ -169,12 +169,13 @@ def test_read_data(mock_obj: mock.MagicMock, patched_driver):
     # Require that it was written into correct pipe with correct mode: open('ReMoni_pipe', 'w')
     assert mock_obj.call_args_list == [(('ReMoni_pipe', 'w'), )]
 
-
-
-### Jakob's tests here ###
+### Jakob's tests here ### ### Jakob's tests here ### ### Jakob's tests here ### ### Jakob's tests here ###
 
 @pytest.mark.skipif(os.uname()[1] != 'Does not work', reason="Doesn't work, but is saved")
 def test_init_open_exception(IM871A_bad_setup):
+    """
+    This should test that open() can throw a SerialException, but the gateway stalls when attempting to test it
+    """
     # Missing Line 103-105 - init_open SerialException
     test_driver_bad = IM871A_bad_setup
     test_driver_bad.open()
@@ -183,6 +184,9 @@ def test_init_open_exception(IM871A_bad_setup):
 
 @pytest.mark.skipif(os.uname()[1] != 'Does not work', reason="Doesn't work, but is saved")
 def test_SerialTimeoutException(IM871A_bad_setup):
+    """
+    This should test that read_data() can throw a SerialException, but it doesn't work
+    """
     # Missing Line 171-173- ping() port.SerialTimeoutException
     # Dette er pakket ind i en while True
     test_driver_bad = IM871A('asd')
@@ -192,6 +196,9 @@ def test_SerialTimeoutException(IM871A_bad_setup):
 
 pytest.mark.skipif(os.uname()[1] != 'raspberrypi', reason="Only run this test on Gateway")
 def test_pingself_timout(IM871A_bad_setup):
+    """
+    Test if ping() returns false with a wrong USB-port
+    """
     USB_port = IM871A_bad_setup
     test_driver_bad = IM871A(USB_port)
     #test_driver_bad.open()
@@ -200,6 +207,9 @@ def test_pingself_timout(IM871A_bad_setup):
 
 pytest.mark.skipif(os.uname()[1] != 'raspberrypi', reason="Only run this test on Gateway")
 def test_CRC_check(IM871A_setup, input_data):
+    """
+    Tests if a succesfull CRC-check returns true
+    """
     USB_port = IM871A_setup
     test_driver_CRC = IM871A(USB_port)
     raw_data, processed_data, processed_data_bad = input_data
@@ -207,6 +217,9 @@ def test_CRC_check(IM871A_setup, input_data):
 
 pytest.mark.skipif(os.uname()[1] != 'raspberrypi', reason="Only run this test on Gateway")
 def test_CRC_check_fails(IM871A_setup, input_data):
+    """
+    Tests if a unsuccesfull CRC-check returns false
+    """
     USB_port = IM871A_setup
     test_driver_CRC = IM871A(USB_port)
     raw_data, processed_data, processed_data_bad = input_data
@@ -214,6 +227,9 @@ def test_CRC_check_fails(IM871A_setup, input_data):
 
 @pytest.mark.skipif(os.uname()[1] != 'raspberrypi', reason="Only run this test on Gateway")
 def test_driver(IM871A_setup):
+    """
+    Tests several things. (Thomas)
+    """
     # Instantiate DriverClass
     USB_Port = IM871A_setup
     test_driver = IM871A(USB_Port)
