@@ -265,7 +265,12 @@ def test_SerialTimeoutException(IM871A_bad_setup):
         bad_usb_port.read_data()
 
 
+pytest.mark.skipif(os.uname()[1] != 'raspberrypi', reason="Only run this test on Gateway")
+def test_pingself_timout(IM871A_bad_setup):
+    bad_USB_port = IM871A(IM871A_bad_setup)
+    assert not bad_USB_port.ping()
 
+pytest.mark.skipif(os.uname()[1] != 'raspberrypi', reason="Only run this test on Gateway")
 
 
 
