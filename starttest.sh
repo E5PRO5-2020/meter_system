@@ -1,6 +1,8 @@
 # Run the tests
 #python -m pytest -rs test/
 
+# Setup pipe reader
+
 # Check the coverage, -rs shows skipped tests
 coverage run -m pytest -rs
 sleep 0.2s

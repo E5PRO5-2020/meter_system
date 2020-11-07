@@ -200,7 +200,9 @@ def test_read_data(IM871A_setup, input_data):
     """
     USB_port = IM871A_setup
     test_driver = IM871A(USB_port)
+    print(test_driver.pipe)
     assert test_driver.read_data()
+    # This hangs!
 
 pytest.mark.skipif(os.uname()[1] != 'raspberrypi', reason="Only run this test on Gateway")
 def test_CRC_check(IM871A_setup, input_data):
