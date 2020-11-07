@@ -44,7 +44,7 @@ import subprocess
 import errno
 from binascii import hexlify
 from struct import pack
-port.
+
 # Definitions imported from WMBus_HCI_Spec_V1_6.pdf
 IM871A_SERIAL_SOF = 0xA5
 DEVMGMT_ID = 0x01
