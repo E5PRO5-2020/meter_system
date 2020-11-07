@@ -6,6 +6,7 @@ if test -f "$FILE"; then
   echo "$FILE exists."
 else 
   mkfifo USB0_pipe
+fi
 # Ensure recipient for pipe, and save pipe output into file
 cat USB0_pipe > test/pipe_data.txt &
 
