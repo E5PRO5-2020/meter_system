@@ -197,44 +197,6 @@ def test_driver(IM871A_setup, input_data):
         assert test_driver.setup_linkmode('') == False
         assert test_driver.setup_linkmode('c1a') == True
 
-
-        # Missing Line 82 - return true if FIFO is created
-        #assert test_Driver.__init__(USB_Port) == True
-        # Being reworked, not testing
-
-
-        # Missing Line 87 - __create_pipe() print(err)
-        # Being reworked, not testing
-
-
-        # Missing Line 103-105 - init_open SerialException
-        # In a while loop? Look at test_init_open_exception()
-
-
-        # Missing Line 161-163 - ping() port.SerialTimeoutException
-
-        # Missing Line 169-171 - ping() port.SerialException
-
-        # Missing Line 179-180 - ping() No response from module. ping returns false
-
-        # Missing Line 191-193 - reset_module() port.SerialTimeoutException (returns false)
-
-        # Missing Line 199-201 - reset_module() port.SerialException (Returns false)
-
-        # Missing Line 209-210 - reset_module() Module wont reset (Returns false)
-
-        # Missing Line 227-229 - setup_linkmode() port.SerialTimeoutException (Returns false)
-
-        # Missing Line 235-237 - setup_linkmode() port.SerialException (Returns false)
-
-        # Missing Line 245-246 - setup_linkmode() setup failed (Returns false)
-
-        # Missing Line 259-261 - open() port.SerialException (Returns false)
-
-        # Testing read_data. Only returns when read from pipe.
-        # ! To test this 'cat' the pipe
-        # assert USBport.read_data() == True
-
         # Closing port to test open function
         test_driver.close()
         assert test_driver.open() == True
@@ -242,16 +204,11 @@ def test_driver(IM871A_setup, input_data):
         # Testing reset
         assert test_driver.reset_module() == True
 
-        # Testing several functions
-        #assert initialize() == True
-
-
-#Not working
-@pytest.mark.skipif(os.uname()[1] != 'raspberrypi', reason="Only run this test on Gateway")
-def test_init_open_exception(IM871A_bad_setup):
+#@pytest.mark.skipif(os.uname()[1] != 'raspberrypi', reason="Only run this test on Gateway")
+#def test_init_open_exception(IM871A_bad_setup):
     # Missing Line 103-105 - init_open SerialException
-    bad_usb_port = IM871A_bad_setup
-    bad_usb_port_driver = IM871A(bad_usb_port)
+#    bad_usb_port = IM871A_bad_setup
+#    bad_usb_port_driver = IM871A(bad_usb_port)
     # Ved ikke hvordan jeg fanger IM871A.__init_open for at teste linje 103-105
 
 #@pytest.mark.skipif(os.uname()[1] != 'raspberrypi', reason="Only run this test on Gateway")
