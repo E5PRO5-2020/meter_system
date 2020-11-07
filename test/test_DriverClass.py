@@ -25,7 +25,7 @@ def IM871A_setup():
 
 @pytest.fixture()
 def IM871A_bad_setup():
-    bad_USB_Port = '/somethingrandom/'
+    bad_USB_Port = '/dev/ttyUSB1'
     return bad_USB_Port
 
 @pytest.fixture()
