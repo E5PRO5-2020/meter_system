@@ -200,6 +200,8 @@ def test_read_data(IM871A_setup, input_data):
     """
     USB_port = IM871A_setup
     test_driver = IM871A(USB_port)
+    test_driver.setup_linkmode('c1a')
+
     assert test_driver.read_data()
     # This hangs!
 
