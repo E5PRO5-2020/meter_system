@@ -8,6 +8,8 @@ On Gateway, tests run using hardware peripheral.
 import pytest
 import os
 from unittest import mock
+import serial as port
+
 
 # Import class to be tested
 from driver.DriverClass import IM871A
@@ -256,7 +258,7 @@ def test_SerialTimeoutException(IM871A_bad_setup):
     # Missing Line 171-173- ping() port.SerialTimeoutException
     # Dette er pakket ind i en while True
     bad_usb_port = IM871A_bad_setup
-    with pytest.raises(SerialException):
+    with pytest.raises(port.SerialException):
         bad_usb_port.read_data(100)
 #        while True:
 #            try:
