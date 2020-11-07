@@ -215,7 +215,7 @@ def test_driver(IM871A_setup, input_data):
 def test_SerialTimeoutException(IM871A_bad_setup):
     # Missing Line 171-173- ping() port.SerialTimeoutException
     # Dette er pakket ind i en while True
-    bad_usb_port = IM871A(IM871A_bad_setup)
+    bad_usb_port = IM871A('asd')
     with pytest.raises(port.SerialException):
         bad_usb_port.read_data()
 
