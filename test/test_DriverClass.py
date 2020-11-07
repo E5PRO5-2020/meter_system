@@ -258,7 +258,7 @@ def test_init_open_exception(IM871A_bad_setup):
 def test_SerialTimeoutException(IM871A_bad_setup):
     # Missing Line 171-173- ping() port.SerialTimeoutException
     # Dette er pakket ind i en while True
-    bad_usb_port = IM871A_bad_setup
+    bad_usb_port = IM871A(IM871A_bad_setup)
     with pytest.raises(port.SerialException):
         bad_usb_port.read_data(100)
 
@@ -266,5 +266,5 @@ def test_SerialTimeoutException(IM871A_bad_setup):
 def test_read_data_from_usb(IM871A_setup):
     # Missing Line 171-173- ping() port.SerialTimeoutException
     # Dette er pakket ind i en while True
-    USB_port = IM871A_setup
+    USB_port = IM871A(IM871A_setup)
     assert USB_port.read_data(100) == True
