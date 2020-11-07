@@ -182,17 +182,6 @@ def test_init_open_exception(IM871A_bad_setup):
     test_driver_bad = IM871A(test_driver_bad)
     # Ved ikke hvordan jeg fanger IM871A.__init_open for at teste linje 103-105
 
-@pytest.mark.skipif(os.uname()[1] != 'raspberrypi', reason="Only run this test on Gateway")
-def test_SerialTimeoutException(IM871A_bad_setup):
-    """
-    This should test that read_data() can throw a SerialException, but it doesn't work
-    """
-    # Missing Line 171-173- ping() port.SerialTimeoutException
-    # Dette er pakket ind i en while True
-    test_driver_bad = IM871A('asd')
-    with pytest.raises(port.SerialException):
-        test_driver_bad.read_data()
-
 pytest.mark.skipif(os.uname()[1] != 'raspberrypi', reason="Only run this test on Gateway")
 def test_pingself_timout(IM871A_bad_setup):
     """
@@ -203,6 +192,15 @@ def test_pingself_timout(IM871A_bad_setup):
     #test_driver_bad.open()
     assert not test_driver_bad.ping()
 
+
+pytest.mark.skipif(os.uname()[1] != 'raspberrypi', reason="Only run this test on Gateway")
+def test_read_data(IM871A_setup, input_data):
+    """
+    Test that data can be read!
+    """
+    USB_port = IM871A_setup
+    test_driver = IM871A(USB_port)
+    assert test_driver.read_data()
 
 pytest.mark.skipif(os.uname()[1] != 'raspberrypi', reason="Only run this test on Gateway")
 def test_CRC_check(IM871A_setup, input_data):
