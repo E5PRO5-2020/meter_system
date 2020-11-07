@@ -104,8 +104,8 @@ class IM871A:
             print(err)
             return False
 
-    def is_good(self):
-        return self.IM871.isatty()
+    def is_open(self):
+        return self.IM871.is_open()
 
     def __string_to_hex(self, argument: str) -> bytes:
         """
