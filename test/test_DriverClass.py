@@ -19,13 +19,13 @@ from driver.DriverClass import IM871A
 # After conversion:  a5820321442d2c125000641b168d203f02d9f322205a0647e36848e40c452256907e501de9fd6c
 
 @pytest.fixture()
-def IM871A_setup():
+def usb_port_tty0():
     USB_Port = '/dev/ttyUSB0'
     return USB_Port
 
 @pytest.fixture()
-def IM871A_bad_setup():
-    bad_USB_Port = '/dev/ttyUSB1'
+def usb_port_bad_tty():
+    bad_USB_Port = '/dev/tty'
     return bad_USB_Port
 
 @pytest.fixture()
@@ -173,10 +173,10 @@ def test_read_data(mock_obj: mock.MagicMock, patched_driver):
 ### Jakob's tests here ###
 
 @pytest.mark.skipif(os.uname()[1] != 'raspberrypi', reason="Only run this test on Gateway")
-def test_driver(IM871A_setup, input_data):
+def test_driver(usb_port_tty0, input_data):
     if os.uname()[1] == 'raspberrypi':
         # Instantiate DriverClass
-        USB_Port = IM871A_setup
+        USB_Port = usb_port_tty0
         test_driver = IM871A(USB_Port)
 
         raw_data, processed_data = input_data
@@ -248,34 +248,34 @@ def test_driver(IM871A_setup, input_data):
 
 #Not working
 @pytest.mark.skipif(os.uname()[1] != 'raspberrypi', reason="Only run this test on Gateway")
-def test_init_open_exception(IM871A_bad_setup):
+def test_init_open_exception(usb_port_bad_tty):
     # Missing Line 103-105 - init_open SerialException
-    bad_usb_port = IM871A_bad_setup
+    bad_usb_port = usb_port_bad_tty
     bad_usb_port_driver = IM871A(bad_usb_port)
     # Ved ikke hvordan jeg fanger IM871A.__init_open for at teste linje 103-105
 
 #@pytest.mark.skipif(os.uname()[1] != 'raspberrypi', reason="Only run this test on Gateway")
 @pytest.mark.skipif(os.uname()[1] != 'Skipped', reason="Can't get it to work :(")
 
-def test_SerialTimeoutException(IM871A_bad_setup):
+def test_SerialTimeoutException(usb_port_bad_tty):
     # Missing Line 171-173- ping() port.SerialTimeoutException
     # Dette er pakket ind i en while True
-    bad_usb_port = IM871A(IM871A_bad_setup)
+    bad_usb_port = IM871A(usb_port_bad_tty)
     with pytest.raises(port.SerialException):
         bad_usb_port.read_data()
 
 #pytest.mark.skipif(os.uname()[1] != 'raspberrypi', reason="Only run this test on Gateway")
 @pytest.mark.skipif(os.uname()[1] != 'Skipped', reason="Can't get it to work :(")
-def test_read_data_from_usb(IM871A_setup):
+def test_read_data_from_usb(usb_port_tty0):
     # Missing Line 171-173- ping() port.SerialTimeoutException
     # Dette er pakket ind i en while True
-    USB_port = IM871A(IM871A_setup)
+    d = IM871A(usb_port_tty0)
 
-    assert USB_port.Port
-    assert USB_port.pipe == USB_port.Port.split('tty')[1] + '_pipe'
+    assert d.Port
+    assert d.pipe == d.Port.split('tty')[1] + '_pipe'
 
-    if USB_port.read_data():
-        with open(USB_port.pipe, "r") as fifo:
+    if d.read_data():
+        with open(d.pipe, "r") as fifo:
             while True:
                 data = fifo.read()
                 if len(data == 0):
@@ -284,13 +284,13 @@ def test_read_data_from_usb(IM871A_setup):
     assert succes
 
 pytest.mark.skipif(os.uname()[1] != 'raspberrypi', reason="Only run this test on Gateway")
-def test_pingself_timout(IM871A_bad_setup, IM871A_setup):
-    bad_USB_port = IM871A(IM871A_bad_setup)
-    assert not bad_USB_port.ping()
+def test_pingself_timout(usb_port_bad_tty, usb_port_tty0):
+    d_bad = IM871A(usb_port_bad_tty)
+    assert not d_bad.ping()
 
-    USB_port = IM871A(IM871A_setup)
+    USB_port = IM871A(usb_port_tty0)
     with pytest.raises(port.SerialException):
-        bad_USB_port.ping()
+        d_bad.ping()
 
 
 
