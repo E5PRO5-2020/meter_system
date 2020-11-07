@@ -187,7 +187,7 @@ class IM871A:
 
                     # Output to named pipe
                     try:
-                        fp = open(self.pipe, "w", 0)
+                        fp = open(self.pipe, "w") # Alternatively os.open(self.pipe, "w", 0)
                         fp.write(data_conv[6::] + '\n')
                         fp.close()
                         break

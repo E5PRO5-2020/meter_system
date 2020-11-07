@@ -1,5 +1,6 @@
 # Run the tests
 #python -m pytest -rs test/
+source ./open_pipe.sh
 
 # Setup pipe reader
 
