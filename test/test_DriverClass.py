@@ -189,7 +189,6 @@ def test_SerialTimeoutException(IM871A_bad_setup):
     test_driver_bad.open()
     with pytest.raises(port.SerialException):
         test_driver_bad.read_data()
-    test_driver_bad.close()
 
 pytest.mark.skipif(os.uname()[1] != 'raspberrypi', reason="Only run this test on Gateway")
 def test_pingself_timout(IM871A_bad_setup):
@@ -197,7 +196,6 @@ def test_pingself_timout(IM871A_bad_setup):
     test_driver_bad = IM871A(USB_port)
     test_driver_bad.open()
     assert not test_driver_bad.ping()
-    test_driver_bad.close()
 
 
 pytest.mark.skipif(os.uname()[1] != 'raspberrypi', reason="Only run this test on Gateway")
@@ -205,16 +203,14 @@ def test_CRC_check(IM871A_setup):
     USB_port = IM871A_setup
     test_driver = IM871A(USB_port)
     raw_data, processed_data = input_data
-    test_driver.open()
+    test_driver.ping()
     assert test_driver._IM871A__CRC16_check(raw_data)
-    test_driver.close()
 
 @pytest.mark.skipif(os.uname()[1] != 'raspberrypi', reason="Only run this test on Gateway")
 def test_driver(IM871A_setup):
     # Instantiate DriverClass
     USB_Port = IM871A_setup
     test_driver = IM871A(USB_Port)
-
     # Testing ping
     assert test_driver.ping() == True
 
