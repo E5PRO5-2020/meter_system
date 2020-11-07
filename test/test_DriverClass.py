@@ -211,9 +211,7 @@ def test_driver(IM871A_setup, input_data):
 #    bad_usb_port_driver = IM871A(bad_usb_port)
     # Ved ikke hvordan jeg fanger IM871A.__init_open for at teste linje 103-105
 
-#@pytest.mark.skipif(os.uname()[1] != 'raspberrypi', reason="Only run this test on Gateway")
-@pytest.mark.skipif(os.uname()[1] != 'Skipped', reason="Can't get it to work :(")
-
+@pytest.mark.skipif(os.uname()[1] != 'raspberrypi', reason="Only run this test on Gateway")
 def test_SerialTimeoutException(IM871A_bad_setup):
     # Missing Line 171-173- ping() port.SerialTimeoutException
     # Dette er pakket ind i en while True
@@ -226,9 +224,6 @@ pytest.mark.skipif(os.uname()[1] != 'raspberrypi', reason="Only run this test on
 def test_pingself_timout(IM871A_bad_setup):
     bad_USB_port = IM871A(IM871A_bad_setup)
     assert not bad_USB_port.ping()
-
-pytest.mark.skipif(os.uname()[1] != 'raspberrypi', reason="Only run this test on Gateway")
-
 
 
 
