@@ -70,7 +70,6 @@ class IM871A:
         self.__create_pipe(Port)            # Initially creates 'named pipe' file
 
 
-
     def __create_pipe(self, pipe: str) -> bool:
         """
         Creates named pipe for output when class is instantiated, if no pipe exists.
