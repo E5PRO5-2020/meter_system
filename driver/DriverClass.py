@@ -105,7 +105,7 @@ class IM871A:
             return False
 
     def is_open(self):
-        return self.IM871.is_open()
+        return self.IM871, self.IM871.isOpen()
 
     def __string_to_hex(self, argument: str) -> bytes:
         """
