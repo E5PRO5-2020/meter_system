@@ -171,16 +171,14 @@ def test_read_data(mock_obj: mock.MagicMock, patched_driver):
 
 ### Jakob's tests here ### ### Jakob's tests here ### ### Jakob's tests here ### ### Jakob's tests here ###
 
-@pytest.mark.skipif(os.uname()[1] != 'Does not work', reason="Doesn't work, but is saved")
-def test_init_open_exception(IM871A_bad_setup):
-    """
-    This should test that open() can throw a SerialException, but the gateway stalls when attempting to test it
-    """
-    # Missing Line 103-105 - init_open SerialException
-    test_driver_bad = IM871A_bad_setup
-    test_driver_bad.open()
-    test_driver_bad = IM871A(test_driver_bad)
-    # Ved ikke hvordan jeg fanger IM871A.__init_open for at teste linje 103-105
+# Can object be instatiated
+pytest.mark.skipif(os.uname()[1] != 'asd', reason="Only run this test on Gateway")
+def test_object_instatiated_true(IM871A_setup):
+    USB_port = IM871A_setup
+    test_driver = IM871A(USB_port)
+    assert test_driver.IM871.is_open()
+
+
 
 pytest.mark.skipif(os.uname()[1] != 'raspberrypi', reason="Only run this test on Gateway")
 def test_pingself_timout(IM871A_bad_setup):
@@ -193,7 +191,7 @@ def test_pingself_timout(IM871A_bad_setup):
     assert not test_driver_bad.ping()
 
 
-pytest.mark.skipif(os.uname()[1] != 'raspberrypi', reason="Only run this test on Gateway")
+pytest.mark.skipif(os.uname()[1] != 'asd', reason="Only run this test on Gateway")
 def test_read_data(IM871A_setup, input_data):
     """
     Test that data can be read!
@@ -201,12 +199,11 @@ def test_read_data(IM871A_setup, input_data):
     USB_port = IM871A_setup
     test_driver = IM871A(USB_port)
     test_driver.setup_linkmode('c1a')
-
     assert test_driver.read_data()
     # This hangs!
 
 pytest.mark.skipif(os.uname()[1] != 'raspberrypi', reason="Only run this test on Gateway")
-def test_CRC_check(IM871A_setup, input_data):
+def test_CRC_check_succes(IM871A_setup, input_data):
     """
     Tests if a succesfull CRC-check returns true
     """
