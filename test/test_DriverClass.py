@@ -202,6 +202,7 @@ def test_CRC_check(IM871A_setup, input_data):
     USB_port = IM871A_setup
     test_driver_CRC = IM871A(USB_port)
     raw_data, processed_data = input_data
+    processed_data = b'a5820321442d2c125000641b168d203f02d9f322205a0647e36848e40c452256907e501de9fd6c'
     assert test_driver_CRC._IM871A__CRC16_check(processed_data) == True
 
 @pytest.mark.skipif(os.uname()[1] != 'raspberrypi', reason="Only run this test on Gateway")
