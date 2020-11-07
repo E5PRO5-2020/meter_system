@@ -269,13 +269,13 @@ def test_SerialTimeoutException(usb_port_bad_tty):
 def test_read_data_from_usb(usb_port_tty0):
     # Missing Line 171-173- ping() port.SerialTimeoutException
     # Dette er pakket ind i en while True
-    d = IM871A(usb_port_tty0)
+    USB_port = IM871A(usb_port_tty0)
 
-    assert d.Port
-    assert d.pipe == d.Port.split('tty')[1] + '_pipe'
+    assert USB_port.Port
+    assert USB_port.pipe == USB_port.Port.split('tty')[1] + '_pipe'
 
-    if d.read_data():
-        with open(d.pipe, "r") as fifo:
+    if USB_port.read_data():
+        with open(USB_port.pipe, "r") as fifo:
             while True:
                 data = fifo.read()
                 if len(data == 0):
@@ -285,12 +285,12 @@ def test_read_data_from_usb(usb_port_tty0):
 
 pytest.mark.skipif(os.uname()[1] != 'raspberrypi', reason="Only run this test on Gateway")
 def test_pingself_timout(usb_port_bad_tty, usb_port_tty0):
-    d_bad = IM871A(usb_port_bad_tty)
-    assert not d_bad.ping()
+    bad_USB_port = IM871A(usb_port_bad_tty)
+    assert not bad_USB_port.ping()
 
     USB_port = IM871A(usb_port_tty0)
     with pytest.raises(port.SerialException):
-        d_bad.ping()
+        bad_USB_port.ping()
 
 
 
