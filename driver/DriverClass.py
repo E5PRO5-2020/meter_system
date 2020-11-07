@@ -108,7 +108,8 @@ class IM871A:
     def is_open(self):
         try:
             # Will return true if object exists and is opened.
-            return self.IM871.isOpen()
+            try_val = self.IM871.isOpen()
+            return try_val
         except NameError as e:
             print(e)
             # Will return False because object doesn't exist.
