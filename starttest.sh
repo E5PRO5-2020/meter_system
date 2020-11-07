@@ -1,6 +1,8 @@
 # Run the tests
 #python -m pytest -rs test/
-source ./open_pipe.sh
+
+# Ensure recipient for pipe, and save pipe output into file
+cat USB0_pipe > testfile.txt &
 
 # Setup pipe reader
 
