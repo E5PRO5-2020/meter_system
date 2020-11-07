@@ -104,8 +104,16 @@ class IM871A:
             print(err)
             return False
 
+
     def is_open(self):
-        return self.IM871, self.IM871.isOpen()
+        try:
+            # Will return true if object exists and is opened.
+            return self.IM871.isOpen()
+        except NameError as e:
+            print(e)
+            # Will return False because object doesn't exist.
+            return False
+
 
     def __string_to_hex(self, argument: str) -> bytes:
         """
