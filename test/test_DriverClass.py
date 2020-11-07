@@ -197,7 +197,7 @@ def test_pingself_timout(IM871A_bad_setup):
     assert not test_driver_bad.ping()
 
 
-pytest.mark.skipif(os.uname()[1] != 'asd', reason="Only run this test on Gateway")
+pytest.mark.skipif(os.uname()[1] != 'raspberrypi', reason="Only run this test on Gateway")
 def test_read_data(IM871A_setup, input_data):
     """
     Test that data can be read! IMPLEMENT AUTOREADER
