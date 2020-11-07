@@ -208,6 +208,7 @@ def test_driver(IM871A_setup, input_data):
 
 
         # Missing Line 103-105 - init_open SerialException
+        # In a while loop? Look at test_init_open_exception()
 
 
         # Missing Line 161-163 - ping() port.SerialTimeoutException
@@ -260,9 +261,10 @@ def test_SerialTimeoutException(IM871A_bad_setup):
     bad_usb_port = IM871A_bad_setup
     with pytest.raises(port.SerialException):
         bad_usb_port.read_data(100)
-#        while True:
-#            try:
-#                data = self.IM871.read(100)
-#            except (AttributeError, port.SerialException) as err:
-#                print(err)
-#                return False
+
+@pytest.mark.skipif(os.uname()[1] != 'raspberrypi', reason="Only run this test on Gateway")
+def test_read_data_from_usb(IM871A_setup):
+    # Missing Line 171-173- ping() port.SerialTimeoutException
+    # Dette er pakket ind i en while True
+    USB_port = IM871A_setup
+    assert USB_port.read_data(100) == True
