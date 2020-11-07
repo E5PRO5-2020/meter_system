@@ -172,12 +172,18 @@ def test_read_data(mock_obj: mock.MagicMock, patched_driver):
 ### Jakob's tests here ### ### Jakob's tests here ### ### Jakob's tests here ### ### Jakob's tests here ###
 
 # Can object be instatiated
-pytest.mark.skipif(os.uname()[1] != 'asd', reason="Only run this test on Gateway")
+pytest.mark.skipif(os.uname()[1] != 'raspberrypi', reason="Only run this test on Gateway")
 def test_object_instatiated_true(IM871A_setup):
     USB_port = IM871A_setup
     test_driver = IM871A(USB_port)
-    assert test_driver.IM871.is_open()
+    assert test_driver.is_open()
 
+# Can object be instatiated
+pytest.mark.skipif(os.uname()[1] != 'raspberrypi', reason="Only run this test on Gateway")
+def test_object_instatiated_false(IM871A_bad_setup):
+    USB_port = IM871A_bad_setup
+    test_driver = IM871A(USB_port)
+    assert not test_driver.is_open()
 
 
 pytest.mark.skipif(os.uname()[1] != 'raspberrypi', reason="Only run this test on Gateway")
