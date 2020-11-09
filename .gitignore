@@ -147,4 +147,8 @@ venv.bak/
 # Swap files
 .swp
 
+# PyCharm
 .idea/
+
+# MQTT settings
+/experimental/secrets.yaml
