@@ -27,9 +27,9 @@ IM871A is able to run in different modes. Default mode is S2.
 +-----------------------+----------+-------------------------------------------------------+
 | C1, Telegram Format A | c1a      | Compact, one way communication. No fixed length       | 
 +-----------------------+----------+-------------------------------------------------------+
-| C1, Telegram Format B | c1b      | Compact, bidirectional communication. Fixed length    | 
+| C1, Telegram Format B | c1b      | Compact, one way communication. Fixed length          | 
 +-----------------------+----------+-------------------------------------------------------+
-| C2, Telegram Format A | c2a      | Compact, one way communication. No fixed length       | 
+| C2, Telegram Format A | c2a      | Compact, bidirectional communication. No fixed length | 
 +-----------------------+----------+-------------------------------------------------------+
 | C2, Telegram Format B | c2b      | Compact, bidirectional communication. Fixed length    | 
 +-----------------------+----------+-------------------------------------------------------+
@@ -167,6 +167,23 @@ class IM871A:
 
 
 
+    def __pipe_data(self, data) -> bool:
+        """
+        Open the pipe, try to send data to pipe and close the pipe again.
+        Returns a bool to verify if data is sent to pipe.
+        """ 
+        try:
+            fp = open(self.pipe, "w")
+            fp.write(data + '\n')
+            fp.close()
+            return True
+
+        except IOError as err:
+            print(err)
+            return False
+
+            
+
     def read_data(self) -> bool:
         """
         Read single dataframe from meters sending with the specified link mode.
@@ -184,17 +201,13 @@ class IM871A:
             if len(data) != 0:
                 if self.__CRC16_check(hexlify(data)):
                     data_conv = data.hex()
-
+                    
                     # Output to named pipe
-                    try:
-                        fp = open(self.pipe, "w") # Alternatively os.open(self.pipe, "w", 0)
-                        fp.write(data_conv[6::] + '\n')
-                        fp.close()
-                        break
-                    except IOError as err:
-                        print(err)
-                        return False
-        return True
+                    if self.__pipe_data(data_conv[6::]):
+                           return True
+                    else:
+                        break                          
+        return False
         
 
     
