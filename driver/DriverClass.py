@@ -60,14 +60,16 @@ DEVMGMT_MSG_RESET_RSP = 0x08
 class IM871A:  
     """
     Implementation of a driver class for IM871A USB-dongle. 
-    Takes path to IM871A as argument, e.g. '/dev/ttyUSB1'.
+    Takes 2 arguments:
+    - Takes path to IM871A as argument, e.g. '/dev/ttyUSB1'.
+    - Takes the path to where to put the pipe, e.g. the program directory. 
     """ 
 
-    def __init__(self, Port): 
-        self.Port = Port                    # Path the USB-port used 
-        self.pipe = Port[8::] + '_pipe'     # Pipe name matching USB-port 
-        self.__init_open(Port)              # Initially creates and opens port
-        self.__create_pipe(Port)            # Initially creates 'named pipe' file
+    def __init__(self, Port, program_path): 
+        self.Port = Port                                        # Path the USB-port used 
+        self.pipe = program_path + '/IM871A_pipe'               # Pipe name and place to put it
+        self.__init_open(Port)                                  # Initially creates and opens port
+        self.__create_pipe(Port)                                # Initially creates 'named pipe' file
 
 
     def __create_pipe(self, pipe: str) -> bool:
