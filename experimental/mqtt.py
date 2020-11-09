@@ -4,6 +4,7 @@ Connect to Raspberry from outside
 
 """
 
+import time
 import yaml
 import paho.mqtt.client as mqtt
 
@@ -84,11 +85,20 @@ class MqttClient():
     def loop(self):
         return self.client.loop_forever(retry_first_connection=False)
 
+    def run_thread(self):
+        return self.client.loop_start()
+
+    def run_once(self):
+        return self.client.loop()
+
     def disconnect(self):
         return self.client.disconnect()
 
 
 if __name__ == '__main__':
+
+    #global i_am_global
+    i_am_global = False
 
     def on_message_callback(client, userdata, message):
         msg = message.payload.decode("utf-8")
@@ -97,6 +107,8 @@ if __name__ == '__main__':
         print(topic)
         print(topic_parts)
         print(msg)
+        global i_am_global
+        i_am_global= not i_am_global
 
     def on_publish_callback(client, userdata, mid):
         pass
@@ -107,5 +119,10 @@ if __name__ == '__main__':
     # Only subscribe to relevant inbound messages
     subscriber.subscribe("#")
 
-    print("Starting listening loop")
-    subscriber.loop()
+    print("Starting a loop")
+    subscriber.run_thread()
+
+    while True:
+        print("Thread is running!")
+        print("Current state of global variable {}.".format(i_am_global))
+        time.sleep(10.0)
