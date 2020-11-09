@@ -70,7 +70,6 @@ class IM871A:
         self.__create_pipe(Port)            # Initially creates 'named pipe' file
 
 
-
     def __create_pipe(self, pipe: str) -> bool:
         """
         Creates named pipe for output when class is instantiated, if no pipe exists.
@@ -104,6 +103,16 @@ class IM871A:
             print(err)
             return False
 
+
+    def is_open(self):
+        try:
+            # Will return true if object exists and is opened.
+            try_val = self.IM871.isOpen()
+            return try_val
+        except AttributeError as e:
+            print(e)
+            # Will return False because object doesn't exist.
+            return False
 
 
     def __string_to_hex(self, argument: str) -> bytes:
@@ -178,7 +187,7 @@ class IM871A:
 
                     # Output to named pipe
                     try:
-                        fp = open(self.pipe, "w")
+                        fp = open(self.pipe, "w") # Alternatively os.open(self.pipe, "w", 0)
                         fp.write(data_conv[6::] + '\n')
                         fp.close()
                         break
