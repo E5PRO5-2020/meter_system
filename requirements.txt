@@ -10,3 +10,4 @@ serial>=0.0.97
 pyserial>=3.4
 termcolor
 PyYAML>=5.3.1,<5.4
+python-daemon>=2.2.4, <2.5
