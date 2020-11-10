@@ -9,10 +9,14 @@ from typing import Dict, Any
 
 
 def load_settings() -> Dict[Any, Any]:
-    p = os.path.abspath('../settings/secrets.yaml')
-    with open(p) as f:
+
+    # Make paths
+    path_to_system = os.getcwd().split("meter_system")[0]
+    basepath = os.path.join(path_to_system, "meter_system")
+    secrets_path = os.path.join(basepath, "settings", "secrets.yaml")
+
+    with open(secrets_path) as f:
         settings = yaml.load(f, Loader=yaml.FullLoader)
-        print(settings)
         return settings
 
 

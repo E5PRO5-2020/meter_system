@@ -8,7 +8,7 @@ MQTT-class for communication between Gateway and ReCalc/Cloud at ReMoni.
 """
 
 import paho.mqtt.client as mqtt
-from utils import load_settings
+from utils.load_settings import load_settings
 
 
 class MqttClient:
@@ -30,7 +30,8 @@ class MqttClient:
     # For outputting log messages to console
     @staticmethod
     def __on_log(client, userdata, level, buf):
-        print("log: ", buf)
+        pass
+        #print("log: ", buf)
 
     # By default, do nothing on_message
     @staticmethod
@@ -42,7 +43,7 @@ class MqttClient:
     def __on_publish(client, userdata, mid):
         pass
 
-    def __init__(self, name, on_message, on_publish):
+    def __init__(self, name, on_message, on_publish, param_settings='mqtt'):
         """Handles all setup and connection when object is initialized.
 
         :param name: Client ID
@@ -52,7 +53,7 @@ class MqttClient:
         :param on_publish: On publish callback function
         :type on_publish: Function pointer.
         """
-        settings = load_settings()['mqtt']
+        settings = load_settings()[param_settings]
         self.client = mqtt.Client(client_id=name, clean_session=True, userdata=None, transport="tcp")
         self.client.username_pw_set(settings["username"], settings["password"])
         self.client.on_connect = MqttClient.__on_connect
@@ -104,3 +105,11 @@ class MqttClient:
 
     def disconnect(self):
         return self.client.disconnect()
+
+
+def donothing_onmessage(client, userdata, message):
+    pass
+
+
+def donothing_onpublish(client, userdata, mid):
+    pass
