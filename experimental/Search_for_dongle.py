@@ -46,17 +46,10 @@ if __name__ == '__main__':
     except Exception as err:
         print(err)
     # Stolen lines from the IM871a-driver to test the returned path.
-    try:
-        IM871 = port.Serial(port=path, baudrate=57600, bytesize=8, parity=port.PARITY_NONE, stopbits=1, timeout=0)
-
-    except (ValueError, port.SerialException) as err:
-        print(err)
+    IM871 = port.Serial(port=path, baudrate=57600, bytesize=8, parity=port.PARITY_NONE, stopbits=1, timeout=0)
 
     while True:
-        try:
-            data = IM871.read(100)
-            if len(data) != 0:
-                data = data.hex()
-                print(data)
-        except (AttributeError, port.SerialException) as err:
-            print(err)
+        data = IM871.read(100)
+        if len(data) != 0:
+            data = data.hex()
+            print(data)
