@@ -42,7 +42,14 @@ def make_json() -> str:
         "manufacturerDeviceKey": "NotOmniPower"
     }
 
-    list_of_meters = [meter1, meter2]
+    meter3 = {
+        "deviceId": "88888888",
+        "manufacturerKey": "kam",
+        "encryptionKey": "abcd",
+        "manufacturerDeviceKey": "AlsoNotOmniPower"
+    }
+
+    list_of_meters = [meter1, meter2, meter3]
 
     return json.dumps(list_of_meters)
 
