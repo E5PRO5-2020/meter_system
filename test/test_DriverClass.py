@@ -22,14 +22,14 @@ from driver.DriverClass import IM871A
 def IM871A_setup():
     USB_Port = '/dev/ttyUSB0'
     # Temporary path - fix later
-    pipe_path = './driver/IM871A_pipe'
+    pipe_path = './driver'
     return USB_Port, pipe_path
 
 @pytest.fixture()
 def IM871A_bad_setup():
     bad_USB_Port = '/somethingrandom/'
     # Temporary path - fix later
-    pipe_path = './driver/IM871A_pipe'
+    pipe_path = './driver'
     return bad_USB_Port, pipe_path
 
 @pytest.fixture()
@@ -114,7 +114,7 @@ def patched_driver(mock_obj, mock_obj_fifo):
 
     # Instantiate object with a dummy device name
     test_device = '/dev/ttyReMoni'
-    pipe_path = './driver/IM871A_pipe'
+    pipe_path = './driver'
     d = IM871A(test_device, pipe_path)
 
     # Return patched object
