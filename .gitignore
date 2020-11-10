@@ -153,3 +153,4 @@ venv.bak/
 # MQTT settings
 /experimental/secrets.yaml
 /mqtt/secrets.yaml
+/settings/secrets.yaml
