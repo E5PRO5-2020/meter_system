@@ -21,12 +21,16 @@ from driver.DriverClass import IM871A
 @pytest.fixture()
 def IM871A_setup():
     USB_Port = '/dev/ttyUSB0'
-    return USB_Port
+    # Temporary path - fix later
+    pipe_path = '/home/pi/projects/meter-system/driver/IM871A_pipe'
+    return USB_Port, pipe_path
 
 @pytest.fixture()
 def IM871A_bad_setup():
     bad_USB_Port = '/somethingrandom/'
-    return bad_USB_Port
+    # Temporary path - fix later
+    pipe_path = '/home/pi/projects/meter-system/driver/IM871A_pipe'
+    return USB_Port, pipe_path
 
 @pytest.fixture()
 def input_data():
@@ -174,8 +178,8 @@ def test_read_data(mock_obj: mock.MagicMock, patched_driver):
 # Can object be instatiated
 pytest.mark.skipif(os.uname()[1] != 'raspberrypi', reason="Only run this test on Gateway")
 def test_object_instatiated_true(IM871A_setup):
-    USB_port = IM871A_setup
-    test_driver = IM871A(USB_port)
+    USB_port, path_pipe = IM871A_setup
+    test_driver = IM871A(USB_port, path_pipe)
     assert test_driver.is_open()
 
 # Can object be instatiated
