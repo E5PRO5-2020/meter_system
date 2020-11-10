@@ -1,6 +1,6 @@
 """
 This file demos set operations to figure out marginal changes to list of monitored meters.
-Let's us keep queues and data and avoid rebuilding a new object every minute.
+Lets us keep queues and data and avoid rebuilding a new object every minute.
 
 """
 
