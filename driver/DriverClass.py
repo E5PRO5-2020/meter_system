@@ -6,6 +6,14 @@ Generic driver class for WM-Bus USB-dongle IM871A
 :Authors: Steffen Breinbjerg, Thomas Serup
 :Date: 21 October 2020
 
+Version history
+===============
+
+- Ver 1.0: Set up driver.
+- Ver 1.1: Implemented seperate 'open pipe' handler.
+- Ver 1.2: Implemented CRC-16 check.
+- Ver 1.3: Logging exceptions to syslog instead of printing to console. 
+
 
 Link Modes
 ===============
@@ -36,7 +44,7 @@ IM871A is able to run in different modes. Default mode is S2.
 
 
 """
-import serial as port
+import serial as port   # type: ignore
 import sys
 import struct
 import os
@@ -44,6 +52,10 @@ import subprocess
 import errno
 from binascii import hexlify
 from struct import pack
+from utils.log import get_logger
+
+# Get logger instance
+log = get_logger()
 
 # Definitions imported from WMBus_HCI_Spec_V1_6.pdf
 IM871A_SERIAL_SOF = 0xA5
@@ -85,7 +97,7 @@ class IM871A:
         except OSError as err:
             # If error is 'File exists' don't show error
             if err.errno != errno.EEXIST:
-                print(err)
+                log.exception(err)
             return False
 
 
@@ -99,10 +111,10 @@ class IM871A:
         """       
         try:
             self.IM871 = port.Serial(port=Port, baudrate=57600, bytesize=8, parity=port.PARITY_NONE, stopbits=1, timeout=0)
-            print("Connected to Serial port " + Port)
             return True
+
         except (ValueError, port.SerialException) as err:
-            print(err)
+            log.exception(err)
             return False
 
 
@@ -111,13 +123,13 @@ class IM871A:
             # Will return true if object exists and is opened.
             try_val = self.IM871.isOpen()
             return try_val
-        except AttributeError as e:
-            print(e)
+        except AttributeError as err:
+            log.exception(err)
             # Will return False because object doesn't exist.
             return False
 
 
-    def __string_to_hex(self, argument: str) -> bytes:
+    def __string_to_hex(self, argument: str) -> [int, bytes]:
         """
         Convert 'mode' argument into bytes. Returns '0xa' if no valid input.
         Function is used in 'setup_linkmode()'.
@@ -176,12 +188,13 @@ class IM871A:
         """ 
         try:
             fp = open(self.pipe, "w")
-            fp.write(data + '\n')
+            fp.write(data + os.linesep)
+            fp.flush()
             fp.close()
             return True
 
         except IOError as err:
-            print(err)
+            log.exception(err)
             return False
 
             
@@ -197,7 +210,7 @@ class IM871A:
             try:
                 data = self.IM871.read(100)
             except (AttributeError, port.SerialException) as err:
-                print(err)
+                log.exception(err)
                 return False
 
             if len(data) != 0:
@@ -220,7 +233,7 @@ class IM871A:
         try:
             self.IM871.write(port.to_bytes([IM871A_SERIAL_SOF, DEVMGMT_ID, DEVMGMT_MSG_PING_REQ, 0x0]))
         except (AttributeError, port.SerialTimeoutException) as err:
-            print(err)
+            log.exception(err)
             return False
 
         # Looking for response message from IM871A
@@ -228,16 +241,14 @@ class IM871A:
             try:
                 data = self.IM871.read(10)
             except port.SerialException as err:
-                print(err)
+                log.exception(err)
                 return False
             data_conv = data.hex()
             # Looking for Endpoint-ID and Msg-ID in response
             if(data_conv[3:6] == "102"):
-                print("Ping Response received")
                 return True
 
         # If no response message arrives        
-        print("!No response from WM-Bus module")
         return False
 
 
@@ -250,7 +261,7 @@ class IM871A:
         try:
             self.IM871.write([IM871A_SERIAL_SOF, DEVMGMT_ID, DEVMGMT_MSG_RESET_REQ, 0x00])
         except (AttributeError, port.SerialTimeoutException) as err:
-            print(err)
+            log.exception(err)
             return False
 
         # Looking for response message from IM871A    
@@ -258,16 +269,14 @@ class IM871A:
             try:
                 data = self.IM871.read(10)
             except port.SerialException as err:
-                print(err)
+                log.exception(err)
                 return False
             data_conv = data.hex()
             # Looking for Endpoint-ID and Msg-ID in response
             if(data_conv[3:6] == "108"):
-                print("Module resetting...")
                 return True
 
         # If no response message arrives
-        print("!Module won't reset")
         return False
 
 
@@ -281,12 +290,11 @@ class IM871A:
         # Converting mode-string to byte
         Mode = self.__string_to_hex(mode)
         if(Mode == 0xa):
-            print("!Invalid link mode")
             return False
         try:
             self.IM871.write(port.to_bytes([IM871A_SERIAL_SOF, DEVMGMT_ID, DEVMGMT_MSG_SET_CONFIG_REQ, 0x03, TEMP_MEM, 0x2, Mode]))
         except (AttributeError, port.SerialTimeoutException) as err:
-            print(err)
+            log.exception(err)
             return False
 
         # Looking for responce message from IM871A     
@@ -294,16 +302,14 @@ class IM871A:
             try:
                 data = self.IM871.read(10)
             except port.SerialException as err:
-                print(err)
+                log.exception(err)
                 return False
             data_conv = data.hex()
             # Looking for Endpoint-ID and Msg-ID in response
             if(data_conv[3:6] == "104"):
-                print("Link mode set to " + mode)
                 return True
 
         # If no responce message arrives
-        print("!Failed to setup link mode")
         return False
         
 
@@ -315,10 +321,9 @@ class IM871A:
         """
         try:
             self.IM871.open()
-            print("Port " + self.Port + " is opened")
             return True
         except (AttributeError, port.SerialException) as err:
-            print(err)
+            log.exception(err)
             return False
 
 
@@ -328,7 +333,6 @@ class IM871A:
         Close the connection to IM871A
         """
         self.IM871.close()
-        print("Port " + self.Port + " is closed")
 
 
 

@@ -2,8 +2,9 @@
 from class_t import testclass
 from mqtt_mess import set_json 
 import json
+from select import select
 
-msg = "27442d2c5768663230028d208e11de0320188851bdc4b72dd3c2954a341be369e9089b4eb3858169494e"
+#msg = "27442d2c5768663230028d208e11de0320188851bdc4b72dd3c2954a341be369e9089b4eb3858169494e"
 meter_list = {}     # Creating a dict
 meter = [None]*20   # Meter array
 
@@ -21,7 +22,11 @@ def lit_end(no: str) -> str:
 
 
 def create_meter_list():
-
+    """
+    Clear the list of meters to read from.
+    Creating a new list and an array of OmniPower classes.
+    Meter list Id = OmniPower array position.
+    """
     # Create test object to search in
     full_obj = json.loads(set_json())
     
@@ -43,18 +48,23 @@ def create_meter_list():
         meter[i] = testclass(meter_id)                                   
   
 
-def dispatcher(message: str):
+def dispatcher() -> bool: 
 
-    for i in meter_list:
-        print(meter_list[i])
-
-    deviceId = str(message[8:16])
+    try:
+        fifo = open('../driver/IM871A_pipe', 'r')
+    except OSError as err:
+        print(err)    
+    
+    select([fifo], [], [])                # polls and wait for data ready for read on fifo
+    msg = fifo.readline()
+    fifo.close()
+    
+    deviceId = str(msg[8:16])
     if deviceId in meter_list.keys():
-        print("This meter received the message: ")
         meter[meter_list[deviceId]['id']].printout()
 
 
 
 if __name__ == "__main__":
     create_meter_list()
-    dispatcher(msg)
+    dispatcher()
