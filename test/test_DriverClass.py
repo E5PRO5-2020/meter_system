@@ -8,7 +8,7 @@ On Gateway, tests run using hardware peripheral.
 import pytest
 import os
 from unittest import mock
-import serial as port
+import serial as port   # type: ignore
 
 
 # Import class to be tested

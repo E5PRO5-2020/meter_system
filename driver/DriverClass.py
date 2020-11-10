@@ -53,6 +53,7 @@ import errno
 from binascii import hexlify
 from struct import pack
 from utils.log import get_logger
+from typing import Union
 
 # Get logger instance
 log = get_logger()
@@ -129,7 +130,7 @@ class IM871A:
             return False
 
 
-    def __string_to_hex(self, argument: str) -> [int, bytes]:
+    def __string_to_hex(self, argument: str) -> Union[int, bytes]:
         """
         Convert 'mode' argument into bytes. Returns '0xa' if no valid input.
         Function is used in 'setup_linkmode()'.
