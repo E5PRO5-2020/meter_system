@@ -4,7 +4,7 @@ Let's us keep queues and data and avoid rebuilding a new object every minute.
 
 """
 
-from get_mqtt_json import make_json, get_meters_to_read
+from experimental.get_mqtt_json import make_json, get_meters_to_read
 
 # Object of currently monitored meters
 monitor_list = {
