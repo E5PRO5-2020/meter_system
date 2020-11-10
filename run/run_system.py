@@ -31,10 +31,8 @@ def run_system():
     while True:
 
         # Step 1: Check for message from recalc
-        try:
+        if dq:
             print(dq.pop())
-        except:
-            pass
 
         # Step 2: Process message and update data structure
 
