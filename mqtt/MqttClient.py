@@ -7,17 +7,11 @@ MQTT-class for communication between Gateway and ReCalc/Cloud at ReMoni.
 :Date: 9 November 2020
 """
 
-import yaml
 import paho.mqtt.client as mqtt
+from utils import load_settings
 
 
 class MqttClient:
-    @staticmethod
-    def __load_settings() -> dict:
-        with open('secrets.yaml') as f:
-            settings = yaml.load(f, Loader=yaml.FullLoader)
-            # print(settings)
-            return settings
 
     # This method is the same for all instances of the class
     @staticmethod
@@ -58,7 +52,7 @@ class MqttClient:
         :param on_publish: On publish callback function
         :type on_publish: Function pointer.
         """
-        settings = self.__load_settings()
+        settings = load_settings()['mqtt']
         self.client = mqtt.Client(client_id=name, clean_session=True, userdata=None, transport="tcp")
         self.client.username_pw_set(settings["username"], settings["password"])
         self.client.on_connect = MqttClient.__on_connect
