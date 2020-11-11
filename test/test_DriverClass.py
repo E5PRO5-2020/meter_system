@@ -22,14 +22,14 @@ from driver.DriverClass import IM871A
 def IM871A_setup():
     USB_Port = '/dev/ttyUSB0'
     # Temporary path - fix later
-    pipe_path = './driver'
+    pipe_path = './USB0_pipe'
     return USB_Port, pipe_path
 
 @pytest.fixture()
 def IM871A_bad_setup():
     bad_USB_Port = '/somethingrandom/'
     # Temporary path - fix later
-    pipe_path = './driver'
+    pipe_path = './USB0_pipe'
     return bad_USB_Port, pipe_path
 
 @pytest.fixture()
