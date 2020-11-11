@@ -16,7 +16,7 @@ cat USB0_pipe > test/pipe_data.txt &
 
 # Check the coverage, -rs shows skipped tests
 coverage run -m pytest -rs
-sleep 0.2s
+sleep 1s
 coverage report -m --omit="${PYENV_VIRTUAL_ENV}*"
 
 # Do type checking

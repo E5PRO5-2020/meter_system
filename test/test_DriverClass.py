@@ -8,11 +8,11 @@ On Gateway, tests run using hardware peripheral.
 import pytest
 import os
 from unittest import mock
-import serial as port   # type: ignore
-
+import serial as port  # type: ignore
 
 # Import class to be tested
 from driver.DriverClass import IM871A
+
 
 # Data from DriverClass testrun
 # Raw USB data:  b'\xa5\x82\x03!D-,\x12P\x00d\x1b\x16\x8d ?\x02\xd9\xf3" Z\x06G\xe3hH\xe4\x0cE"V\x90~P\x1d\xe9\xfdl'
@@ -25,12 +25,14 @@ def IM871A_setup():
     pipe_path = './USB0_pipe'
     return USB_Port, pipe_path
 
+
 @pytest.fixture()
 def IM871A_bad_setup():
     bad_USB_Port = '/somethingrandom/'
     # Temporary path - fix later
     pipe_path = './USB0_pipe'
     return bad_USB_Port, pipe_path
+
 
 @pytest.fixture()
 def input_data():
@@ -127,7 +129,7 @@ def test_constructor_destructor(patched_driver):
     Test construction and destruction of a driver object is OK.
     """
 
-    d = patched_driver              # Get fixture
+    d = patched_driver  # Get fixture
 
     # Assert existence of these objects
     # If Port is /dev/ttyReMoni, then require pipe to be named ReMoni_pipe as per spec
@@ -163,7 +165,7 @@ def test_read_data(mock_obj: mock.MagicMock, patched_driver):
     Patch out the pipe dependency to an instance of local PipeWriter-type object that we can easily read.
     """
 
-    d = patched_driver          # Get fixture
+    d = patched_driver  # Get fixture
 
     # Require that read_data() returns True
     assert d.read_data()
@@ -172,16 +174,18 @@ def test_read_data(mock_obj: mock.MagicMock, patched_driver):
     assert mock_obj.return_value.message == test_vectors()[0][2]
 
     # Require that it was written into correct pipe with correct mode: open('ReMoni_pipe', 'w')
-    assert mock_obj.call_args_list == [(('ReMoni_pipe', 'w'), )]
+    assert mock_obj.call_args_list == [(('ReMoni_pipe', 'w'),)]
+
 
 ### Jakob's tests here ### ### Jakob's tests here ### ### Jakob's tests here ### ### Jakob's tests here ###
 
 # Can object be instatiated
 pytest.mark.skipif(os.uname()[1] != 'raspberrypi', reason="Only run this test on Gateway")
-def test_object_instatiated_true(IM871A_setup):
+def test_object_instatiated_true_RPi(IM871A_setup):
     USB_port, path_pipe = IM871A_setup
     test_driver = IM871A(USB_port, path_pipe)
     assert test_driver.is_open()
+
 
 # Can object be instatiated
 pytest.mark.skipif(os.uname()[1] != 'raspberrypi', reason="Only run this test on Gateway")
@@ -192,18 +196,18 @@ def test_object_instatiated_false(IM871A_bad_setup):
 
 
 pytest.mark.skipif(os.uname()[1] != 'raspberrypi', reason="Only run this test on Gateway")
-def test_pingself_timout(IM871A_bad_setup):
+def test_pingself_timout_RPi(IM871A_bad_setup):
     """
     Test if ping() returns false with a wrong USB-port
     """
     USB_port, path_pipe = IM871A_bad_setup
     test_driver_bad = IM871A(USB_port, path_pipe)
-    #test_driver_bad.open()
+    # test_driver_bad.open()
     assert not test_driver_bad.ping()
 
 
 pytest.mark.skipif(os.uname()[1] != 'raspberrypi', reason="Only run this test on Gateway")
-def test_read_data(IM871A_setup, input_data):
+def test_read_data_RPi(IM871A_setup, input_data):
     """
     Test that data can be read! IMPLEMENT AUTOREADER
     """
@@ -220,7 +224,7 @@ def test_read_data(IM871A_setup, input_data):
 
 
 pytest.mark.skipif(os.uname()[1] != 'raspberrypi', reason="Only run this test on Gateway")
-def test_CRC_check_succes(IM871A_setup, input_data):
+def test_CRC_check_succes_RPi(IM871A_setup, input_data):
     """
     Tests if a succesfull CRC-check returns true
     """
@@ -229,8 +233,9 @@ def test_CRC_check_succes(IM871A_setup, input_data):
     raw_data, processed_data, processed_data_bad = input_data
     assert test_driver_CRC._IM871A__CRC16_check(processed_data)
 
+
 pytest.mark.skipif(os.uname()[1] != 'raspberrypi', reason="Only run this test on Gateway")
-def test_CRC_check_fails(IM871A_setup, input_data):
+def test_CRC_check_fails_RPi(IM871A_setup, input_data):
     """
     Tests if a unsuccesfull CRC-check returns false
     """
@@ -239,8 +244,9 @@ def test_CRC_check_fails(IM871A_setup, input_data):
     raw_data, processed_data, processed_data_bad = input_data
     assert test_driver_CRC._IM871A__CRC16_check(processed_data_bad) == False
 
+
 @pytest.mark.skipif(os.uname()[1] != 'raspberrypi', reason="Only run this test on Gateway")
-def test_driver(IM871A_setup):
+def test_driver_RPi(IM871A_setup):
     """
     Tests several things. (Thomas)
     """
@@ -269,7 +275,3 @@ def test_driver(IM871A_setup):
 
     # Testing reset
     assert test_driver.reset_module() == True
-
-
-
-

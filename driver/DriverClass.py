@@ -97,6 +97,7 @@ class IM871A:
 
         except OSError as err:
             # If error is 'File exists' don't show error
+            # If error is 'File exists' don't show error
             if err.errno != errno.EEXIST:
                 log.exception(err)
             return False
