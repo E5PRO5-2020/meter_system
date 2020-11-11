@@ -106,7 +106,8 @@ class PipeWriter:
 @pytest.fixture
 @mock.patch("driver.DriverClass.port.Serial", return_value=PatchSerial(test_vectors()[0][0]), autospec=True)
 @mock.patch("driver.DriverClass.os.mkfifo")
-def patched_driver(mock_obj, mock_obj_fifo):
+@mock.patch("driver.DriverClass.im871a_port", return_value="dinmor")
+def patched_driver(mock_obj, mock_obj_fifo, mock_obj_im871a_port):
     """
     Make a driver fixture where we've patched (bypass/override) the port.Serial dependency with our own fake object.
     The port.Serial-function (serial.Serial) is used when the driver tries to establish serial connection.
@@ -115,9 +116,9 @@ def patched_driver(mock_obj, mock_obj_fifo):
     """
 
     # Instantiate object with a dummy device name
-    test_device = '/dev/ttyReMoni'
-    pipe_path = './driver'
-    d = IM871A(test_device, pipe_path)
+    #test_device = '/dev/ttyReMoni'
+    pipe_path = './'
+    d = IM871A(pipe_path)
 
     # Return patched object
     return d
@@ -134,7 +135,7 @@ def test_constructor_destructor(patched_driver):
     # Assert existence of these objects
     # If Port is /dev/ttyReMoni, then require pipe to be named ReMoni_pipe as per spec
     assert d.Port
-    assert d.pipe == './driver/IM871A_pipe'
+    assert d.pipe == './IM871A_pipe'
     # Previous path method
     # d.Port.split('tty')[1] + '_pipe'
 
