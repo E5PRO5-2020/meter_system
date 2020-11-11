@@ -6,13 +6,16 @@ Generic driver class for WM-Bus USB-dongle IM871A
 :Authors: Steffen Breinbjerg, Thomas Serup
 :Date: 21 October 2020
 
+
 Version history
 ===============
 
 - Ver 1.0: Set up driver.
-- Ver 1.1: Implemented seperate 'open pipe' handler.
+- Ver 1.1: Implemented seperate 'open pipe' handler. Added pipe path as 2.nd argument.
 - Ver 1.2: Implemented CRC-16 check.
-- Ver 1.3: Logging exceptions to syslog instead of printing to console. 
+- Ver 1.3: Logging exceptions to syslog instead of printing to console.
+- Ver 1.4: No longer takes USB port as argument. Function for handling port is located in 'utils/Search_for_dongle'.  
+
 
 
 Link Modes
@@ -54,6 +57,8 @@ from binascii import hexlify
 from struct import pack
 from utils.log import get_logger
 from typing import Union
+from experimental.Search_for_dongle import im871a_port
+
 
 # Get logger instance
 log = get_logger()
@@ -73,16 +78,15 @@ DEVMGMT_MSG_RESET_RSP = 0x08
 class IM871A:  
     """
     Implementation of a driver class for IM871A USB-dongle. 
-    Takes 2 arguments:
-    - Takes path to IM871A as argument, e.g. '/dev/ttyUSB1'.
-    - Takes the path to where to put the pipe, e.g. the program directory. 
+    Takes 1 argument1:
+    - The path to where to put the pipe, e.g. the program directory. 
     """ 
 
-    def __init__(self, Port, program_path): 
-        self.Port = Port                                        # Path the USB-port used 
-        self.pipe = program_path + '/IM871A_pipe'               # Pipe name and place to put it
-        self.__init_open(Port)                                  # Initially creates and opens port
-        self.__create_pipe(Port)                                # Initially creates 'named pipe' file
+    def __init__(self, program_path): 
+        self.Port = im871a_port()                                    # Path the USB-port used 
+        self.pipe = program_path + '/IM871A_pipe'                    # Pipe name and place to put it
+        self.__init_open(self.Port)                                  # Initially creates and opens port
+        self.__create_pipe(self.Port)                                # Initially creates 'named pipe' file
 
 
     def __create_pipe(self, pipe: str) -> bool:
