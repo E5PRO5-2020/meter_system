@@ -1,5 +1,5 @@
 import daemon   # type: ignore
-from driver.DriverClass import IM871A
+from DriverClass import IM871A
 import time
 import os
 
