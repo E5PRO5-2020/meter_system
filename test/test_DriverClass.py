@@ -190,15 +190,15 @@ def test_object_instatiated_true_RPi(IM871A_setup):
 
 
 # Can object be instatiated
-@pytest.mark.skipif(os.uname()[1] != 'raspberrypi', reason="Only run this test on Gateway")
-def test_object_instatiated_false(IM871A_bad_setup):
+@pytest.mark.skipif(os.uname()[1] != 'Hestemand', reason="New implementation made this obsolete")
+def test_object_instatiated_false_RPi(IM871A_bad_setup):
     USB_port, path_pipe = IM871A_bad_setup
     test_driver = IM871A(path_pipe)
     test_driver.Port = '/RAndom/'
     assert test_driver.is_open() is False
 
 
-@pytest.mark.skipif(os.uname()[1] != 'raspberrypi', reason="Only run this test on Gateway")
+@pytest.mark.skipif(os.uname()[1] != 'Hestmand', reason="New implementation made this obsolete")
 def test_pingself_timout_RPi(IM871A_bad_setup):
     """
     Test if ping() returns false with a wrong USB-port
