@@ -194,7 +194,7 @@ def test_object_instatiated_true_RPi(IM871A_setup):
 def test_object_instatiated_false(IM871A_bad_setup):
     USB_port, path_pipe = IM871A_bad_setup
     test_driver = IM871A(path_pipe)
-    test_driver.port = '/RAndom/'
+    test_driver.Port = '/RAndom/'
     assert test_driver.is_open() is False
 
 
@@ -205,7 +205,7 @@ def test_pingself_timout_RPi(IM871A_bad_setup):
     """
     USB_port, path_pipe = IM871A_bad_setup
     test_driver_bad = IM871A(path_pipe)
-    test_driver_bad.port = '/RAndom/'
+    test_driver_bad.Port = '/RAndom/'
     # test_driver_bad.open()
     assert not test_driver_bad.ping()
 
