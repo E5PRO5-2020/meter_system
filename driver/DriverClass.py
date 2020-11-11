@@ -57,7 +57,7 @@ from binascii import hexlify
 from struct import pack
 from utils.log import get_logger
 from typing import Union
-from experimental.Search_for_dongle import im871a_port
+from utils.Search_for_dongle import im871a_port
 
 
 # Get logger instance
