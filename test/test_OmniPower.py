@@ -100,6 +100,8 @@ def test_OmniTest(omnipower_base):
     Test the OmniPower class functionality (not yet fully implemented)
     Jakob, 27/10-2020
     """
+    
+    # Chop into smaller tests!
 
     omnipower = omnipower_base
     telegram = '27442d2c5768663230028d208e11de0320188851bdc4b72dd3c2954a341be369e9089b4eb3858169494e'.encode()
