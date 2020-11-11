@@ -26,18 +26,23 @@ to first encountered link.
 
 import os
 import serial as port  # type: ignore
+from typing import Any
 
 
-def im871a_port() -> str:
-    directory = "/dev/serial/by-id"
+def im871a_port() -> Any:
+    #TODO: Refactor this so it is more readable
+    directory = os.path.join("/dev", "serial", "by-id")     #/dev/serial/by-id
     match = "iM871A"
-    if os.path.exists("/dev/serial/by-id"):
+
+    if os.path.exists(directory):
         for cur_path, directories, files in os.walk(directory):
             for filename in files:
                 if match in filename:
                     return os.path.join(cur_path, filename)
-            else:
-                raise Exception("No IM871A-Link found in /dev/serial/by-id")
+
+            # File not found,
+            raise Exception("No IM871A-Link found in /dev/serial/by-id")
+
     else:
         raise Exception("No serial devices are found.")
 

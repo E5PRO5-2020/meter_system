@@ -102,11 +102,15 @@ class PipeWriter:
     def close(self):
         return True
 
+    def flush(self):
+        return True
+
 
 @pytest.fixture
 @mock.patch("driver.DriverClass.port.Serial", return_value=PatchSerial(test_vectors()[0][0]), autospec=True)
 @mock.patch("driver.DriverClass.os.mkfifo")
-def patched_driver(mock_obj, mock_obj_fifo):
+@mock.patch("driver.DriverClass.im871a_port")
+def patched_driver(mock_obj, mock_obj_fifo, mock_obj_im871a_port):
     """
     Make a driver fixture where we've patched (bypass/override) the port.Serial dependency with our own fake object.
     The port.Serial-function (serial.Serial) is used when the driver tries to establish serial connection.
@@ -115,9 +119,8 @@ def patched_driver(mock_obj, mock_obj_fifo):
     """
 
     # Instantiate object with a dummy device name
-    test_device = '/dev/ttyReMoni'
-    pipe_path = './driver'
-    d = IM871A(test_device, pipe_path)
+    program_path = '/her'
+    d = IM871A(program_path)
 
     # Return patched object
     return d
@@ -134,7 +137,7 @@ def test_constructor_destructor(patched_driver):
     # Assert existence of these objects
     # If Port is /dev/ttyReMoni, then require pipe to be named ReMoni_pipe as per spec
     assert d.Port
-    assert d.pipe == './driver/IM871A_pipe'
+    assert d.pipe == '/her/IM871A_pipe'
     # Previous path method
     # d.Port.split('tty')[1] + '_pipe'
 
@@ -176,7 +179,7 @@ def test_read_data(mock_obj: mock.MagicMock, patched_driver):
     assert mock_obj.return_value.message == test_vectors()[0][2]
 
     # Require that it was written into correct pipe with correct mode: open('ReMoni_pipe', 'w')
-    assert mock_obj.call_args_list == [(('./driver/IM871A_pipe', 'w'),)]
+    assert mock_obj.call_args_list == [(('/her/IM871A_pipe', 'w'),)]
 
 
 ### Jakob's tests here ### ### Jakob's tests here ### ### Jakob's tests here ### ### Jakob's tests here ###
@@ -198,7 +201,7 @@ def test_object_instatiated_false_RPi(IM871A_bad_setup):
     assert test_driver.is_open() is False
 
 
-@pytest.mark.skipif(os.uname()[1] != 'Hestmand', reason="New implementation made this obsolete")
+@pytest.mark.skipif(os.uname()[1] != 'Hestmand', reason="New implementation made this obsolet")
 def test_pingself_timout_RPi(IM871A_bad_setup):
     """
     Test if ping() returns false with a wrong USB-port
