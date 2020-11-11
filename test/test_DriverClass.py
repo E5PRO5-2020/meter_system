@@ -198,7 +198,7 @@ def test_object_instatiated_false_RPi(IM871A_bad_setup):
     assert test_driver.is_open() is False
 
 
-@pytest.mark.skipif(os.uname()[1] != 'Hestmand', reason="New implementation made this obsolete")
+@pytest.mark.skipif(os.uname()[1] != 'Hestmand', reason="New implementation made this obsolet")
 def test_pingself_timout_RPi(IM871A_bad_setup):
     """
     Test if ping() returns false with a wrong USB-port
