@@ -2,15 +2,15 @@
 #python -m pytest -rs test/
 
 # Check if FIFO is created, if not; create fifo
-FILE=./USB0_pipe
+FILE=./IM871A_pipe
 if test -f "$FILE"; then
   echo "$FILE exists."
 else 
-  mkfifo USB0_pipe
+  mkfifo IM871A_pipe
 fi
 
 # Ensure recipient for pipe, and save pipe output into file
-cat USB0_pipe > test/pipe_data.txt &
+cat IM871A_pipe > test/pipe_data.txt &
 
 # Setup pipe reader
 
