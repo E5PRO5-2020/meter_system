@@ -30,10 +30,12 @@ import serial as port
 
 def im871a_port() -> str:
     directory = "/dev/serial/by-id"
+    match = "iM871A"
     if os.path.exists("/dev/serial/by-id"):
         for cur_path, directories, files in os.walk(directory):
-            if "iM871A" in files[0]:
-                return os.path.join(directory, cur_path, files[0])
+            for filename in files:
+                if match in filename:
+                    return os.path.join(cur_path, filename)
             else:
                 raise Exception("No IM871A-Link found in /dev/serial/by-id")
     else:
