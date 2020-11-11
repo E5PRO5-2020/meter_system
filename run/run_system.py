@@ -5,18 +5,39 @@ Contains main loop which instantiates and runs the entire system
 
 Ver. 0.1: Build main loop with queue and Mqtt startup
 
+
+Test message to send to start monitoring out OmniPower:
+mosquitto_pub -h <INSERT IP> -t "testtopic" -m '[{"deviceId": "32666857","manufacturerKey": "kam","encryptionKey": "9A25139E3244CC2E391A8EF6B915B697", "manufacturerDeviceKey": "OmniPower1"}]' -u <INSERT USER> -P <INSERT PWD>
+
+
 """
 
-from mqtt.MqttClient import MqttClient, donothing_onpublish
+from mqtt.MqttClient import MqttClient, donothing_onmessage, donothing_onpublish
 from collections import deque
 from time import sleep
 import json
 from meter.OmniPower import OmniPower, C1Telegram
+from select import select
+from utils.log import get_logger
+import os
+
 
 # Global double-ended queue, atomic object for communication from mqtt thread
 dq = deque(maxlen=1)
 
 meter_list = {}     # Creating a dict
+
+# Get logger instance
+log = get_logger()
+
+# Try to open FIFO
+try:
+    fifo = open('/home/pi/Thomas/IM871A_pipe', 'r')
+except OSError as err:
+    log.exception(err)
+    exit(1)
+
+publisher = MqttClient("publishToRecalc", donothing_onmessage, donothing_onpublish, param_settings='mqtt')
 
 def run_system():
     """
@@ -45,11 +66,13 @@ def run_system():
 
         # Step 1: Check for message from ReMoni ReCalc
         #TODO: Prevent to objects with same serial number
+
         if dq:
             q_elem = dq.pop()
             full_obj = json.loads(q_elem[1])
             meter_list.clear()
 
+            # TODO: Do we need to send a config over MQTT?
             # Step 2: Process message and update data structure
             # Split the topic and message to figure out what to do
             for i in range(0, len(full_obj)):
@@ -59,26 +82,46 @@ def run_system():
                 # Adding to dictionary
                 # TODO: Figure out which topic to publish on from an MQTT message and include in this object
                 meter_list.update({meter_id: OmniPower(name="OP-" + meter_id, meter_id=meter_id,
-                                                       aes_key=full_obj[i]['encryptionKey'])})
+                                                       aes_key=full_obj[i]['encryptionKey']),
+                                   'manufacturerKey': full_obj[i]['manufacturerKey'],
+                                   'deviceId': full_obj[i]['deviceId'],
+                                   })
 
             print(meter_list)
 
         # Step 3: Read all data from driver via FIFO
         # Tap the FIFO
-        good_telegrams = [b'27442d2c5768663230028d208e11de0320188851bdc4b72dd3c2954a341be369e9089b4eb3858169494e',
-                          b'2d442d2c5768663230028d206461dd032038931d14b405536e0250592f8b908138d58602eca676ff79e0caf0b14d0e7d']
 
+        select([fifo], [], [], 10)  # polls and wait for data ready for read on fifo, 10 sec timeout
 
-        #TODO: Replace this with driver FIFO
-        telegram = C1Telegram(good_telegrams[0])
-        address = telegram.big_endian['A'].decode()  # Gets address as UTF-8 string
+        # TODO: Don't close FIFO in driver
+        msg = fifo.readline().strip()   #UTF-8 without line break
+        if not msg:                     # If EOF telegram, just start again
+            continue
 
-        # Step 4: Process received telegrams
-        if address in meter_list.keys():
-            meter_list[address].process_telegram(telegram)
+        #print("Received telegram: {}".format(msg))
 
-        # Step 5: Profit?
-            print(meter_list[address].measurement_log[-1])
+        try:
+            telegram = C1Telegram(msg.encode())     # Must take bytes
+            address = telegram.big_endian['A'].decode()  # Gets address as UTF-8 string
+            #print("Received address {}".format(address))
+
+            # Step 4: Process received telegrams
+            #print("Monitored serial numbers {}".format(meter_list.keys()))
+            if address in meter_list.keys():
+                meter_list[address].process_telegram(telegram)
+
+                # Step 5: See the log
+                print(meter_list[address].measurement_log[-1])
+
+                # v2/<gw-id>/<manufacturer-key>-<device-id>/data
+                topic = "v2/" + meter_list['manufacturerKey'] + "-" + meter_list['deviceId'] + "/data"
+                cloud_message = meter_list[address].measurement_log[-1].json_dump()
+                #print(cloud_message)
+                publisher.publish(topic, cloud_message)
+
+        except:
+            pass
 
         sleep(2)
 
@@ -86,3 +129,7 @@ def run_system():
 if __name__ == '__main__':
     # When run from terminal, it powers up the system, and away we go...
     run_system()
+
+    fifo.close()
+
+# PYTHONPATH=alsjlasnglan:$PYTHONPATH python script.py
