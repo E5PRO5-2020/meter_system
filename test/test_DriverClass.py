@@ -134,7 +134,9 @@ def test_constructor_destructor(patched_driver):
     # Assert existence of these objects
     # If Port is /dev/ttyReMoni, then require pipe to be named ReMoni_pipe as per spec
     assert d.Port
-    assert d.pipe == d.Port.split('tty')[1] + '_pipe'
+    assert d.pipe == './driver/IM871A_pipe'
+
+           #d.Port.split('tty')[1] + '_pipe'
 
     # When object goes out of scope, destructor is called; we will force this here
     # Expect NO exceptions or errors
