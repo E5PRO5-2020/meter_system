@@ -25,7 +25,7 @@ to first encountered link.
 """
 
 import os
-import serial as port
+import serial as port  # type: ignore
 
 
 def im871a_port() -> str:
