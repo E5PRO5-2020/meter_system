@@ -16,6 +16,20 @@ Message:
     }
 ]
 
+mosquitto_pub -h 185.182.204.219 -t "testtopic" -m '[{"deviceId": "32666857","manufacturerKey": "kam","encryptionKey": "9A25139E3244CC2E391A8EF6B915B697", "manufacturerDeviceKey": "OmniPower1"}, {"deviceId": "32666858","manufacturerKey": "kam","encryptionKey": "9A25139E3244CC2E391A8EF6B915B697", "manufacturerDeviceKey": "OmniPower1"}]' -u Verner -P vernerisback
+[{"deviceId": "32666857","manufacturerKey": "kam","encryptionKey": "9A25139E3244CC2E391A8EF6B915B697", "manufacturerDeviceKey": "OmniPower1"}, {"deviceId": "32666858","manufacturerKey": "kam","encryptionKey": "9A25139E3244CC2E391A8EF6B915B697", "manufacturerDeviceKey": "OmniPower1"}]]
+
+,
+    {
+        "deviceId": "76422795",
+        "manufacturerKey": "kam",
+        "encryptionKey": "abcd",
+        "manufacturerDeviceKey": "NotOmniPower"
+    }
+]
+
+
+
 """
 
 import json
