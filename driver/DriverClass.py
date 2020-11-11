@@ -82,8 +82,14 @@ class IM871A:
     - The path to where to put the pipe, e.g. the program directory. 
     """ 
 
-    def __init__(self, program_path): 
-        self.Port = im871a_port()                                    # Path the USB-port used 
+    def __init__(self, program_path):
+
+        try:
+            self.Port = im871a_port()                                # Path the USB-port used
+        except Exception as e:
+            log.exception(e)
+            exit(1)
+
         self.pipe = program_path + '/IM871A_pipe'                    # Pipe name and place to put it
         self.__init_open(self.Port)                                  # Initially creates and opens port
         self.__create_pipe(self.Port)                                # Initially creates 'named pipe' file

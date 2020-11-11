@@ -102,11 +102,14 @@ class PipeWriter:
     def close(self):
         return True
 
+    def flush(self):
+        return True
+
 
 @pytest.fixture
 @mock.patch("driver.DriverClass.port.Serial", return_value=PatchSerial(test_vectors()[0][0]), autospec=True)
 @mock.patch("driver.DriverClass.os.mkfifo")
-@mock.patch("driver.DriverClass.im871a_port", return_value="dinmor")
+@mock.patch("driver.DriverClass.im871a_port")
 def patched_driver(mock_obj, mock_obj_fifo, mock_obj_im871a_port):
     """
     Make a driver fixture where we've patched (bypass/override) the port.Serial dependency with our own fake object.
@@ -116,9 +119,8 @@ def patched_driver(mock_obj, mock_obj_fifo, mock_obj_im871a_port):
     """
 
     # Instantiate object with a dummy device name
-    #test_device = '/dev/ttyReMoni'
-    pipe_path = './'
-    d = IM871A(pipe_path)
+    program_path = '/her'
+    d = IM871A(program_path)
 
     # Return patched object
     return d
@@ -135,7 +137,7 @@ def test_constructor_destructor(patched_driver):
     # Assert existence of these objects
     # If Port is /dev/ttyReMoni, then require pipe to be named ReMoni_pipe as per spec
     assert d.Port
-    assert d.pipe == './IM871A_pipe'
+    assert d.pipe == '/her/IM871A_pipe'
     # Previous path method
     # d.Port.split('tty')[1] + '_pipe'
 
@@ -177,7 +179,7 @@ def test_read_data(mock_obj: mock.MagicMock, patched_driver):
     assert mock_obj.return_value.message == test_vectors()[0][2]
 
     # Require that it was written into correct pipe with correct mode: open('ReMoni_pipe', 'w')
-    assert mock_obj.call_args_list == [(('./driver/IM871A_pipe', 'w'),)]
+    assert mock_obj.call_args_list == [(('/her/IM871A_pipe', 'w'),)]
 
 
 ### Jakob's tests here ### ### Jakob's tests here ### ### Jakob's tests here ### ### Jakob's tests here ###
