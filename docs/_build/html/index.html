@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Kamstrup OmniPower wm-bus metering &mdash; Kamstrup OmniPower wm-bus metering development documentation</title>
+  <title>Kamstrup OmniPower wm-bus metering &mdash; Kamstrup OmniPower wm-bus metering system beta documentation</title>
   
 
   
@@ -50,7 +50,7 @@
           
 
           
-            <a href="#" class="icon icon-home" alt="Documentation Home"> Kamstrup OmniPower wm-bus metering
+            <a href="#" class="icon icon-home" alt="Documentation Home"> Kamstrup OmniPower wm-bus metering system
           
 
           
@@ -86,6 +86,7 @@
 <li class="toctree-l1"><a class="reference internal" href="DriverClass.html">Implementation of iM871-A driver</a></li>
 <li class="toctree-l1"><a class="reference internal" href="omnipower.html">OmniPower implementation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="metermeasurement.html">Implementation of generic measurements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mqtt.html">MQTT implementation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="util_crc16wmbus.html">Utils: CRC16 for wm-bus</a></li>
 <li class="toctree-l1"><a class="reference internal" href="util_crc16im871a.html">Utils: CRC16 for IM871-A</a></li>
 <li class="toctree-l1"><a class="reference internal" href="util_timezone.html">Utils: Timezone handling</a></li>
@@ -105,7 +106,7 @@
       <nav class="wy-nav-top" aria-label="top navigation">
         
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="#">Kamstrup OmniPower wm-bus metering</a>
+          <a href="#">Kamstrup OmniPower wm-bus metering system</a>
         
       </nav>
 
@@ -158,8 +159,9 @@
   <div class="section" id="kamstrup-omnipower-wm-bus-metering">
 <h1>Kamstrup OmniPower wm-bus metering<a class="headerlink" href="#kamstrup-omnipower-wm-bus-metering" title="Permalink to this headline">¶</a></h1>
 <p>This documentation covers the system to read the
-Kamstrup OmniPower 1-phase meter over wm-bus
-using a iM871-A transceiver.</p>
+Kamstrup OmniPower 1-phase meter over wm-bus.
+The implementation uses an iM871-A transceiver to read wm-bus messages.
+Processed measurements are sent upstream using MQTT.</p>
 <div class="toctree-wrapper compound">
 <p class="caption"><span class="caption-text">Table of contents</span></p>
 <ul>
@@ -178,6 +180,11 @@ using a iM871-A transceiver.</p>
 <li class="toctree-l2"><a class="reference internal" href="metermeasurement.html#generic-class-for-measurements-and-measurement-frames">Generic class for measurements and measurement frames</a></li>
 <li class="toctree-l2"><a class="reference internal" href="metermeasurement.html#the-measurement-class">The Measurement class</a></li>
 <li class="toctree-l2"><a class="reference internal" href="metermeasurement.html#the-metermeasurement-class">The MeterMeasurement class</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="mqtt.html">MQTT implementation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="mqtt.html#mqtt-class-for-communication-between-gateway-and-recalc-cloud-at-remoni">MQTT-class for communication between Gateway and ReCalc/Cloud at ReMoni</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mqtt.html#mqttclient-class">MqttClient class</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="util_crc16wmbus.html">Utils: CRC16 for wm-bus</a><ul>

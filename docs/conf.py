@@ -20,12 +20,12 @@ sys.path.insert(0, os.path.abspath('..'))
 
 # -- Project information -----------------------------------------------------
 
-project = 'Kamstrup OmniPower wm-bus metering'
+project = 'Kamstrup OmniPower wm-bus metering system'
 copyright = '2020, Team 3, E5PRO5 2020, Aarhus Uni., School of Engineering'
 author = 'Team 3, E5PRO5 2020, Aarhus Uni., School of Engineering'
 
 # The full version, including alpha/beta/rc tags
-release = 'development'
+release = 'beta'
 
 
 # -- General configuration ---------------------------------------------------

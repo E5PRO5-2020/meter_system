@@ -1,10 +1,13 @@
 """
-MQTT-class for communication between Gateway and ReCalc/Cloud at ReMoni.
-*************************************************
+MQTT-class for communication between Gateway and ReCalc/Cloud at ReMoni
+***********************************************************************
+
 :Platform: Python 3.5.10 on Linux
 :Synopsis: This module implements a class for MQTT Client
 :Authors: Steffen Breinbjerg, Janus Bo Andersen
 :Date: 9 November 2020
+:Version: 1.0
+
 """
 
 import paho.mqtt.client as mqtt
@@ -12,24 +15,33 @@ from utils.load_settings import load_settings
 
 
 class MqttClient:
+    """
+    This class wraps a Paho MQTT client and sets it up using a profile from settings/secrets.yaml.
+    On instantiation, all setup steps run up to and including connect.
+
+    """
 
     # This method is the same for all instances of the class
     @staticmethod
-    def __on_connect(client, userdata, flags, rc):
+    def on_connect(client, userdata, flags, rc):
         """
-          on_connect callback rc argument value meaning:
-          0: Connection successful
-          1: Connection refused - incorrect protocol version
-          2: Connection refused - invalid client identifier
-          3: Connection refused - server unavailable
-          4: Connection refused - bad username or password
-          5: Connection refused - not authorised 6-255: Currently unused.
-          """
+        on_connect callback rc argument value meaning:
+
+        * 0: Connection successful
+        * 1: Connection refused - incorrect protocol version
+        * 2: Connection refused - invalid client identifier
+        * 3: Connection refused - server unavailable
+        * 4: Connection refused - bad username or password
+        * 5: Connection refused - not authorised 6-255: Currently unused.
+
+        """
+        #TODO: Implement logging potentially
         print("Connected with result code " + str(rc))
 
     # For outputting log messages to console
     @staticmethod
     def __on_log(client, userdata, level, buf):
+        #TODO: Implement logging if needed
         pass
         #print("log: ", buf)
 
@@ -46,17 +58,16 @@ class MqttClient:
     def __init__(self, name, on_message, on_publish, param_settings='mqtt'):
         """Handles all setup and connection when object is initialized.
 
-        :param name: Client ID
-        :type name: String
-        :param on_message: On message callback function
-        :type on_message: Function pointer
-        :param on_publish: On publish callback function
-        :type on_publish: Function pointer.
+        :param str name: Client ID (must be unique)
+        :param function_ptr on_message: On message callback function
+        :param function_ptr on_publish: On publish callback function
+        :param str param_settings: Profile from secrets.yaml to use
         """
+
         settings = load_settings()[param_settings]
         self.client = mqtt.Client(client_id=name, clean_session=True, userdata=None, transport="tcp")
         self.client.username_pw_set(settings["username"], settings["password"])
-        self.client.on_connect = MqttClient.__on_connect
+        self.client.on_connect = MqttClient.on_connect
         self.client.on_message = on_message
         self.client.on_publish = on_publish
 
@@ -85,15 +96,26 @@ class MqttClient:
     # Note: Removed qos=2 - This may be added again.
     def publish(self, topic, payload):
         """
-        :param topic: Topic to publish to
-        :param payload: Message payload
+        :param str topic: Topic to publish to
+        :param str payload: Message payload
+        :returns: (result, mid)
+        :rtype: tuple
+
+            - result: 0 on success, 4 if no connection
+            - mid is message id for tracked message
+
         """
+
         return self.client.publish(topic, payload)
 
     def subscribe(self, topic):
         """
-        :param topic: Topic to subscribe to.
-        :type topic: String
+        :param str topic: Topic to subscribe to.
+        :returns: (result, mid)
+        :rtype: tuple
+
+            - result: 0 on success, 4 if no connection
+            - mid is message id for tracked message
         """
         return self.client.subscribe(topic)
 
@@ -104,6 +126,9 @@ class MqttClient:
         return self.client.loop_forever(retry_first_connection=False)
 
     def disconnect(self):
+        """
+        Gracefully disconnects from server.
+        """
         return self.client.disconnect()
 
 

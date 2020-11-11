@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Index &mdash; Kamstrup OmniPower wm-bus metering development documentation</title>
+  <title>Index &mdash; Kamstrup OmniPower wm-bus metering system beta documentation</title>
   
 
   
@@ -49,7 +49,7 @@
           
 
           
-            <a href="index.html" class="icon icon-home" alt="Documentation Home"> Kamstrup OmniPower wm-bus metering
+            <a href="index.html" class="icon icon-home" alt="Documentation Home"> Kamstrup OmniPower wm-bus metering system
           
 
           
@@ -85,6 +85,7 @@
 <li class="toctree-l1"><a class="reference internal" href="DriverClass.html">Implementation of iM871-A driver</a></li>
 <li class="toctree-l1"><a class="reference internal" href="omnipower.html">OmniPower implementation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="metermeasurement.html">Implementation of generic measurements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mqtt.html">MQTT implementation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="util_crc16wmbus.html">Utils: CRC16 for wm-bus</a></li>
 <li class="toctree-l1"><a class="reference internal" href="util_crc16im871a.html">Utils: CRC16 for IM871-A</a></li>
 <li class="toctree-l1"><a class="reference internal" href="util_timezone.html">Utils: Timezone handling</a></li>
@@ -104,7 +105,7 @@
       <nav class="wy-nav-top" aria-label="top navigation">
         
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="index.html">Kamstrup OmniPower wm-bus metering</a>
+          <a href="index.html">Kamstrup OmniPower wm-bus metering system</a>
         
       </nav>
 
@@ -156,7 +157,8 @@
 <h1 id="index">Index</h1>
 
 <div class="genindex-jumpbox">
- <a href="#A"><strong>A</strong></a>
+ <a href="#_"><strong>_</strong></a>
+ | <a href="#A"><strong>A</strong></a>
  | <a href="#B"><strong>B</strong></a>
  | <a href="#C"><strong>C</strong></a>
  | <a href="#D"><strong>D</strong></a>
@@ -165,6 +167,7 @@
  | <a href="#I"><strong>I</strong></a>
  | <a href="#J"><strong>J</strong></a>
  | <a href="#K"><strong>K</strong></a>
+ | <a href="#L"><strong>L</strong></a>
  | <a href="#M"><strong>M</strong></a>
  | <a href="#O"><strong>O</strong></a>
  | <a href="#P"><strong>P</strong></a>
@@ -176,6 +179,14 @@
  | <a href="#Z"><strong>Z</strong></a>
  
 </div>
+<h2 id="_">_</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="mqtt.html#mqtt.MqttClient.MqttClient.__init__">__init__() (mqtt.MqttClient.MqttClient method)</a>
+</li>
+  </ul></td>
+</tr></table>
+
 <h2 id="A">A</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
@@ -241,6 +252,8 @@
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="mqtt.html#mqtt.MqttClient.MqttClient.disconnect">disconnect() (mqtt.MqttClient.MqttClient method)</a>
+</li>
       <li><a href="util_timezone.html#utils.timezone.ZuluTime.dst">dst() (utils.timezone.ZuluTime method)</a>
 </li>
       <li><a href="omnipower.html#meter.OmniPower.OmniPower.dump_log_to_json">dump_log_to_json() (meter.OmniPower.OmniPower method)</a>
@@ -302,6 +315,20 @@
   </ul></td>
 </tr></table>
 
+<h2 id="L">L</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="mqtt.html#mqtt.MqttClient.MqttClient.loop_forever">loop_forever() (mqtt.MqttClient.MqttClient method)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="mqtt.html#mqtt.MqttClient.MqttClient.loop_start">loop_start() (mqtt.MqttClient.MqttClient method)</a>
+</li>
+      <li><a href="mqtt.html#mqtt.MqttClient.MqttClient.loop_stop">loop_stop() (mqtt.MqttClient.MqttClient method)</a>
+</li>
+  </ul></td>
+</tr></table>
+
 <h2 id="M">M</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
@@ -333,6 +360,8 @@
 </li>
         <li><a href="omnipower.html#module-meter.OmniPower">meter.OmniPower</a>
 </li>
+        <li><a href="mqtt.html#module-mqtt.MqttClient">mqtt.MqttClient</a>
+</li>
         <li><a href="test.html#module-test.test_DriverClass">test.test_DriverClass</a>
 </li>
         <li><a href="test.html#module-test.test_MeterMeasure">test.test_MeterMeasure</a>
@@ -346,6 +375,17 @@
         <li><a href="util_timezone.html#module-utils.timezone">utils.timezone</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li>
+    mqtt.MqttClient
+
+      <ul>
+        <li><a href="mqtt.html#module-mqtt.MqttClient">module</a>
+</li>
+      </ul></li>
+      <li><a href="mqtt.html#mqtt.MqttClient.MqttClient">MqttClient (class in mqtt.MqttClient)</a>
+</li>
   </ul></td>
 </tr></table>
 
@@ -366,6 +406,8 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="test.html#test.test_OmniPower.omnipower_with_no_aes_key">omnipower_with_no_aes_key() (in module test.test_OmniPower)</a>
 </li>
+      <li><a href="mqtt.html#mqtt.MqttClient.MqttClient.on_connect">on_connect() (mqtt.MqttClient.MqttClient static method)</a>
+</li>
       <li><a href="DriverClass.html#driver.DriverClass.IM871A.open">open() (driver.DriverClass.IM871A method)</a>
 </li>
   </ul></td>
@@ -378,13 +420,15 @@
 </li>
       <li><a href="test.html#test.test_DriverClass.PatchSerial">PatchSerial (class in test.test_DriverClass)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="DriverClass.html#driver.DriverClass.IM871A.ping">ping() (driver.DriverClass.IM871A method)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="test.html#test.test_DriverClass.PipeWriter">PipeWriter (class in test.test_DriverClass)</a>
 </li>
       <li><a href="omnipower.html#meter.OmniPower.OmniPower.process_telegram">process_telegram() (meter.OmniPower.OmniPower method)</a>
+</li>
+      <li><a href="mqtt.html#mqtt.MqttClient.MqttClient.publish">publish() (mqtt.MqttClient.MqttClient method)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -407,6 +451,10 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="DriverClass.html#driver.DriverClass.IM871A.setup_linkmode">setup_linkmode() (driver.DriverClass.IM871A method)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="mqtt.html#mqtt.MqttClient.MqttClient.subscribe">subscribe() (mqtt.MqttClient.MqttClient method)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -447,12 +495,16 @@
 </li>
       <li><a href="test.html#test.test_DriverClass.test_constructor_destructor">test_constructor_destructor() (in module test.test_DriverClass)</a>
 </li>
+      <li><a href="test.html#test.test_DriverClass.test_CRC_check_fails">test_CRC_check_fails() (in module test.test_DriverClass)</a>
+</li>
+      <li><a href="test.html#test.test_DriverClass.test_CRC_check_succes">test_CRC_check_succes() (in module test.test_DriverClass)</a>
+</li>
       <li><a href="test.html#test.test_OmniPower.test_decrypt_must_raise_aes_key_error">test_decrypt_must_raise_aes_key_error() (in module test.test_OmniPower)</a>
+</li>
+      <li><a href="test.html#test.test_OmniPower.test_decrypt_must_raise_crc_check_error">test_decrypt_must_raise_crc_check_error() (in module test.test_OmniPower)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="test.html#test.test_OmniPower.test_decrypt_must_raise_crc_check_error">test_decrypt_must_raise_crc_check_error() (in module test.test_OmniPower)</a>
-</li>
       <li><a href="test.html#test.test_OmniPower.test_decrypt_using_must_return_false_for_bad_key">test_decrypt_using_must_return_false_for_bad_key() (in module test.test_OmniPower)</a>
 </li>
       <li><a href="test.html#test.test_OmniPower.test_decrypt_using_must_return_false_for_bad_payload">test_decrypt_using_must_return_false_for_bad_payload() (in module test.test_OmniPower)</a>
@@ -467,7 +519,13 @@
 </li>
       <li><a href="test.html#test.test_MeterMeasure.test_meter_measurement_returns_empty">test_meter_measurement_returns_empty() (in module test.test_MeterMeasure)</a>
 </li>
+      <li><a href="test.html#test.test_DriverClass.test_object_instatiated_false">test_object_instatiated_false() (in module test.test_DriverClass)</a>
+</li>
+      <li><a href="test.html#test.test_DriverClass.test_object_instatiated_true">test_object_instatiated_true() (in module test.test_DriverClass)</a>
+</li>
       <li><a href="test.html#test.test_OmniPower.test_OmniTest">test_OmniTest() (in module test.test_OmniPower)</a>
+</li>
+      <li><a href="test.html#test.test_DriverClass.test_pingself_timout">test_pingself_timout() (in module test.test_DriverClass)</a>
 </li>
       <li><a href="test.html#test.test_OmniPower.test_process_telegram_returns_false_if_not_parsable">test_process_telegram_returns_false_if_not_parsable() (in module test.test_OmniPower)</a>
 </li>
