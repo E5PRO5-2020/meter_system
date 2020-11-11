@@ -3,23 +3,10 @@ from class_t import testclass
 from mqtt_mess import set_json 
 import json
 from select import select
+from meter.OmniPower import OmniPower, C1Telegram
+from utils.log import get_logger
 
-#msg = "27442d2c5768663230028d208e11de0320188851bdc4b72dd3c2954a341be369e9089b4eb3858169494e"
 meter_list = {}     # Creating a dict
-meter = [None]*20   # Meter array
-
-
-def lit_end(no: str) -> str:
-    """
-    Converting string from big to little endian bytewise
-    """
-    little = ""
-    for i in range(0, len(no), 2):
-        little+= no[len(no)-2 - i]
-        little+= no[len(no)-1 - i]
-
-    return little
-
 
 def create_meter_list():
     """
@@ -35,33 +22,31 @@ def create_meter_list():
 
     for i in range (0, len(full_obj)):                
         # Set serial no. and convert to little-endian
-        meter_id = lit_end(full_obj[i]['deviceId'])                     
+        meter_id = full_obj[i]['deviceId']                     
         
         # Adding to dictionary
-        meter_list[meter_id] = {
-            "id" : i,
-            "manufacturerKey": full_obj[i]['manufacturerKey'],
-            "EncryptionKey": full_obj[i]['encryptionKey'], 
-            "ManufacturerDeviceKey": full_obj[i]['manufacturerDeviceKey']} 
-            
-        # Instantiating a class for every meter in dictionary
-        meter[i] = testclass(meter_id)                                   
+        meter_list.update({meter_id: OmniPower(name="OP-"+meter_id, meter_id=meter_id, aes_key=full_obj[i]['manufacturerKey'])})                         
   
 
 def dispatcher() -> bool: 
 
+    # Get logger instance
+    log = get_logger()
+    
     try:
         fifo = open('../driver/IM871A_pipe', 'r')
     except OSError as err:
-        print(err)    
+        log.exception(err)    
     
-    select([fifo], [], [])                # polls and wait for data ready for read on fifo
+    select([fifo], [], [])                      # polls and wait for data ready for read on fifo
     msg = fifo.readline()
     fifo.close()
     
-    deviceId = str(msg[8:16])
-    if deviceId in meter_list.keys():
-        meter[meter_list[deviceId]['id']].printout()
+    telegram = C1Telegram(msg)
+    address = telegram.big_endian['A'].decode() # Gets address as UTF-8 string
+    
+    if address in meter_list.keys():
+        meter_list[address].process_telegram(msg)
 
 
 

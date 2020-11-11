@@ -28,7 +28,7 @@ ids = ["77777777", "88888888", "32666857"]
 # Begin with empty dispatcher, and build from there
 dispatch = {}
 for id in ids:
-    dispatch.update({id: create("omnipower", name="OP-"+id, meter_id=id)})
+    dispatch.update({id: create("omnipower", name="OP-"+id, meter_id=id, aes_key='9A25139E3244CC2E391A8EF6B915B697')})
 
 # Call something dynamically
 telegram = C1Telegram(b'27442d2c5768663230028d206360dd0320c42b87f46fc048d42498b44b5e34f083e93e6af16176313d9c')

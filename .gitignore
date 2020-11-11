@@ -154,3 +154,6 @@ venv.bak/
 /experimental/secrets.yaml
 /mqtt/secrets.yaml
 /settings/secrets.yaml
+
+# Visual Studio
+.vscode/
