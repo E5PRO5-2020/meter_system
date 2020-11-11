@@ -31,8 +31,13 @@ meter_list = {}     # Creating a dict
 log = get_logger()
 
 # Try to open FIFO
+curr_path = os.path.dirname(os.path.abspath(__file__))
+base_path = os.path.split(curr_path)[0]
+fifo_path = os.path.join(base_path, "driver", "IM871A_pipe")
+print(fifo_path)
+
 try:
-    fifo = open('/home/pi/Thomas/IM871A_pipe', 'r')
+    fifo = open(fifo_path, 'r')
 except OSError as err:
     log.exception(err)
     exit(1)
