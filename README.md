@@ -4,7 +4,7 @@ This repo contains the integrated metering system for Kamstrup OmniPower, includ
 
 Documentation is live here: [meter-system @ readthedocs.io](https://meter-system.readthedocs.io/en/latest/).
 
-Or, read the [PDF](https://github.com/E5PRO5-2020/meter_system/blob/master/kamstrupomnipowerwm-busmetering.pdf).
+Or, read the [PDF](https://github.com/E5PRO5-2020/meter_system/blob/master/kamstrupomnipowerwm-busmeteringsystem.pdf).
 
 
 ## Install environment and libraries
