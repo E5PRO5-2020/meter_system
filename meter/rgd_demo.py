@@ -102,7 +102,7 @@ def demo_0():
     omnipower.process_telegram(t)
 
 
-def build_api_message_from_log_obj(m: 'MeterMeasurement'):
+def build_api_message_from_log_obj(m: 'MeterMeasurement') -> str:
 
     # Choice of keys to send from
     keys = ['A+', 'A-', 'P+', 'P-']
