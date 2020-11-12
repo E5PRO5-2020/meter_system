@@ -152,10 +152,11 @@ if __name__ == '__main__':
     curr_path = os.path.dirname(os.path.abspath(__file__))
     base_path = os.path.split(curr_path)[0]
     fifo_path = os.path.join(base_path, "driver", "IM871A_pipe")
-    print("Connected to pipe: {}".format(fifo_path))
 
     try:
+        print("Try to open pipe")
         fifo = open(fifo_path, 'r')
+        print("Connected to pipe: {}".format(fifo_path))
     except OSError as err:
         log.exception(err)
         exit(1)

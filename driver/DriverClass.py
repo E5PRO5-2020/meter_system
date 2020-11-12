@@ -93,7 +93,7 @@ class IM871A:
         self.pipe = program_path + '/IM871A_pipe'                    # Pipe name and place to put it
         self.__init_open(self.Port)                                  # Initially creates and opens port
         self.__create_pipe(self.Port)                                # Initially creates 'named pipe' file
-        self.fp = open(self.pipe, "w")                               # Pipe descriptor   
+
 
     def __create_pipe(self, pipe: str) -> bool:
         """
@@ -106,6 +106,7 @@ class IM871A:
             return True
 
         except OSError as err:
+            # If error is 'File exists' don't show error
             # If error is 'File exists' don't show error
             if err.errno != errno.EEXIST:
                 log.exception(err)
@@ -198,8 +199,10 @@ class IM871A:
         Returns a bool to verify if data is sent to pipe.
         """ 
         try:
-            self.fp.write(data + os.linesep)
-            self.fp.flush()
+            fp = open(self.pipe, "w")
+            fp.write(data + os.linesep)
+            fp.flush()
+            fp.close()
             return True
 
         except IOError as err:
@@ -348,7 +351,6 @@ class IM871A:
         Close the connection to IM871A
         """
         self.IM871.close()
-        self.fp.close()
 
 
 
@@ -356,4 +358,5 @@ class IM871A:
         """
         Destructor for closing when going out of scope
         """
+        log.info("Destructor")
         self.close()

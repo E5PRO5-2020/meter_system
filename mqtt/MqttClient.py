@@ -36,7 +36,8 @@ class MqttClient:
 
         """
         #TODO: Implement logging potentially
-        print("Connected with result code " + str(rc))
+        print("xyz")
+        #print(str(client) + " connected with result code " + str(rc))
 
     # For outputting log messages to console
     @staticmethod
