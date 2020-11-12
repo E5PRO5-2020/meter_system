@@ -342,19 +342,15 @@ class IM871A:
         It opens with the path given when instantiating the class.
         Also open the pipe.
         """
-        try:
-            self.fp = open(self.pipe, "w")
-            return True
-        except IOError as err:
-            log.exception(err)
-            return False
+        
+        # Re-open port to IM871A
         try:
             self.IM871.open()
             return True
         except (AttributeError, port.SerialException) as err:
             log.exception(err)
             return False
-        
+        # Re-open pipe
         self.open_pipe()
 
 
