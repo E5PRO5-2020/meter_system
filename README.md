@@ -12,6 +12,8 @@ Or, read the [PDF](https://github.com/E5PRO5-2020/meter_system/blob/master/kamst
 - Ensure virtual enviroment active
 - Install libraries from requirements.txt: `pip3 install -r requirements.txt`
 
+## Run system
+Run the start script `./start_stop_system.sh <command>` with `<command>` being either `start` or `stop`.
 
 ## Run tests
 Run the start script `./starttest.sh`
