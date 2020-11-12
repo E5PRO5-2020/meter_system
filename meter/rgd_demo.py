@@ -9,10 +9,11 @@ Janus, October 2020
 
 from termcolor import colored
 from datetime import datetime
+import json
 
 from meter.OmniPower import OmniPower, C1Telegram
 from utils.timezone import ZuluTime, zulu_time_str
-
+from meter.MeterMeasurement import MeterMeasurement
 
 def demo_0():
 
@@ -101,5 +102,42 @@ def demo_0():
     omnipower.process_telegram(t)
 
 
+def build_api_message_from_log_obj(m: 'MeterMeasurement'):
+
+    # Choice of keys to send from
+    keys = ['A+', 'A-', 'P+', 'P-']
+
+    # measurements is a MeterMeasurement, containing several Measurements objects inside its measurements field
+    measurements = m.measurements
+
+    # List of data points to send, to be built
+    send_list = []
+
+    # Only loop over the keys we want to send
+    for key in keys:
+        v = measurements[key].value
+
+        template = {
+            "channelNumber": 1,
+            "aggregateType": "Raw",
+            "dataType": key,
+            "value": v,
+            "timestamp": zulu_time_str(m.timestamp)
+        }
+
+        send_list.append(template)
+
+    return json.dumps(send_list)
+
+
 if __name__ == "__main__":
-    demo_0()
+    #demo_0()
+
+    t = C1Telegram(b'27442d2c5768663230028d206360dd0320c42b87f46fc048d42498b44b5e34f083e93e6af16176313d9c')
+    o = OmniPower()
+    o.process_telegram(t)
+
+    # Make from last obj in log
+    s = build_api_message_from_log_obj(o.measurement_log[-1])
+
+    print(s)
