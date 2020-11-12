@@ -30,7 +30,7 @@ else
 		# Get Driver PID
 		# (Maybe) Make signal handler in daemon
 		pids=$(pgrep -f driver/Start_Driver.py)
-		kill $pids
+		kill -15 $pids
 		echo "Stopped daemon with pid: $pids"
 		# Make MQTT or other implementation to stop run_system.py
 		#Example: (Not implemented in run_system.py)
