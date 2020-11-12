@@ -18,6 +18,13 @@ Starting and stopping the system
 - Driver will be running as daemon and will create a FIFO as driver/IM871A_pipe.
 - This script will visibly run in terminal (debug).
 
+Stopping the system over MQTT
+-----------------------------
+
+- Send message with `topic: STOP` to end program. Example:
+    - `mosquitto_pub -h <INSERT IP> -p 1883 -t STOP -m 'anything' -u <INSERT USER> -P <INSERT PWD>`
+
+
 Data flows
 ----------
 
@@ -64,6 +71,11 @@ def run_system():
         # Step 1: Check for message from ReMoni ReCalc
         if dq:
             q_elem = dq.pop()
+
+            # If receiving
+            if q_elem[0] == 'STOP':
+                end_loop()
+
             full_obj = json.loads(q_elem[1])
             meter_list.clear()
 
@@ -94,10 +106,10 @@ def run_system():
             print(meter_list)
 
         # Step 3: Read telegram data from driver via FIFO
-        # TODO: Potential bug here - If timeout triggered, then what are we reading from FIFO afterwards?
-        select([fifo], [], [], 10)  # Wait for data to read on fifo, break every 10 sec to check MQTT
+        # Wait for data to read on fifo, break every 10 sec to check MQTT
+        # If this times out, we will just read an empty FIFO and restart loop.
+        select([fifo], [], [], 10)
 
-        # TODO: Don't close FIFO in driver, as that sends an EOF message
         msg = fifo.readline().strip()   # UTF-8 without line break
         if not msg:                     # If EOF telegram, just start loop again
             continue
@@ -121,7 +133,7 @@ def run_system():
                 publisher.publish(topic, cloud_message)
 
         except Exception as e:
-            print(e)
+            log.exception(e)
 
 
 if __name__ == '__main__':
@@ -163,7 +175,10 @@ if __name__ == '__main__':
 
     # TODO: Figure out correct topic/gw-id to monitor
     monitor_topic = load_settings()['mqtt']['subscribe_topic']
+
+    # TODO: Do this in one call [topic1, topic2]?
     recalc.subscribe(monitor_topic)
+    recalc.subscribe('STOP')
 
     # start thread, runs in background
     recalc.loop_start()
@@ -171,6 +186,17 @@ if __name__ == '__main__':
     # Set up client to transmit metered data to ReCalc
     publisher = MqttClient("PublishToRecalc", donothing_onmessage, donothing_onpublish, param_settings='mqtt')
 
-    run_system()
+    # Function to cleanly exit loop and end threads, disconnect
+    def end_loop():
+        """
+        Nice, clean exit.
+        """
 
-    fifo.close()
+        fifo.close()
+        recalc.loop_stop()
+        recalc.disconnect()
+        publisher.disconnect()
+        exit(0)
+
+    print("Starting main loop")
+    run_system()
