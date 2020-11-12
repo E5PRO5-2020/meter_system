@@ -8,11 +8,22 @@ then
 else
 	if [ $1 == "start" ]
 	then
+
 		echo "Starting system"
-		# Start driver as daemon
-		PYTHONPATH=$PYTHONPATH:pwd python driver/Start_Driver.py
+		# Start driver as daemon if not already running
+		# Look for driver
+		pids=$(pgrep -f driver/Start_Driver.py)
+		echo $pids
+		if [[ $pids != "" ]]
+		then
+		  echo "Driver already running"
+		else
+		  PYTHONPATH=$PYTHONPATH:pwd python driver/Start_Driver.py
+		fi
+
 		# Start main event loop in this terminal
-		PYTHONPATH=$PYTHONPATH:pwd python run/run_system.py
+		PYTHONPATH=$PYTHONPATH:pwd python run/run_system.py &
+
 	elif [ $1 == "stop" ]
 	then
 		echo "Stopping system"
