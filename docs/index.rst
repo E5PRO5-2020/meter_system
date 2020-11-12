@@ -15,6 +15,8 @@ Processed measurements are sent upstream using MQTT.
    :caption: Table of contents
    :maxdepth: 2
 
+   run_system
+
    DriverClass
    omnipower
    metermeasurement
