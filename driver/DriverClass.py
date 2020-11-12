@@ -85,15 +85,15 @@ class IM871A:
     def __init__(self, program_path):
 
         try:
-            self.Port = im871a_port()                                # Path the USB-port used
+            self.Port = im871a_port()                       # Path the USB-port used
         except Exception as e:
             log.exception(e)
             exit(1)
 
-        self.pipe = program_path + '/IM871A_pipe'                    # Pipe name and place to put it
-        self.__init_open(self.Port)                                  # Initially creates and opens port
-        self.__create_pipe(self.Port)                                # Initially creates 'named pipe' file
-
+        self.pipe = program_path + '/IM871A_pipe'           # Pipe name and place to put it
+        self.__init_open(self.Port)                         # Initially creates and opens port
+        self.__create_pipe(self.Port)                       # Initially creates 'named pipe' file
+        self.fp = None                                      # Pointer to pipe             
 
     def __create_pipe(self, pipe: str) -> bool:
         """
@@ -199,17 +199,28 @@ class IM871A:
         Returns a bool to verify if data is sent to pipe.
         """ 
         try:
-            fp = open(self.pipe, "w")
-            fp.write(data + os.linesep)
-            fp.flush()
-            fp.close()
+            self.fp.write(data + os.linesep)
+            self.fp.flush()
             return True
 
-        except IOError as err:
+        except Exception as err:
             log.exception(err)
             return False
 
-            
+
+
+    def open_pipe(self) -> bool:
+        """ 
+        Open up the pipe. Blocks until pipe is opened in the other end.
+        """
+        try:
+            self.fp = open(self.pipe, "w")
+        
+        except IOError as err:
+            log.exception(err)
+            return False           
+
+
 
     def read_data(self) -> bool:
         """
@@ -224,17 +235,16 @@ class IM871A:
             except (AttributeError, port.SerialException) as err:
                 log.exception(err)
                 return False
-
+            
             if len(data) != 0:
                 if self.__CRC16_check(hexlify(data)):
                     data_conv = data.hex()
                     
                     # Output to named pipe
                     if self.__pipe_data(data_conv[6::]):
-                           return True
-                    else:
-                        break                          
-        return False
+                        return True
+                    else:                                            
+                        return False
         
 
     
@@ -330,6 +340,7 @@ class IM871A:
         """
         Opens the port if port has been closed.
         It opens with the path given when instantiating the class.
+        Also open the pipe.
         """
         try:
             self.fp = open(self.pipe, "w")
@@ -343,20 +354,25 @@ class IM871A:
         except (AttributeError, port.SerialException) as err:
             log.exception(err)
             return False
+        
+        self.open_pipe()
 
 
 
     def close(self):
         """
-        Close the connection to IM871A
+        Close the connection to IM871A, and the pipe.
         """
+        self.fp.close()
         self.IM871.close()
 
 
 
     def __del__(self):
         """
-        Destructor for closing when going out of scope
+        Destructor for closing when going out of scope.
+        Closes port and pipe.
         """
-        log.info("Destructor")
+        log.info("IM871A-Driver stopped!")
+        self.fp.close()
         self.close()
