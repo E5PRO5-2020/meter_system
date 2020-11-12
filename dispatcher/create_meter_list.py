@@ -25,7 +25,7 @@ def create_meter_list():
         meter_id = full_obj[i]['deviceId']                     
         
         # Adding to dictionary
-        meter_list.update({meter_id: OmniPower(name="OP-"+meter_id, meter_id=meter_id, aes_key=full_obj[i]['manufacturerKey'])})                         
+        meter_list.update({meter_id: OmniPower(name="OP-"+meter_id, meter_id=meter_id, aes_key=full_obj[i]['encryptionKey'])})                         
   
 
 def dispatcher() -> bool: 
@@ -39,7 +39,7 @@ def dispatcher() -> bool:
         log.exception(err)    
     
     select([fifo], [], [])                      # polls and wait for data ready for read on fifo
-    msg = fifo.readline()
+    msg = fifo.readline().strip()
     fifo.close()
     
     telegram = C1Telegram(msg)
