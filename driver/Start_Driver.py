@@ -40,7 +40,7 @@ def main_program():
             myIM871A.read_data()   
         
     
-def program_cleanup():
+def program_cleanup(signum, frame):
     myIM871A.close()
     log.info("IM871A-Driver daemon stopped")
 
