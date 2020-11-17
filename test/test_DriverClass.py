@@ -256,9 +256,7 @@ def test_usb_essentials_RPi(IM871A_setup):
     # Closing port to test open function
     USB_Port, path_pipe = IM871A_setup
     test_driver = IM871A(path_pipe)
-    test_driver.close()
     assert test_driver.open() == True
-
     # Testing reset
     assert test_driver.reset_module() == True
 
