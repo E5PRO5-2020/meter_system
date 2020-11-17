@@ -287,6 +287,7 @@ def test_driver_RPi(IM871A_setup):
     assert test_driver.setup_linkmode('c1a') == True
 
     # Closing port to test open function
+    test_driver.open()
     test_driver.close()
     assert test_driver.open() == True
     # Testing reset
