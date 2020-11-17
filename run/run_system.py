@@ -84,7 +84,7 @@ def run_system():
             obj_list = json.loads(q_elem[1])
             meter_list.clear()
 
-            # TODO: Do we need to respond with a config over MQTT?
+            # TODO: Respond with a config over MQTT - must be made
             # Step 2: Process message objects and update data structure
             for obj in obj_list:
                 # Set serial no. and convert to little-endian
@@ -173,6 +173,7 @@ def end_loop():
     # TODO: Consider implementing disconnects in destructors (must be tested)
     recalc.disconnect()
     publisher.disconnect()
+    DEBUG("Stopping main loop.")
     exit(0)
 
 

@@ -58,7 +58,7 @@ class MqttClient:
     def __on_publish(client, userdata, mid):
         pass
 
-    def __init__(self, name, on_message, on_publish, param_settings='recalc'):
+    def __init__(self, name, on_message, on_publish, param_settings='mqtt_local'):
         """Handles all setup and connection when object is initialized.
 
         :param str name: Client ID (must be unique)
