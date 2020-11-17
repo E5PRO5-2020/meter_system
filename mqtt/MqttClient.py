@@ -16,6 +16,8 @@ MQTT-class for communication between Gateway and ReCalc/Cloud at ReMoni
 import paho.mqtt.client as mqtt
 from utils.load_settings import load_settings
 from typing import Tuple
+import ssl
+
 
 class MqttClient:
     """
@@ -38,15 +40,15 @@ class MqttClient:
         * 5: Connection refused - not authorised 6-255: Currently unused.
 
         """
-        #TODO: Implement logging potentially
+        # TODO: Implement logging potentially
         print("Connected " + client._client_id.decode() + " with result code " + str(rc) + ": " + connection_rc_str(rc))
 
     # For outputting log messages to console
     @staticmethod
     def __on_log(client, userdata, level, buf):
-        #TODO: Implement logging if needed
+        # TODO: Implement logging if needed
         pass
-        #print("log: ", buf)
+        # print("log: ", buf)
 
     # By default, do nothing on_message
     @staticmethod
@@ -68,8 +70,11 @@ class MqttClient:
         """
 
         settings = load_settings()[param_settings]
-        self.client = mqtt.Client(client_id=name, clean_session=True, userdata=None, transport="tcp")
+        self.client = mqtt.Client(client_id=name, clean_session=True, userdata=None, transport=settings["transport"])
         self.client.username_pw_set(settings["username"], settings["password"])
+        if settings["tls"]:
+            self.client.tls_set(ca_certs=None, certfile=None, keyfile=None, cert_reqs=ssl.CERT_REQUIRED,
+                                tls_version=ssl.PROTOCOL_TLS)
         self.client.on_connect = MqttClient.on_connect
         self.client.on_message = on_message
         self.client.on_publish = on_publish
@@ -157,6 +162,7 @@ def publish_rc_bool(rc: Tuple) -> bool:
     Based on return code spec. from Paho MQTT.
     """
     return {0: True, 4: False}[rc[0]]
+
 
 def connection_rc_str(rc: Tuple) -> str:
     """
