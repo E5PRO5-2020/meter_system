@@ -22,12 +22,8 @@ Processed measurements are sent upstream using MQTT.
    metermeasurement
    mqtt
 
-   util_crc16wmbus
-   util_crc16im871a
-   util_timezone
-   log
-   Search_for_dongle
-   
+   utils
+
    test
 
 

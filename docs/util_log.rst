@@ -2,5 +2,5 @@
 
 Logging to syslog
 ***************************
-.. automodule:: utils.Search_for_dongle.py
+.. automodule:: utils.log
    :members:

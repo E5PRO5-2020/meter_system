@@ -5,14 +5,17 @@ MQTT-class for communication between Gateway and ReCalc/Cloud at ReMoni
 :Platform: Python 3.5.10 on Linux
 :Synopsis: This module implements a class for MQTT Client
 :Authors: Steffen Breinbjerg, Janus Bo Andersen
-:Date: 9 November 2020
-:Version: 1.0
+:Latest update: 9 November 2020
+:Version: 1.1
+
+* **Ver. 1.0**: Setup MQTT class with loaded settings.
+* **Ver. 1.1**: Implement support functions for return codes and better printout for on_connect.
 
 """
 
 import paho.mqtt.client as mqtt
 from utils.load_settings import load_settings
-
+from typing import Tuple
 
 class MqttClient:
     """
@@ -23,7 +26,7 @@ class MqttClient:
 
     # This method is the same for all instances of the class
     @staticmethod
-    def on_connect(client, userdata, flags, rc):
+    def on_connect(client: 'mqtt.Client', userdata, flags, rc):
         """
         on_connect callback rc argument value meaning:
 
@@ -36,8 +39,7 @@ class MqttClient:
 
         """
         #TODO: Implement logging potentially
-        print("xyz")
-        #print(str(client) + " connected with result code " + str(rc))
+        print("Connected " + client._client_id.decode() + " with result code " + str(rc) + ": " + connection_rc_str(rc))
 
     # For outputting log messages to console
     @staticmethod
@@ -56,7 +58,7 @@ class MqttClient:
     def __on_publish(client, userdata, mid):
         pass
 
-    def __init__(self, name, on_message, on_publish, param_settings='mqtt'):
+    def __init__(self, name, on_message, on_publish, param_settings='recalc'):
         """Handles all setup and connection when object is initialized.
 
         :param str name: Client ID (must be unique)
@@ -139,3 +141,34 @@ def donothing_onmessage(client, userdata, message):
 
 def donothing_onpublish(client, userdata, mid):
     pass
+
+
+def publish_rc_str(rc: Tuple) -> str:
+    """
+    Returns text description of return codes for publishing a message.
+    Based on return code spec. from Paho MQTT.
+    """
+    return {0: "Successful", 4: "No connection"}[rc[0]]
+
+
+def publish_rc_bool(rc: Tuple) -> bool:
+    """
+    Returns True if message was sent correctly, otherwise False.
+    Based on return code spec. from Paho MQTT.
+    """
+    return {0: True, 4: False}[rc[0]]
+
+def connection_rc_str(rc: Tuple) -> str:
+    """
+    Returns text description of return codes for a connection attempt to server.
+    Based on return code spec. from Paho MQTT.
+    """
+    rc_str = {0: "Connection successful",
+              1: "Connection refused - incorrect protocol version",
+              2: "Connection refused - invalid client identifier",
+              3: "Connection refused - server unavailable",
+              4: "Connection refused - bad username or password",
+              5: "Connection refused - not authorised 6-255: Currently unused."
+              }
+
+    return rc_str[rc]

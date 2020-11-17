@@ -4,10 +4,13 @@ Metering system main event loop
 
 :Synopsis: This script is main loop which handles the system flow
 :Authors: Steffen, Thomas, Janus
-:Date: 11 November 2020
-
-* **Ver. 0.1**: Build main loop with queue and Mqtt startup
-* **Ver. 0.9**: Implement mqtt to get command from ReCalc, dispatcher, and mqtt to send data to ReCalc
+:Latest update: 17 November 2020
+:Version: 0.92
+:Version history:
+* **Ver. 0.1**: Build main loop with queue and Mqtt startup.
+* **Ver. 0.9**: Implement mqtt to get command from ReCalc, dispatcher, and mqtt to send data to ReCalc.
+* **Ver. 0.91**: Implement (1) gw-id from settings into topics, (2) mqtt pub rc check (log on err), (3) Use DEBUG instead of print.
+* **Ver. 0.92**: Move functions out of __main__ section to document them.
 
 Starting and stopping the system
 --------------------------------
@@ -36,16 +39,16 @@ Testing
 -------
 
 - Test message to start monitoring our OmniPower (fill in username and password):
-    - `mosquitto_pub -h <INSERT IP> -t "v2/pi@vestjylland/sensors/set" -m '[{"deviceId": "32666857","manufacturerKey": "kam","encryptionKey": "9A25139E3244CC2E391A8EF6B915B697", "manufacturerDeviceKey": "OmniPower1"}]' -u <INSERT USER> -P <INSERT PWD>`
+    - `mosquitto_pub -h <INSERT IP> -t "v2/706462169/sensors/set" -m '[{"deviceId": "32666857","manufacturerKey": "kam","encryptionKey": "9A25139E3244CC2E391A8EF6B915B697", "manufacturerDeviceKey": "OmniPower1"}]' -u <INSERT USER> -P <INSERT PWD>`
 - Test to receive published data (fill in username and password):
     - `mosquitto_sub -h <INSERT IP> -t "#" -u <INSERT USER> -P <INSERT PWD>`
 
 TO DO
 -----
 
-- Implement clean way to terminate program over MQTT
 - Implement API compliant message
 - Sort out all TODOs in the code
+- Consider refactoring several steps into functions
 
 """
 
@@ -54,7 +57,7 @@ import json
 import os
 from select import select
 
-from mqtt.MqttClient import MqttClient, donothing_onmessage, donothing_onpublish
+from mqtt.MqttClient import MqttClient, donothing_onmessage, donothing_onpublish, publish_rc_str, publish_rc_bool
 from meter.OmniPower import OmniPower, C1Telegram
 from utils.log import get_logger
 from utils.load_settings import load_settings
@@ -66,24 +69,26 @@ def run_system():
     """
 
     # Main event loop
+    DEBUG("Listening on MQTT.")
     while True:
 
         # Step 1: Check for message from ReMoni ReCalc
         if dq:
             q_elem = dq.pop()
 
-            # If receiving
+            # If receiving command to stop
             if q_elem[0] == 'STOP':
                 end_loop()
 
-            full_obj = json.loads(q_elem[1])
+            # ReCalc sends list with objects, each object represents a sensor to monitor
+            obj_list = json.loads(q_elem[1])
             meter_list.clear()
 
             # TODO: Do we need to respond with a config over MQTT?
-            # Step 2: Process message and update data structure
-            for i in range(0, len(full_obj)):
+            # Step 2: Process message objects and update data structure
+            for obj in obj_list:
                 # Set serial no. and convert to little-endian
-                meter_id = full_obj[i]['deviceId']
+                meter_id = obj['deviceId']
 
                 # Adding object like this to meter_list dictionary
                 #    "12345678": {
@@ -94,16 +99,17 @@ def run_system():
                 #                 }
 
                 meter_control = {
-                    "manufacturerKey": full_obj[i]['manufacturerKey'],
-                    "manufacturerDeviceKey": full_obj[i]['manufacturerDeviceKey'],
-                    "handler": OmniPower(name="OP" + meter_id, meter_id=meter_id, aes_key=full_obj[i]['encryptionKey']),
-                    "mqttTopic": "v2/" + full_obj[i]['manufacturerKey'] + "-" + full_obj[i]['deviceId'] + "/data",
+                    "manufacturerKey": obj['manufacturerKey'],
+                    "manufacturerDeviceKey": obj['manufacturerDeviceKey'],
+                    "handler": OmniPower(name="OP" + meter_id, meter_id=meter_id, aes_key=obj['encryptionKey']),
+                    "mqttTopic": "v2/" + str(gw_id) + "/" + obj['manufacturerKey'] + "-" + obj['deviceId'] + "/data",
                 }
 
                 # TODO: Prevent two objects with same serial number if sent by mistake?
                 meter_list.update({meter_id: meter_control})
 
-            print(meter_list)
+            DEBUG("Monitored meters:")
+            DEBUG(str(meter_list))
 
         # Step 3: Read telegram data from driver via FIFO
         # Wait for data to read on fifo, break every 10 sec to check MQTT
@@ -121,63 +127,101 @@ def run_system():
 
             # Step 5: Let a registered meter handle the telegram
             if address in meter_list.keys():
+                DEBUG("Received data on monitored meter.")
                 meter_list[address]["handler"].process_telegram(telegram)
 
                 # See the log after message parsed, decrypted, etc.
-                print(meter_list[address]["handler"].measurement_log[-1])
+                DEBUG(meter_list[address]["handler"].measurement_log[-1])
 
                 # Step 6: Make MQTT message and send
                 topic = meter_list[address]["mqttTopic"]
                 data_frame = meter_list[address]["handler"].measurement_log.pop()
                 cloud_message = data_frame.json_dump()
-                publisher.publish(topic, cloud_message)
+                rc = publisher.publish(topic, cloud_message)
+                DEBUG("Sent MQTT message with rc" + str(rc) + ": " + publish_rc_str(rc) + ".")
+                if not publish_rc_bool(rc):
+                    log.info("Failed to send MQTT message")
 
         except Exception as e:
             log.exception(e)
 
 
+def on_command_callback(client, userdata, message):
+    """
+    On every message from ReMoni ReCalc, the message is put into an atomic, threadsafe queue.
+    Atomic deque, dq, is from global scope from __main__ section.
+    """
+
+    try:
+        msg = message.payload.decode("utf-8")
+        topic = message.topic
+        # Put received message into the queue as tuple
+        dq.appendleft((topic, msg))
+    except Exception as e:
+        log.exception(e)
+
+
+def end_loop():
+    """
+    Function to cleanly exit loop and end threads, disconnect.
+    From __main__ section: FIFO queue, fifo; Mqtt subscriber, recalc; Mqtt publisher.
+    """
+
+    fifo.close()
+    recalc.loop_stop()
+
+    # TODO: Consider implementing disconnects in destructors (must be tested)
+    recalc.disconnect()
+    publisher.disconnect()
+    exit(0)
+
+
+def DEBUG(message: str):
+    """
+    Prints out if global DEBUG_ON set to True.
+    """
+
+    if DEBUG_ON:
+        print(message)
+
+
 if __name__ == '__main__':
-    # When run from terminal, it sets ub globals, and away we go...
+    # When run from terminal, it sets up globals, and away we go...
+
+    # Debug printouts
+    DEBUG_ON = True
 
     # Global double-ended queue, atomic object for communication from mqtt thread
     dq = deque(maxlen=1)
 
-    # Dispatcher object
+    # Dispatcher object, empty dict (hashmap)
     meter_list = {}
 
-    # Get logger instance
+    # Make logger instance
     log = get_logger()
 
-    # Try to open FIFO
+    # Try to open FIFO, first build an absolute path to the FIFO
     curr_path = os.path.dirname(os.path.abspath(__file__))
     base_path = os.path.split(curr_path)[0]
     fifo_path = os.path.join(base_path, "driver", "IM871A_pipe")
 
     try:
-        print("Try to open pipe")
+        DEBUG("Trying to open FIFO, waiting for communication partner.")
         fifo = open(fifo_path, 'r')
-        print("Connected to pipe: {}".format(fifo_path))
+        DEBUG("Connected to pipe: {}".format(fifo_path))
     except OSError as err:
         log.exception(err)
         exit(1)
 
-    # On every message from ReMoni ReCalc, the message is put into atomic, threadsafe queue
-    def on_command_callback(client, userdata, message):
-        try:
-            msg = message.payload.decode("utf-8")
-            topic = message.topic
-            # Put it into the queue
-            dq.appendleft((topic, msg))
-        except Exception as e:
-            log.exception(e)
-
     # Set up client to get commands from ReCalc
-    recalc = MqttClient("ListenToRecalc", on_command_callback, donothing_onpublish, param_settings='mqtt')
+    recalc = MqttClient("ListenToRecalc", on_command_callback, donothing_onpublish, param_settings='recalc')
 
-    # TODO: Figure out correct topic/gw-id to monitor
-    monitor_topic = load_settings()['mqtt']['subscribe_topic']
+    # Gets topics to monitor and ID for this gateqay
+    settings_yaml = load_settings()['recalc']
+    monitor_topic = settings_yaml['subscribe_topic']
+    gw_id = settings_yaml['gateway_id']
 
-    # TODO: Do this in one call [topic1, topic2]?
+    # TODO: Do this in one call [(topic1,0), (topic2,0)]?
     recalc.subscribe(monitor_topic)
     recalc.subscribe('STOP')
 
@@ -185,19 +229,7 @@ if __name__ == '__main__':
     recalc.loop_start()
 
     # Set up client to transmit metered data to ReCalc
-    publisher = MqttClient("PublishToRecalc", donothing_onmessage, donothing_onpublish, param_settings='mqtt')
+    publisher = MqttClient("PublishToRecalc", donothing_onmessage, donothing_onpublish, param_settings='recalc')
 
-    # Function to cleanly exit loop and end threads, disconnect
-    def end_loop():
-        """
-        Nice, clean exit.
-        """
-
-        fifo.close()
-        recalc.loop_stop()
-        recalc.disconnect()
-        publisher.disconnect()
-        exit(0)
-
-    print("Starting main loop")
+    DEBUG("Starting main loop:")
     run_system()

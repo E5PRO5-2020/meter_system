@@ -5,7 +5,7 @@ MQTT implementation
 .. automodule:: mqtt.MqttClient
 
 MqttClient class
-===============================
+================
 .. currentmodule:: mqtt.MqttClient
 .. autoclass:: MqttClient
    :members:
@@ -13,4 +13,9 @@ MqttClient class
    .. automethod:: __init__
 
 
-
+Supporting functions
+====================
+.. currentmodule:: mqtt.MqttClient
+.. autofunction:: connection_rc_str
+.. autofunction:: publish_rc_str
+.. autofunction:: publish_rc_bool
