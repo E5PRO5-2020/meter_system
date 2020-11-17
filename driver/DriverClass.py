@@ -215,6 +215,7 @@ class IM871A:
         """
         try:
             self.fp = open(self.pipe, "w")
+            return True
         
         except IOError as err:
             log.exception(err)

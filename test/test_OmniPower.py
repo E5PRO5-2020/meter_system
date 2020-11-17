@@ -95,47 +95,45 @@ def bad_payload_list():
     return [bad_payload_tlg]
 
 
-def test_OmniTest(omnipower_base):
+def test_Omnipower_longtelegram(omnipower_base):
     """
-    Test the OmniPower class functionality (not yet fully implemented)
-    Jakob, 27/10-2020
+    Assure Omnipower class can process long telegrams
     """
-    
-    # Chop into smaller tests!
-
     omnipower = omnipower_base
     telegram = '27442d2c5768663230028d208e11de0320188851bdc4b72dd3c2954a341be369e9089b4eb3858169494e'.encode()
     tlg = C1Telegram(telegram)
     assert omnipower.is_this_my(tlg) == True
 
-    # Long telegrams
-    long_telegram = b'2d442d2c5768663230028d206461dd032038931d14b405536e0250592f8b908138d58602eca676ff79e0caf0b14d0e7d'
-    longC1 = C1Telegram(long_telegram)
-    assert omnipower.process_telegram(longC1) == True
 
-    # Short telegram
+def test_Omnipower_shorttelegram(omnipower_base):
+    """
+    Assure Omnipower class can process long telegrams
+    """
+    omnipower = omnipower_base
     short_telegram = b'27442D2C5768663230028D202E21870320D3A4F149B1B8F5783DF7434B8A66A55786499ABE7BAB59ffff'
     shortC1 = C1Telegram(short_telegram)
     assert omnipower.process_telegram(shortC1) == True
 
+
+def test_Omnipower_notmytelegram(omnipower_base):
+    """
+    Assure Omnipower class rejects a telegram from an unknown sensor
+    """
+    omnipower = omnipower_base
     notmy_short_telegram = b'27442D2C5768663130028D202E21870320D3A4F149B1B8F5783DF7434B8A66A55786499ABE7BAB59ffff'
     notmy_short_c1 = C1Telegram(notmy_short_telegram)
     assert omnipower.is_this_my(notmy_short_c1) == False
 
+
+def test_Omnipower_noAESkey(omnipower_base):
+    """
+    Assure that Omnipower class can't decrypt with wrong or no AES-key
+    """
+    omnipower = omnipower_base
     omnipower.AES_key = None
+    short_telegram = b'27442D2C5768663230028D202E21870320D3A4F149B1B8F5783DF7434B8A66A55786499ABE7BAB59ffff'
+    shortC1 = C1Telegram(short_telegram)
     assert shortC1.decrypt_using(omnipower) == False
-
-    # Missing line 500 - Length of telegram check (Not implemented yet)
-    # Is tested but doesn't count as covered
-
-    # Missing line 523-525 - exception add_measurement
-    # Don't know how to make this fail!!!!!!!!!!!!!!!!!
-
-
-    # Missing line 542-545 - is_this_my() false
-    # depends on "if self.is_this_my(telegram) and telegram.decrypt_using(self)"
-
-
 
 
 def test_json_full_log(omnipower_setup):

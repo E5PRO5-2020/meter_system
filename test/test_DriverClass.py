@@ -251,6 +251,16 @@ def test_CRC_check_fails_RPi(IM871A_setup, input_data):
     raw_data, processed_data, processed_data_bad = input_data
     assert test_driver_CRC._IM871A__CRC16_check(processed_data_bad) == False
 
+@pytest.mark.skipif(os.uname()[1] != 'raspberrypi', reason="Only run this test on Gateway")
+def test_usb_essentials_RPi(IM871A_setup):
+    # Closing port to test open function
+    USB_Port, path_pipe = IM871A_setup
+    test_driver = IM871A(path_pipe)
+    test_driver.close()
+    assert test_driver.open() == True
+
+    # Testing reset
+    assert test_driver.reset_module() == True
 
 @pytest.mark.skipif(os.uname()[1] != 'raspberrypi', reason="Only run this test on Gateway")
 def test_driver_RPi(IM871A_setup):
@@ -276,9 +286,4 @@ def test_driver_RPi(IM871A_setup):
     assert test_driver.setup_linkmode('') == False
     assert test_driver.setup_linkmode('c1a') == True
 
-    # Closing port to test open function
-    test_driver.close()
-    assert test_driver.open() == True
 
-    # Testing reset
-    assert test_driver.reset_module() == True
