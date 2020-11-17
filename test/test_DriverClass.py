@@ -20,10 +20,8 @@ from driver.DriverClass import IM871A
 
 @pytest.fixture()
 def IM871A_pipe():
-    USB_Port = '/dev/ttyUSB0'
-    # Temporary path - fix later
     pipe_path = './'
-    return USB_Port, pipe_path
+    return pipe_path
 
 @pytest.fixture()
 def input_data():
@@ -178,7 +176,7 @@ def test_read_data(mock_obj: mock.MagicMock, patched_driver):
 # Can object be instatiated
 @pytest.mark.skipif(os.uname()[1] != 'raspberrypi', reason="Only run this test on Gateway")
 def test_object_instatiated_true_RPi(IM871A_pipe):
-    USB_port, path_pipe = IM871A_pipe
+    path_pipe = IM871A_pipe
     test_driver = IM871A(path_pipe)
     assert test_driver.is_open()
 
@@ -187,7 +185,7 @@ def test_read_data_RPi(IM871A_pipe, input_data):
     """
     Test that data can be read! IMPLEMENT AUTOREADER
     """
-    USB_port, path_pipe = IM871A_pipe
+    path_pipe = IM871A_pipe
     test_driver = IM871A(path_pipe)
     test_driver.setup_linkmode('c1a')
     assert test_driver.read_data()
@@ -204,7 +202,7 @@ def test_CRC_check_succes_RPi(IM871A_pipe, input_data):
     """
     Tests if a succesfull CRC-check returns true
     """
-    USB_port, path_pipe = IM871A_pipe
+    path_pipe = IM871A_pipe
     test_driver_CRC = IM871A(path_pipe)
     raw_data, processed_data, processed_data_bad = input_data
     assert test_driver_CRC._IM871A__CRC16_check(processed_data)
@@ -215,7 +213,7 @@ def test_CRC_check_fails_RPi(IM871A_pipe, input_data):
     """
     Tests if a unsuccesfull CRC-check returns false
     """
-    USB_port, path_pipe = IM871A_pipe
+    path_pipe = IM871A_pipe
     test_driver_CRC = IM871A(path_pipe)
     raw_data, processed_data, processed_data_bad = input_data
     assert test_driver_CRC._IM871A__CRC16_check(processed_data_bad) == False
@@ -223,7 +221,7 @@ def test_CRC_check_fails_RPi(IM871A_pipe, input_data):
 @pytest.mark.skipif(os.uname()[1] != 'raspberrypi', reason="Only run this test on Gateway")
 def test_usb_essentials_RPi(IM871A_pipe):
     # Closing port to test open function
-    USB_Port, path_pipe = IM871A_pipe
+    path_pipe = IM871A_pipe
     test_driver = IM871A(path_pipe)
     assert test_driver.open() == True
     # Testing reset
@@ -235,7 +233,7 @@ def test_linkmodes_RPi(IM871A_pipe):
     Tests several things. (Thomas)
     """
     # Instantiate DriverClass
-    USB_Port, path_pipe = IM871A_pipe
+    path_pipe = IM871A_pipe
     test_driver = IM871A(path_pipe)
     # Testing ping
     assert test_driver.ping() == True
