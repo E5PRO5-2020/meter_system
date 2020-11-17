@@ -114,17 +114,22 @@ def build_api_message_from_log_obj(m: 'MeterMeasurement') -> str:
     send_list = []
 
     # Only loop over the keys we want to send
+    i = 1
     for key in keys:
         v = measurements[key].value
+        if key == 'A+' or 'A-':
+            temptype = "accumulated-power"
+        else:
+            temptype = "power"
 
         template = {
-            "channelNumber": 1,
-            "aggregateType": "Raw",
-            "dataType": key,
-            "value": v,
-            "timestamp": zulu_time_str(m.timestamp)
+            "channelNumber":i,
+            "aggregateType":"Raw",
+            "dataType":temptype,
+            "value":v,
+            "timestamp":zulu_time_str(m.timestamp)
         }
-
+        i = i+1
         send_list.append(template)
 
     return json.dumps(send_list)
