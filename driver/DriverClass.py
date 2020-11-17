@@ -93,7 +93,8 @@ class IM871A:
         self.pipe = program_path + '/IM871A_pipe'           # Pipe name and place to put it
         self.__init_open(self.Port)                         # Initially creates and opens port
         self.__create_pipe(self.Port)                       # Initially creates 'named pipe' file
-        self.fp = None                                      # Pointer to pipe             
+        self.open_pipe(self)
+        #self.fp = None                                      # Pointer to pipe
 
     def __create_pipe(self, pipe: str) -> bool:
         """
