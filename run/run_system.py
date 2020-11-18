@@ -158,7 +158,7 @@ def on_command_callback(client, userdata, message):
         # Put received message into the queue as tuple
         dq.appendleft((topic, msg))
     except Exception as e:
-        log.exception(e)
+        log_error(e)
 
 
 def end_loop():
