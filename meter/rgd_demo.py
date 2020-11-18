@@ -112,11 +112,11 @@ def build_api_message_from_log_obj(m: 'MeterMeasurement') -> str:
 
     # Check if unit is in kilo-watts, and change it to watts if true
     if m.measurements['P+'].unit == "kW":
-        m.measurements['P+'].value = (m.measurements['P+'].value) / 1000
+        m.measurements['P+'].value = m.measurements['P+'].value / 1000
         m.measurements['P+'].unit = "W"
 
     if m.measurements['P-'].unit == "kW":
-        m.measurements['P-'].value = (m.measurements['P-'].value) / 1000
+        m.measurements['P-'].value = m.measurements['P-'].value / 1000
         m.measurements['P-'].unit = "W"
 
 
