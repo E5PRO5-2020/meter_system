@@ -26,12 +26,18 @@ from driver.DriverClass import IM871A
 
 @pytest.fixture()
 def IM871A_pipe():
+    """
+    Fixture that returns a path to use for the pipe
+    """
     pipe_path = './'
     return pipe_path
 
 
 @pytest.fixture()
 def input_data():
+    """
+    Fixture that returns raw usb data, processed data and processed data with errors
+    """
     raw_usb_data = b'\xa5\x82\x03!D-,\x12P\x00d\x1b\x16\x8d ?\x02\xd9\xf3" Z\x06G\xe3hH\xe4\x0cE"V\x90~P\x1d\xe9\xfdl'
     processed_data = b'a5820321442d2c125000641b168d203f02d9f322205a0647e36848e40c452256907e501de9fd6c'
     processed_data_bad = b'a5820321442d2c125000641b168d203f02d9f322205a0647e36848e40c452256907e501de9ffff'
@@ -186,6 +192,9 @@ def test_read_data(mock_obj: mock.MagicMock, patched_driver):
 # Can object be instatiated
 @pytest.mark.skipif(os.uname()[1] != 'raspberrypi', reason="Only run this test on Gateway")
 def test_object_instatiated_true_RPi(IM871A_pipe):
+    """
+    Testing if an object of the type IM871A can be instantiated
+    """
     path_pipe = IM871A_pipe
     test_driver = IM871A(path_pipe)
     assert test_driver.is_open()
@@ -194,7 +203,7 @@ def test_object_instatiated_true_RPi(IM871A_pipe):
 @pytest.mark.skipif(os.uname()[1] != 'raspberrypi', reason="Only run this test on Gateway")
 def test_read_data_RPi(IM871A_pipe, input_data):
     """
-    Test that data can be read! IMPLEMENT AUTOREADER
+    Testing if it's possible to read from the pipe
     """
     path_pipe = IM871A_pipe
     test_driver = IM871A(path_pipe)
@@ -236,6 +245,9 @@ def test_CRC_check_fails_RPi(IM871A_pipe, input_data):
 
 @pytest.mark.skipif(os.uname()[1] != 'raspberrypi', reason="Only run this test on Gateway")
 def test_usb_essentials_RPi(IM871A_pipe):
+    """
+    Testing if it is possible to open the pipe and reset the USB-module
+    """
     # Closing port to test open function
     path_pipe = IM871A_pipe
     test_driver = IM871A(path_pipe)
@@ -248,7 +260,7 @@ def test_usb_essentials_RPi(IM871A_pipe):
 @pytest.mark.skipif(os.uname()[1] != 'raspberrypi', reason="Only run this test on Gateway")
 def test_linkmodes_RPi(IM871A_pipe):
     """
-    Tests several things. (Thomas)
+    Testing all the linkmodes possible with IM871A
     """
     # Instantiate DriverClass
     path_pipe = IM871A_pipe
