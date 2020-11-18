@@ -20,7 +20,9 @@ else
 		else
 		  PYTHONPATH=$PYTHONPATH:pwd python driver/Start_Driver.py
 		fi
-
+		
+		# 2 seconds delay. This is to make time for the driver to create the UNIX pipe. 
+		sleep 2
 		# Start main event loop in this terminal
 		PYTHONPATH=$PYTHONPATH:pwd python run/run_system.py
 
