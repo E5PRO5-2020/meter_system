@@ -162,6 +162,7 @@ def run_system():
                     log_info("Failed to send MQTT message")
 
         except Exception as e:
+
             log_error(e)
 
 

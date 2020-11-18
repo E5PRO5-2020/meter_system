@@ -1,6 +1,8 @@
 """
+API compliant messages
+----------------------
 
-:Synopsis: Implements functionality to send and receive correctly formatted messages as spec'ed by ReMoni API.
+:Synopsis: Implements functionality to send and receive correctly formatted messages as spec'ed by ReMoni API v2.
 :Authors: Jakob, Steffen, Janus
 :Last update: 18 Nov. 2020.
 

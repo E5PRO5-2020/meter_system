@@ -351,12 +351,14 @@ class IM871A:
         # Re-open port to IM871A
         try:
             self.IM871.open()
+            # Re-open pipe
+            self.open_pipe()
             return True
+            
         except (AttributeError, port.SerialException) as err:
             log_error(err)
             return False
-        # Re-open pipe
-        self.open_pipe()
+        
 
 
 
