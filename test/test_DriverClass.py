@@ -199,6 +199,10 @@ def test_read_data_RPi(IM871A_pipe, input_data):
     path_pipe = IM871A_pipe
     test_driver = IM871A(path_pipe)
     test_driver.setup_linkmode('c1a')
+
+    # Open pipe
+    test_driver.open_pipe()
+
     assert test_driver.read_data()
 
     # Ensure that data was received at the other end of the pipe
