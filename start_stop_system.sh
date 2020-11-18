@@ -22,7 +22,7 @@ else
 		fi
 
 		# Start main event loop in this terminal
-		PYTHONPATH=$PYTHONPATH:pwd python run/run_system.py &
+		PYTHONPATH=$PYTHONPATH:pwd python run/run_system.py
 
 	elif [ $1 == "stop" ]
 	then
