@@ -84,7 +84,6 @@ def omnipower_setup():
 def test_add_measurement(MeasureFix, keys):
     """
     Test the "add_measurement"-method from MeterMeasurement
-    Jakob, 27/10-2020
     """
     # Load in fixture
     m1, m2, m3, m4, meterID, testdateTime = MeasureFix
@@ -116,7 +115,6 @@ def test_add_measurement(MeasureFix, keys):
 def test_as_dict(MeasureFix, keys):
     """
 	Test the "as_dict" method from MeterMeasurement
-	Jakob, 27/10-2020
 	"""
     # Load in fixture
     m1, m2, m3, m4, meterID, testdateTime = MeasureFix
