@@ -59,7 +59,7 @@ from select import select
 
 from mqtt.MqttClient import MqttClient, donothing_onmessage, donothing_onpublish, publish_rc_str, publish_rc_bool
 from meter.OmniPower import OmniPower, C1Telegram
-from utils.log import get_logger
+from utils.log import log_error, log_info
 from utils.load_settings import load_settings
 import mqtt.api as api
 
@@ -159,10 +159,10 @@ def run_system():
                 DEBUG("Sent MQTT message with rc" + str(rc) + ": " + publish_rc_str(rc) + ".")
                 if not publish_rc_bool(rc):
                     # Save message somewhere
-                    log.info("Failed to send MQTT message")
+                    log_info("Failed to send MQTT message")
 
         except Exception as e:
-            log.exception(e)
+            log_error(e)
 
 
 def on_command_callback(client, userdata, message):
@@ -178,7 +178,7 @@ def on_command_callback(client, userdata, message):
         # Put received message into the queue as tuple
         dq.appendleft((topic, msg))
     except Exception as e:
-        log.exception(e)
+        log_error(e)
 
 
 def end_loop():
@@ -218,9 +218,6 @@ if __name__ == '__main__':
     # Dispatcher object, empty dict (hashmap)
     meter_list = {}
 
-    # Make logger instance
-    log = get_logger()
-
     # Try to open FIFO, first build an absolute path to the FIFO
     curr_path = os.path.dirname(os.path.abspath(__file__))
     base_path = os.path.split(curr_path)[0]
@@ -231,7 +228,7 @@ if __name__ == '__main__':
         fifo = open(fifo_path, 'r')
         DEBUG("Connected to pipe: {}".format(fifo_path))
     except OSError as err:
-        log.exception(err)
+        log_error(err)
         exit(1)
 
     # Set up client to get commands from ReCalc

@@ -55,13 +55,11 @@ import subprocess
 import errno
 from binascii import hexlify
 from struct import pack
-from utils.log import get_logger
+from utils.log import log_info, log_error
 from typing import Union
 from utils.Search_for_dongle import im871a_port
 
 
-# Get logger instance
-log = get_logger()
 
 # Definitions imported from WMBus_HCI_Spec_V1_6.pdf
 IM871A_SERIAL_SOF = 0xA5
@@ -82,18 +80,22 @@ class IM871A:
     - The path to where to put the pipe, e.g. the program directory. 
     """ 
 
+
+
     def __init__(self, program_path):
 
         try:
-            self.Port = im871a_port()                       # Path the USB-port used
-        except Exception as e:
-            log.exception(e)
+            self.Port = im871a_port()                       # Path to the USB-port used
+        except Exception as err:
+            log_error(err)
             exit(1)
 
         self.pipe = program_path + '/IM871A_pipe'           # Pipe name and place to put it
         self.__init_open(self.Port)                         # Initially creates and opens port
         self.__create_pipe(self.Port)                       # Initially creates 'named pipe' file
         self.fp = None                                      # Pointer to pipe
+
+
 
     def __create_pipe(self, pipe: str) -> bool:
         """
@@ -107,9 +109,8 @@ class IM871A:
 
         except OSError as err:
             # If error is 'File exists' don't show error
-            # If error is 'File exists' don't show error
             if err.errno != errno.EEXIST:
-                log.exception(err)
+                log_error(err)
             return False
 
 
@@ -126,8 +127,9 @@ class IM871A:
             return True
 
         except (ValueError, port.SerialException) as err:
-            log.exception(err)
+            log_error(err)
             return False
+
 
 
     def is_open(self):
@@ -136,9 +138,10 @@ class IM871A:
             try_val = self.IM871.isOpen()
             return try_val
         except AttributeError as err:
-            log.exception(err)
+            log_error(err)
             # Will return False because object doesn't exist.
             return False
+
 
 
     def __string_to_hex(self, argument: str) -> Union[int, bytes]:
@@ -204,22 +207,23 @@ class IM871A:
             return True
 
         except Exception as err:
-            log.error(err)
+            log_error(err)
             exit()
+
             return False
 
 
 
     def open_pipe(self) -> bool:
         """ 
-        Open up the pipe. Blocks until pipe is opened in the other end.
+        Open up the pipe. Blocks until pipe is opened at the other end.
         """
         try:
             self.fp = open(self.pipe, "w")
             return True
-        
+
         except IOError as err:
-            log.exception(err)
+            log_error(err)
             return False           
 
 
@@ -227,7 +231,6 @@ class IM871A:
     def read_data(self) -> bool:
         """
         Read single dataframe from meters sending with the specified link mode.
-        Function is blocking until data arrives.
         Send data into 'named pipe' (USBx_pipe).
         Removes the WM-Bus frame before sending data to pipe.
         """   
@@ -235,7 +238,7 @@ class IM871A:
             try:
                 data = self.IM871.read(100)
             except (AttributeError, port.SerialException) as err:
-                log.exception(err)
+                log_error(err)
                 return False
             
             if len(data) != 0:
@@ -257,7 +260,7 @@ class IM871A:
         try:
             self.IM871.write(port.to_bytes([IM871A_SERIAL_SOF, DEVMGMT_ID, DEVMGMT_MSG_PING_REQ, 0x0]))
         except (AttributeError, port.SerialTimeoutException) as err:
-            log.exception(err)
+            log_error(err)
             return False
 
         # Looking for response message from IM871A
@@ -265,7 +268,7 @@ class IM871A:
             try:
                 data = self.IM871.read(10)
             except port.SerialException as err:
-                log.exception(err)
+                log_error(err)
                 return False
             data_conv = data.hex()
             # Looking for Endpoint-ID and Msg-ID in response
@@ -285,7 +288,7 @@ class IM871A:
         try:
             self.IM871.write([IM871A_SERIAL_SOF, DEVMGMT_ID, DEVMGMT_MSG_RESET_REQ, 0x00])
         except (AttributeError, port.SerialTimeoutException) as err:
-            log.exception(err)
+            log_error(err)
             return False
 
         # Looking for response message from IM871A    
@@ -293,7 +296,7 @@ class IM871A:
             try:
                 data = self.IM871.read(10)
             except port.SerialException as err:
-                log.exception(err)
+                log_error(err)
                 return False
             data_conv = data.hex()
             # Looking for Endpoint-ID and Msg-ID in response
@@ -318,7 +321,7 @@ class IM871A:
         try:
             self.IM871.write(port.to_bytes([IM871A_SERIAL_SOF, DEVMGMT_ID, DEVMGMT_MSG_SET_CONFIG_REQ, 0x03, TEMP_MEM, 0x2, Mode]))
         except (AttributeError, port.SerialTimeoutException) as err:
-            log.exception(err)
+            log_error(err)
             return False
 
         # Looking for responce message from IM871A     
@@ -326,7 +329,7 @@ class IM871A:
             try:
                 data = self.IM871.read(10)
             except port.SerialException as err:
-                log.exception(err)
+                log_error(err)
                 return False
             data_conv = data.hex()
             # Looking for Endpoint-ID and Msg-ID in response
@@ -350,7 +353,7 @@ class IM871A:
             self.IM871.open()
             return True
         except (AttributeError, port.SerialException) as err:
-            log.exception(err)
+            log_error(err)
             return False
         # Re-open pipe
         self.open_pipe()
@@ -369,8 +372,7 @@ class IM871A:
     def __del__(self):
         """
         Destructor for closing when going out of scope.
-        Closes port and pipe.
+        Calls close() for closing port and pipe.
         """
-        log.info("IM871A-Driver stopped!")
-        self.fp.close()
+        log_info("IM871A-Driver stopped!")
         self.close()
