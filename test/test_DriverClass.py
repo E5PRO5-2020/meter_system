@@ -256,7 +256,7 @@ def test_linkmodes_RPi(IM871A_pipe):
     assert True == test_driver.setup_linkmode('s1')
     assert True == test_driver.setup_linkmode('s1m')
     assert True == test_driver.setup_linkmode('s2')
-    assert test_driver.setup_linkmode('t1') == True
+    assert True == test_driver.setup_linkmode('t1')
     assert test_driver.setup_linkmode('t2') == True
     assert test_driver.setup_linkmode('c2a') == True
     assert test_driver.setup_linkmode('c2b') == True
