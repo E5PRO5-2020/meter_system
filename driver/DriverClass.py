@@ -205,7 +205,6 @@ class IM871A:
 
         except Exception as err:
             log.error(err)
-            log.error("Broken pipe detected, goodbye!")
             exit()
             return False
 
