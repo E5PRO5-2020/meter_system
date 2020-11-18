@@ -3,6 +3,12 @@ Tests for IM871-A driver.
 Uses mocked tests when not on Gateway.
 On Gateway, tests run using hardware peripheral.
 
+Future dev.:
+
+- Try spec=True to investigate if MagicMock can correctly spec the patched classes and functions.
+- E.g. when patching serial.Serial, the MagicMock should appear to have all relevant methods.
+- This could eliminate some need for spec'ing our own test doubles (fakes).
+
 """
 
 import pytest
@@ -110,6 +116,9 @@ def patched_driver(mock_obj, mock_obj_fifo, mock_obj_im871a_port):
     # Instantiate object with a dummy device name
     program_path = '/her'
     d = IM871A(program_path)
+
+    # Ensure correct ordering
+    assert type(mock_obj_serial.return_value) is PatchSerial
 
     # Return patched object
     return d
