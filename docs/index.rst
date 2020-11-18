@@ -7,20 +7,22 @@ Kamstrup OmniPower wm-bus metering
 ==================================
 
 This documentation covers the system to read the
-Kamstrup OmniPower 1-phase meter over wm-bus
-using a iM871-A transceiver.
+Kamstrup OmniPower 1-phase meter over wm-bus.
+The implementation uses an iM871-A transceiver to read wm-bus messages.
+Processed measurements are sent upstream using MQTT.
 
 .. toctree::
    :caption: Table of contents
    :maxdepth: 2
 
+   run_system
+
    DriverClass
    omnipower
    metermeasurement
+   mqtt
 
-   util_crc16wmbus
-   util_crc16im871a
-   util_timezone
+   utils
 
    test
 

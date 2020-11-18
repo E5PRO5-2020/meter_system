@@ -147,4 +147,14 @@ venv.bak/
 # Swap files
 .swp
 
+# PyCharm
 .idea/
+
+# MQTT settings
+/experimental/secrets.yaml
+/mqtt/secrets.yaml
+/settings/secrets.yaml
+
+# Visual Studio
+.vscode/
+/experimental/remoni.py

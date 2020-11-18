@@ -9,10 +9,11 @@ Janus, October 2020
 
 from termcolor import colored
 from datetime import datetime
+import json
 
 from meter.OmniPower import OmniPower, C1Telegram
 from utils.timezone import ZuluTime, zulu_time_str
-
+from meter.MeterMeasurement import MeterMeasurement
 
 def demo_0():
 
@@ -101,5 +102,57 @@ def demo_0():
     omnipower.process_telegram(t)
 
 
+def build_api_message_from_log_obj(m: 'MeterMeasurement') -> str:
+
+    # Choice of keys to send from
+    keys = ['A+', 'A-', 'P+', 'P-']
+
+    # measurements is a MeterMeasurement, containing several Measurements objects inside its measurements field
+    measurements = m.measurements
+
+    # Check if unit is in kilo-watts, and change it to watts if true
+    if m.measurements['P+'].unit == "kW":
+        m.measurements['P+'].value = m.measurements['P+'].value / 1000
+        m.measurements['P+'].unit = "W"
+
+    if m.measurements['P-'].unit == "kW":
+        m.measurements['P-'].value = m.measurements['P-'].value / 1000
+        m.measurements['P-'].unit = "W"
+
+
+    # List of data points to send, to be built
+    send_list = []
+
+    # Only loop over the keys we want to send
+    i = 1
+    for key in keys:
+        v = measurements[key].value
+        if key == 'A+' or 'A-':
+            temptype = "accumulated-power"
+        else:
+            temptype = "power"
+
+        template = {
+            "channelNumber":i,
+            "aggregateType":"Raw",
+            "dataType":temptype,
+            "value":v,
+            "timestamp":zulu_time_str(m.timestamp)
+        }
+        i = i+1
+        send_list.append(template)
+
+    return json.dumps(send_list)
+
+
 if __name__ == "__main__":
-    demo_0()
+    #demo_0()
+
+    t = C1Telegram(b'27442d2c5768663230028d206360dd0320c42b87f46fc048d42498b44b5e34f083e93e6af16176313d9c')
+    o = OmniPower()
+    o.process_telegram(t)
+
+    # Make from last obj in log
+    s = build_api_message_from_log_obj(o.measurement_log[-1])
+
+    print(s)
