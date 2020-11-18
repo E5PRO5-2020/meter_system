@@ -86,8 +86,8 @@ class IM871A:
 
         try:
             self.Port = im871a_port()                       # Path to the USB-port used
-        except Exception as e:
-            log.exception(e)
+        except Exception as err:
+            log_error(err)
             exit(1)
 
         self.pipe = program_path + '/IM871A_pipe'           # Pipe name and place to put it
@@ -110,7 +110,7 @@ class IM871A:
         except OSError as err:
             # If error is 'File exists' don't show error
             if err.errno != errno.EEXIST:
-                log.exception(err)
+                log_error(err)
             return False
 
 
