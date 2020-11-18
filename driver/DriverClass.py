@@ -204,7 +204,8 @@ class IM871A:
             return True
 
         except Exception as err:
-            log.exception(err)
+            log.error(err)
+            exit()
             return False
 
 
