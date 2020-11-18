@@ -204,7 +204,7 @@ class IM871A:
                 self.fp.flush()
             except Exception as err:
                 log.exception(err)
-                return False
+                exit()
             return True
 
         except Exception as err:
