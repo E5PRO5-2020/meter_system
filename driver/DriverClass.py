@@ -200,13 +200,15 @@ class IM871A:
         """ 
         try:
             self.fp.write(data + os.linesep)
-            self.fp.flush()
+            try:
+                self.fp.flush()
+            except Exception as err:
+                log.exception(err)
+                return False
             return True
 
         except Exception as err:
             log.exception(err)
-            print("This is the error we're trying to fix")
-            exit()
             return False
 
 
