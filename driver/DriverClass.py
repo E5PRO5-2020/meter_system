@@ -200,16 +200,13 @@ class IM871A:
         """ 
         try:
             self.fp.write(data + os.linesep)
-            try:
-                self.fp.flush()
-            except Exception as err:
-                log.error(err)
-                log.error("Broken pipe detected, goodbye!")
-                #exit()
+            self.fp.flush()
             return True
 
         except Exception as err:
             log.error(err)
+            log.error("Broken pipe detected, goodbye!")
+            exit()
             return False
 
 
