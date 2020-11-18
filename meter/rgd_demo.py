@@ -110,6 +110,16 @@ def build_api_message_from_log_obj(m: 'MeterMeasurement') -> str:
     # measurements is a MeterMeasurement, containing several Measurements objects inside its measurements field
     measurements = m.measurements
 
+    # Check if unit is in kilo-watts, and change it to watts if true
+    if m.measurements['P+'].unit == "kW":
+        m.measurements['P+'].value = m.measurements['P+'].value / 1000
+        m.measurements['P+'].unit = "W"
+
+    if m.measurements['P-'].unit == "kW":
+        m.measurements['P-'].value = m.measurements['P-'].value / 1000
+        m.measurements['P-'].unit = "W"
+
+
     # List of data points to send, to be built
     send_list = []
 

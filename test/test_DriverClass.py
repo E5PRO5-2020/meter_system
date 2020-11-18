@@ -3,6 +3,12 @@ Tests for IM871-A driver.
 Uses mocked tests when not on Gateway.
 On Gateway, tests run using hardware peripheral.
 
+Future dev.:
+
+- Try spec=True to investigate if MagicMock can correctly spec the patched classes and functions.
+- E.g. when patching serial.Serial, the MagicMock should appear to have all relevant methods.
+- This could eliminate some need for spec'ing our own test doubles (fakes).
+
 """
 
 import pytest
@@ -19,19 +25,9 @@ from driver.DriverClass import IM871A
 # After conversion:  a5820321442d2c125000641b168d203f02d9f322205a0647e36848e40c452256907e501de9fd6c
 
 @pytest.fixture()
-def IM871A_setup():
-    USB_Port = '/dev/ttyUSB0'
-    # Temporary path - fix later
+def IM871A_pipe():
     pipe_path = './'
-    return USB_Port, pipe_path
-
-
-@pytest.fixture()
-def IM871A_bad_setup():
-    bad_USB_Port = '/somethingrandom/'
-    # Temporary path - fix later
-    pipe_path = './'
-    return bad_USB_Port, pipe_path
+    return pipe_path
 
 
 @pytest.fixture()
@@ -122,6 +118,9 @@ def patched_driver(mock_obj, mock_obj_fifo, mock_obj_im871a_port):
     program_path = '/her'
     d = IM871A(program_path)
 
+    # Ensure correct ordering
+    assert type(mock_obj_serial.return_value) is PatchSerial
+
     # Return patched object
     return d
 
@@ -186,41 +185,24 @@ def test_read_data(mock_obj: mock.MagicMock, patched_driver):
 
 # Can object be instatiated
 @pytest.mark.skipif(os.uname()[1] != 'raspberrypi', reason="Only run this test on Gateway")
-def test_object_instatiated_true_RPi(IM871A_setup):
-    USB_port, path_pipe = IM871A_setup
+def test_object_instatiated_true_RPi(IM871A_pipe):
+    path_pipe = IM871A_pipe
     test_driver = IM871A(path_pipe)
     assert test_driver.is_open()
 
 
-# Can object be instatiated
-@pytest.mark.skipif(os.uname()[1] != 'Hestemand', reason="New implementation made this obsolete")
-def test_object_instatiated_false_RPi(IM871A_bad_setup):
-    USB_port, path_pipe = IM871A_bad_setup
-    test_driver = IM871A(path_pipe)
-    test_driver.Port = '/RAndom/'
-    assert test_driver.is_open() is False
-
-
-@pytest.mark.skipif(os.uname()[1] != 'Hestmand', reason="New implementation made this obsolet")
-def test_pingself_timout_RPi(IM871A_bad_setup):
-    """
-    Test if ping() returns false with a wrong USB-port
-    """
-    USB_port, path_pipe = IM871A_bad_setup
-    test_driver_bad = IM871A(path_pipe)
-    test_driver_bad.Port = '/RAndom/'
-    # test_driver_bad.open()
-    assert not test_driver_bad.ping()
-
-
 @pytest.mark.skipif(os.uname()[1] != 'raspberrypi', reason="Only run this test on Gateway")
-def test_read_data_RPi(IM871A_setup, input_data):
+def test_read_data_RPi(IM871A_pipe, input_data):
     """
     Test that data can be read! IMPLEMENT AUTOREADER
     """
-    USB_port, path_pipe = IM871A_setup
+    path_pipe = IM871A_pipe
     test_driver = IM871A(path_pipe)
     test_driver.setup_linkmode('c1a')
+
+    # Open pipe
+    test_driver.open_pipe()
+
     assert test_driver.read_data()
 
     # Ensure that data was received at the other end of the pipe
@@ -231,43 +213,54 @@ def test_read_data_RPi(IM871A_setup, input_data):
 
 
 @pytest.mark.skipif(os.uname()[1] != 'raspberrypi', reason="Only run this test on Gateway")
-def test_CRC_check_succes_RPi(IM871A_setup, input_data):
+def test_CRC_check_succes_RPi(IM871A_pipe, input_data):
     """
     Tests if a succesfull CRC-check returns true
     """
-    USB_port, path_pipe = IM871A_setup
+    path_pipe = IM871A_pipe
     test_driver_CRC = IM871A(path_pipe)
     raw_data, processed_data, processed_data_bad = input_data
     assert test_driver_CRC._IM871A__CRC16_check(processed_data)
 
 
 @pytest.mark.skipif(os.uname()[1] != 'raspberrypi', reason="Only run this test on Gateway")
-def test_CRC_check_fails_RPi(IM871A_setup, input_data):
+def test_CRC_check_fails_RPi(IM871A_pipe, input_data):
     """
     Tests if a unsuccesfull CRC-check returns false
     """
-    USB_port, path_pipe = IM871A_setup
+    path_pipe = IM871A_pipe
     test_driver_CRC = IM871A(path_pipe)
     raw_data, processed_data, processed_data_bad = input_data
     assert test_driver_CRC._IM871A__CRC16_check(processed_data_bad) == False
 
 
 @pytest.mark.skipif(os.uname()[1] != 'raspberrypi', reason="Only run this test on Gateway")
-def test_driver_RPi(IM871A_setup):
+def test_usb_essentials_RPi(IM871A_pipe):
+    # Closing port to test open function
+    path_pipe = IM871A_pipe
+    test_driver = IM871A(path_pipe)
+
+    assert test_driver.is_open() == True
+    # Testing reset
+    assert test_driver.reset_module() == True
+
+
+@pytest.mark.skipif(os.uname()[1] != 'raspberrypi', reason="Only run this test on Gateway")
+def test_linkmodes_RPi(IM871A_pipe):
     """
     Tests several things. (Thomas)
     """
     # Instantiate DriverClass
-    USB_Port, path_pipe = IM871A_setup
+    path_pipe = IM871A_pipe
     test_driver = IM871A(path_pipe)
     # Testing ping
     assert test_driver.ping() == True
 
     # Testing Linkmode. Last mode is 'c1a' to be able to test read_data()
-    assert test_driver.setup_linkmode('s1') == True
-    assert test_driver.setup_linkmode('s1m') == True
-    assert test_driver.setup_linkmode('s2') == True
-    assert test_driver.setup_linkmode('t1') == True
+    assert True == test_driver.setup_linkmode('s1')
+    assert True == test_driver.setup_linkmode('s1m')
+    assert True == test_driver.setup_linkmode('s2')
+    assert True == test_driver.setup_linkmode('t1')
     assert test_driver.setup_linkmode('t2') == True
     assert test_driver.setup_linkmode('c2a') == True
     assert test_driver.setup_linkmode('c2b') == True
@@ -275,10 +268,3 @@ def test_driver_RPi(IM871A_setup):
     assert test_driver.setup_linkmode('ha') == False
     assert test_driver.setup_linkmode('') == False
     assert test_driver.setup_linkmode('c1a') == True
-
-    # Closing port to test open function
-    test_driver.close()
-    assert test_driver.open() == True
-
-    # Testing reset
-    assert test_driver.reset_module() == True

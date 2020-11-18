@@ -61,6 +61,7 @@ from mqtt.MqttClient import MqttClient, donothing_onmessage, donothing_onpublish
 from meter.OmniPower import OmniPower, C1Telegram
 from utils.log import log_error, log_info
 from utils.load_settings import load_settings
+import mqtt.api as api
 
 
 def run_system():
@@ -84,29 +85,40 @@ def run_system():
             obj_list = json.loads(q_elem[1])
             meter_list.clear()
 
-            # TODO: Respond with a config over MQTT - must be made
             # Step 2: Process message objects and update data structure
             for obj in obj_list:
                 # Set serial no. and convert to little-endian
-                meter_id = obj['deviceId']
+                meter_id = obj['DeviceId']
 
                 # Adding object like this to meter_list dictionary
                 #    "12345678": {
-                #                   "manufacturerKey": "kam",
-                #                   "manufacturerDeviceKey": "somekeyfromrecalc",
+                #                   "ManufacturerKey": "kam",
+                #                   "ManufacturerDeviceKey": "somekeyfromrecalc",
                 #                   "handler": OmniPower(...),
                 #                   "mqttTopic": "v2/<gw-id>/<manufacturer-key>-<device-id>/data",
                 #                 }
 
                 meter_control = {
-                    "manufacturerKey": obj['manufacturerKey'],
-                    "manufacturerDeviceKey": obj['manufacturerDeviceKey'],
-                    "handler": OmniPower(name="OP" + meter_id, meter_id=meter_id, aes_key=obj['encryptionKey']),
-                    "mqttTopic": "v2/" + str(gw_id) + "/" + obj['manufacturerKey'] + "-" + obj['deviceId'] + "/data",
+                    "ManufacturerKey": obj['ManufacturerKey'],
+                    "ManufacturerDeviceKey": obj['ManufacturerDeviceKey'],
+                    "handler": OmniPower(name="OP" + meter_id, meter_id=meter_id, aes_key=obj['EncryptionKey']),
+                    "mqttTopic": "v2/" + str(gw_id) + "/" + obj['ManufacturerKey'] + "-" + obj['DeviceId'] + "/data",
                 }
 
                 # TODO: Prevent two objects with same serial number if sent by mistake?
                 meter_list.update({meter_id: meter_control})
+
+                # Make config topic
+                # v2/<gw-id>/<manufacturer-key>-<device-id>/config
+                config_topic = "v2/" + str(gw_id) + "/" + obj['ManufacturerKey'] + "-" + obj['DeviceId'] + "/config"
+
+                # Send config message
+                # TODO: Fix PyCharm unresolved reference due to tuple
+                config_msg = api.config_json()
+                rc = publisher.publish(config_topic, config_msg)
+                rc.wait_for_publish()
+
+                DEBUG("Sent config message: " + str((config_msg, config_topic)))
 
             DEBUG("Monitored meters:")
             DEBUG(str(meter_list))
@@ -136,10 +148,17 @@ def run_system():
                 # Step 6: Make MQTT message and send
                 topic = meter_list[address]["mqttTopic"]
                 data_frame = meter_list[address]["handler"].measurement_log.pop()
-                cloud_message = data_frame.json_dump()
-                rc = publisher.publish(topic, cloud_message)
+                data_msg_list = api.build_api_message_from_log_obj(data_frame)
+
+                # Loop over all measurements to be sent
+                for data_msg in data_msg_list:
+                    rc = publisher.publish(topic, json.dumps(data_msg))
+                    DEBUG(json.dumps(data_msg))
+                    rc.wait_for_publish()
+
                 DEBUG("Sent MQTT message with rc" + str(rc) + ": " + publish_rc_str(rc) + ".")
                 if not publish_rc_bool(rc):
+                    # Save message somewhere
                     log_info("Failed to send MQTT message")
 
         except Exception as e:
@@ -155,6 +174,7 @@ def on_command_callback(client, userdata, message):
     try:
         msg = message.payload.decode("utf-8")
         topic = message.topic
+        DEBUG("Topic: " + topic + ". Message: " + msg)
         # Put received message into the queue as tuple
         dq.appendleft((topic, msg))
     except Exception as e:
@@ -212,16 +232,19 @@ if __name__ == '__main__':
         exit(1)
 
     # Set up client to get commands from ReCalc
-    recalc = MqttClient("ListenToRecalc", on_command_callback, donothing_onpublish, param_settings='recalc')
+    profile = 'recalc'
+    #"ListenTo_" + profile
+    recalc = MqttClient("Verner", on_command_callback, donothing_onpublish, param_settings=profile)
 
     # Gets topics to monitor and ID for this gateqay
-    settings_yaml = load_settings()['recalc']
+    settings_yaml = load_settings()[profile]
     monitor_topic = settings_yaml['subscribe_topic']
+    DEBUG("Monitor topic: " + monitor_topic)
     gw_id = settings_yaml['gateway_id']
 
     # TODO: Do this in one call [(topic1,0), (topic2,0)]?
-    recalc.subscribe(monitor_topic)
-    recalc.subscribe('STOP')
+    recalc.subscribe(monitor_topic, 0)
+    #recalc.subscribe('STOP')
 
     # start thread, runs in background
     recalc.loop_start()
