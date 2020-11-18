@@ -205,6 +205,8 @@ class IM871A:
 
         except Exception as err:
             log.exception(err)
+            print("This is the error we're trying to fix")
+            exit()
             return False
 
 
