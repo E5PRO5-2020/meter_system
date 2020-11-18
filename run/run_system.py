@@ -88,21 +88,21 @@ def run_system():
             # Step 2: Process message objects and update data structure
             for obj in obj_list:
                 # Set serial no. and convert to little-endian
-                meter_id = obj['deviceId']
+                meter_id = obj['DeviceId']
 
                 # Adding object like this to meter_list dictionary
                 #    "12345678": {
-                #                   "manufacturerKey": "kam",
-                #                   "manufacturerDeviceKey": "somekeyfromrecalc",
+                #                   "ManufacturerKey": "kam",
+                #                   "ManufacturerDeviceKey": "somekeyfromrecalc",
                 #                   "handler": OmniPower(...),
                 #                   "mqttTopic": "v2/<gw-id>/<manufacturer-key>-<device-id>/data",
                 #                 }
 
                 meter_control = {
-                    "manufacturerKey": obj['manufacturerKey'],
-                    "manufacturerDeviceKey": obj['manufacturerDeviceKey'],
-                    "handler": OmniPower(name="OP" + meter_id, meter_id=meter_id, aes_key=obj['encryptionKey']),
-                    "mqttTopic": "v2/" + str(gw_id) + "/" + obj['manufacturerKey'] + "-" + obj['deviceId'] + "/data",
+                    "ManufacturerKey": obj['ManufacturerKey'],
+                    "ManufacturerDeviceKey": obj['ManufacturerDeviceKey'],
+                    "handler": OmniPower(name="OP" + meter_id, meter_id=meter_id, aes_key=obj['EncryptionKey']),
+                    "mqttTopic": "v2/" + str(gw_id) + "/" + obj['ManufacturerKey'] + "-" + obj['DeviceId'] + "/data",
                 }
 
                 # TODO: Prevent two objects with same serial number if sent by mistake?
@@ -114,9 +114,12 @@ def run_system():
         # Step 3: Read telegram data from driver via FIFO
         # Wait for data to read on fifo, break every 10 sec to check MQTT
         # If this times out, we will just read an empty FIFO and restart loop.
-        select([fifo], [], [], 10)
+        # TODO: Temporarily disabled reading from pipe
+        #select([fifo], [], [], 10)
 
-        msg = fifo.readline().strip()   # UTF-8 without line break
+        # TODO: Temporarily disabled reading from pipe
+        msg = ""
+        #msg = fifo.readline().strip()   # UTF-8 without line break
         if not msg:                     # If EOF telegram, just start loop again
             continue
 
@@ -155,6 +158,7 @@ def on_command_callback(client, userdata, message):
     try:
         msg = message.payload.decode("utf-8")
         topic = message.topic
+        DEBUG("Topic: " + topic + ". Message: " + msg)
         # Put received message into the queue as tuple
         dq.appendleft((topic, msg))
     except Exception as e:
@@ -208,23 +212,27 @@ if __name__ == '__main__':
 
     try:
         DEBUG("Trying to open FIFO, waiting for communication partner.")
-        fifo = open(fifo_path, 'r')
+        # TODO: Temporarily disabled reading from pipe
+        #fifo = open(fifo_path, 'r')
         DEBUG("Connected to pipe: {}".format(fifo_path))
     except OSError as err:
         log.exception(err)
         exit(1)
 
     # Set up client to get commands from ReCalc
-    recalc = MqttClient("ListenToRecalc", on_command_callback, donothing_onpublish, param_settings='recalc')
+    profile = 'recalc'
+    #"ListenTo_" + profile
+    recalc = MqttClient("Verner", on_command_callback, donothing_onpublish, param_settings=profile)
 
     # Gets topics to monitor and ID for this gateqay
-    settings_yaml = load_settings()['recalc']
+    settings_yaml = load_settings()[profile]
     monitor_topic = settings_yaml['subscribe_topic']
+    DEBUG("Monitor topic: " + monitor_topic)
     gw_id = settings_yaml['gateway_id']
 
     # TODO: Do this in one call [(topic1,0), (topic2,0)]?
-    recalc.subscribe(monitor_topic)
-    recalc.subscribe('STOP')
+    recalc.subscribe(monitor_topic, 0)
+    #recalc.subscribe('STOP')
 
     # start thread, runs in background
     recalc.loop_start()
