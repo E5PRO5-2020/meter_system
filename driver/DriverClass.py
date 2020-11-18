@@ -203,13 +203,13 @@ class IM871A:
             try:
                 self.fp.flush()
             except Exception as err:
-                log.exception(err)
+                log.error(err)
+                log.error("Broken pipe detected, goodbye!")
                 exit()
             return True
 
         except Exception as err:
-            log.exception(err)
-            log.exception("Broken pipe detected, goodbye!")
+            log.error(err)
             return False
 
 
