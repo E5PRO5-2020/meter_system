@@ -125,7 +125,7 @@ def patched_driver(mock_obj, mock_obj_fifo, mock_obj_im871a_port):
     d = IM871A(program_path)
 
     # Ensure correct ordering
-    assert type(mock_obj_serial.return_value) is PatchSerial
+    assert type(mock_obj_im871a_port.return_value) is PatchSerial
 
     # Return patched object
     return d
