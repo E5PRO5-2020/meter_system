@@ -1,21 +1,16 @@
 import logging
 import logging.handlers
 
-def get_logger():
+def log_error(message) -> None:
     """
-    Function for setting up logging to syslog file.
-    Ignoring less severe messages than INFO.
-    Returns a reference to a logger instance.
+    Function for sending logging message to syslog file.
+    Use this one for error messages.
     """
     # Create logger with specific name
-    log = logging.getLogger('TEAM 3: ')
-    
-    # Check if handlers are already present and if so, clear them
-    if (log.hasHandlers()):
-        log.handlers.clear()
+    logger = logging.getLogger('Test_logging: ')
 
     # Setting logger level 
-    log.setLevel(logging.INFO)
+    logger.setLevel(logging.INFO)
     
     # Create handler addressed to syslog
     handler = logging.handlers.SysLogHandler(address = '/dev/log')
@@ -25,8 +20,39 @@ def get_logger():
     handler.setFormatter(formatter)
     
     # Add handler to logger
-    log.addHandler(handler)
+    logger.addHandler(handler)
 
-    return log
+    # Log message
+    logger.error(message)
 
+    # Remove the handle after logging
+    logger.removeHandler(handler)
+    
+
+def log_info(message) -> None:
+    """
+    Function for sending logging message to syslog file.
+    Use this one for info messages.
+    """
+    # Create logger with specific name
+    logger = logging.getLogger('Test_logging: ')
+
+    # Setting logger level 
+    logger.setLevel(logging.INFO)
+    
+    # Create handler addressed to syslog
+    handler = logging.handlers.SysLogHandler(address = '/dev/log')
+    
+    # Create and add formatter to handler
+    formatter = logging.Formatter('%(name)s %(levelname)s: %(message)s')
+    handler.setFormatter(formatter)
+    
+    # Add handler to logger
+    logger.addHandler(handler)
+
+    # Log message
+    logger.info(message)
+
+    # Remove the handle after logging
+    logger.removeHandler(handler)
 

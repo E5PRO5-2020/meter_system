@@ -11,13 +11,13 @@ import daemon   # type: ignore
 from driver.DriverClass import IM871A
 import time, signal
 import os
-from utils.log import get_logger
+from utils.log import log_error, log_info
 
 
 # Main_program will be run as daemon
 def main_program():
-    log = get_logger()
-    log.info("Start daemon")
+    
+    log_info("Start daemon")
 
     # Instantialte driver object
     myIM871A = IM871A(path)
