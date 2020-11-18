@@ -29,6 +29,7 @@ def IM871A_pipe():
     pipe_path = './'
     return pipe_path
 
+
 @pytest.fixture()
 def input_data():
     raw_usb_data = b'\xa5\x82\x03!D-,\x12P\x00d\x1b\x16\x8d ?\x02\xd9\xf3" Z\x06G\xe3hH\xe4\x0cE"V\x90~P\x1d\xe9\xfdl'
@@ -189,6 +190,7 @@ def test_object_instatiated_true_RPi(IM871A_pipe):
     test_driver = IM871A(path_pipe)
     assert test_driver.is_open()
 
+
 @pytest.mark.skipif(os.uname()[1] != 'raspberrypi', reason="Only run this test on Gateway")
 def test_read_data_RPi(IM871A_pipe, input_data):
     """
@@ -197,6 +199,10 @@ def test_read_data_RPi(IM871A_pipe, input_data):
     path_pipe = IM871A_pipe
     test_driver = IM871A(path_pipe)
     test_driver.setup_linkmode('c1a')
+
+    # Open pipe
+    test_driver.open_pipe()
+
     assert test_driver.read_data()
 
     # Ensure that data was received at the other end of the pipe
@@ -227,14 +233,17 @@ def test_CRC_check_fails_RPi(IM871A_pipe, input_data):
     raw_data, processed_data, processed_data_bad = input_data
     assert test_driver_CRC._IM871A__CRC16_check(processed_data_bad) == False
 
+
 @pytest.mark.skipif(os.uname()[1] != 'raspberrypi', reason="Only run this test on Gateway")
 def test_usb_essentials_RPi(IM871A_pipe):
     # Closing port to test open function
     path_pipe = IM871A_pipe
     test_driver = IM871A(path_pipe)
-    assert test_driver.open() == True
+
+    assert test_driver.is_open() == True
     # Testing reset
     assert test_driver.reset_module() == True
+
 
 @pytest.mark.skipif(os.uname()[1] != 'raspberrypi', reason="Only run this test on Gateway")
 def test_linkmodes_RPi(IM871A_pipe):
@@ -248,10 +257,10 @@ def test_linkmodes_RPi(IM871A_pipe):
     assert test_driver.ping() == True
 
     # Testing Linkmode. Last mode is 'c1a' to be able to test read_data()
-    assert test_driver.setup_linkmode('s1') == True
-    assert test_driver.setup_linkmode('s1m') == True
-    assert test_driver.setup_linkmode('s2') == True
-    assert test_driver.setup_linkmode('t1') == True
+    assert True == test_driver.setup_linkmode('s1')
+    assert True == test_driver.setup_linkmode('s1m')
+    assert True == test_driver.setup_linkmode('s2')
+    assert True == test_driver.setup_linkmode('t1')
     assert test_driver.setup_linkmode('t2') == True
     assert test_driver.setup_linkmode('c2a') == True
     assert test_driver.setup_linkmode('c2b') == True
