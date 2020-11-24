@@ -84,7 +84,6 @@ class MqttClient:
         if settings["tls"]:
             self.client.tls_set(ca_certs=None, certfile=None, keyfile=None, cert_reqs=ssl.CERT_REQUIRED,
                                 tls_version=ssl.PROTOCOL_TLS)
-            print("Hello from the TLS")
         self.client.on_connect = MqttClient.on_connect
         self.client.on_message = on_message
         self.client.on_disconnect = MqttClient.on_disconnect

@@ -43,12 +43,25 @@ Testing
 - Test to receive published data (fill in username and password):
     - `mosquitto_sub -h <INSERT IP> -t "#" -u <INSERT USER> -P <INSERT PWD>`
 
-TO DO
------
 
-- Implement API compliant message
-- Sort out all TODOs in the code
-- Consider refactoring several steps into functions
+Handling data from ReCalc
+-------------------------
+
+Monitored list is built based on serial numbers from ReCalc messages:
+
+- Keeps object (dispatcher) to keep track of monitored meters.
+- No method (or way) to report if a serial numbers is invalid.
+- Invalid serial numbers will be monitored, but no data will ever be sent.
+- Consider expanding ReCalc Cloud API to receive messages about invalid commands.
+- Currently only able to send config messages for OmniPower devices.
+
+
+Future implementation of more meters
+------------------------------------
+
+- Expand the api.config_json() function to take as arguments the name/type/manufacturer of a device.
+- Return a config string based on these properties.
+- Base configs on yaml files or other files that can be updated on the fly without restarting code.
 
 """
 
@@ -113,12 +126,14 @@ def run_system():
                 config_topic = "v2/" + str(gw_id) + "/" + obj['ManufacturerKey'] + "-" + obj['DeviceId'] + "/config"
 
                 # Send config message
-                # TODO: Fix PyCharm unresolved reference due to tuple
                 config_msg = api.config_json()
                 rc = publisher.publish(config_topic, config_msg)
                 rc.wait_for_publish()
 
-                DEBUG("Sent config message: " + str((config_msg, config_topic)))
+                # Nicer debug print
+                DEBUG("Sent config message: ")
+                DEBUG(config_topic)
+                DEBUG(json.loads(config_msg))
 
             DEBUG("Monitored meters:")
             DEBUG(str(meter_list))
@@ -131,6 +146,9 @@ def run_system():
         msg = fifo.readline().strip()   # UTF-8 without line break
         if not msg:                     # If EOF telegram, just start loop again
             continue
+
+        DEBUG("Message received from IM871A")
+        DEBUG(msg)
 
         # Step 4: Process received telegram
         try:

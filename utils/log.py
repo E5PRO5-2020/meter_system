@@ -8,7 +8,7 @@ def log_error(message) -> None:
     Use this one for ERROR messages.
     """
     # Create logger with specific name
-    logger = logging.getLogger('Test_logging: ')
+    logger = logging.getLogger('TEAM 3: ')
 
     # Setting logger level 
     logger.setLevel(logging.INFO)
@@ -37,7 +37,7 @@ def log_info(message) -> None:
     Use this one for INFO messages.
     """
     # Create logger with specific name
-    logger = logging.getLogger('Test_logging: ')
+    logger = logging.getLogger('TEAM 3: ')
 
     # Setting logger level 
     logger.setLevel(logging.INFO)
