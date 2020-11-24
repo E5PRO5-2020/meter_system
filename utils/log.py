@@ -4,8 +4,7 @@ import logging.handlers
 def log_error(message) -> None:
     """
     Function for sending logging message to syslog file.
-    It creates a handler, sends the message and removes the handler again, to avoid duplicates of handlers.
-    Use this one for ERROR messages.
+    Use this one for error messages.
     """
     # Create logger with specific name
     logger = logging.getLogger('TEAM 3: ')
@@ -33,8 +32,7 @@ def log_error(message) -> None:
 def log_info(message) -> None:
     """
     Function for sending logging message to syslog file.
-    It creates a handler, sends the message and removes the handler again, to avoid duplicates of handlers.
-    Use this one for INFO messages.
+    Use this one for info messages.
     """
     # Create logger with specific name
     logger = logging.getLogger('TEAM 3: ')
