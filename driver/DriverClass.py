@@ -82,7 +82,7 @@ class IM871A:
 
 
 
-    def __init__(self, program_path):
+    def __init__(self, program_path, logOnDestruct=True):
 
         try:
             self.Port = im871a_port()                       # Path to the USB-port used
@@ -95,7 +95,7 @@ class IM871A:
         self.__create_pipe(self.Port)                       # Initially creates 'named pipe' file
         self.fp = None                                      # Pointer to pipe
 
-
+        self.logOnDestruct = logOnDestruct
 
     def __create_pipe(self, pipe: str) -> bool:
         """
@@ -366,7 +366,8 @@ class IM871A:
         """
         Close the connection to IM871A, and the pipe.
         """
-        self.fp.close()
+        if not self.fp is None:
+            self.fp.close()     # only run if not NoneType
         self.IM871.close()
 
 
@@ -376,5 +377,7 @@ class IM871A:
         Destructor for closing when going out of scope.
         Calls close() for closing port and pipe.
         """
-        log_info("IM871A-Driver stopped!")
+        if self.logOnDestruct:
+            log_info("IM871A-Driver stopped!")
+
         self.close()
