@@ -76,7 +76,7 @@ DEVMGMT_MSG_RESET_RSP = 0x08
 class IM871A:  
     """
     Implementation of a driver class for IM871A USB-dongle. 
-    Takes one argument:
+    Takes 1 argument1:
     - The path to where to put the pipe, e.g. the program directory. 
     """ 
 
@@ -231,8 +231,8 @@ class IM871A:
     def read_data(self) -> bool:
         """
         Read single dataframe from meters sending with the specified link mode.
-        Send data to '__pipe_data()'.
-        Removes the WM-Bus frame before sending data.
+        Send data into 'named pipe' (USBx_pipe).
+        Removes the WM-Bus frame before sending data to pipe.
         """   
         while True:
             try:
@@ -312,7 +312,7 @@ class IM871A:
         """
         Setup link mode for communication with meter. 
         Takes the link mode as argument.
-        If no Link Mode is set, default is 'S2'.
+        If no Link Mode is set, default is 'S2'
         """
         # Converting mode-string to byte
         Mode = self.__string_to_hex(mode)
@@ -345,7 +345,7 @@ class IM871A:
         """
         Opens the port if port has been closed.
         It opens with the path given when instantiating the class.
-        It also opens the pipe.
+        Also open the pipe.
         """
         
         # Re-open port to IM871A
@@ -354,11 +354,12 @@ class IM871A:
             # Re-open pipe
             self.open_pipe()
             return True
-
+            
         except (AttributeError, port.SerialException) as err:
             log_error(err)
             return False
         
+
 
 
     def close(self):
